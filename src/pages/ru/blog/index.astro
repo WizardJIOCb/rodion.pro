@@ -1,0 +1,105 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const posts = await getCollection(`blog-${lang}`, ({ data }) => !data.draft);
+const sortedPosts = posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Get all unique tags
+const allTags = [...new Set(sortedPosts.flatMap(post => post.data.tags))];
+
+// Filter by tag if provided
+const url = new URL(Astro.request.url);
+const filterTag = url.searchParams.get('tag');
+const filteredPosts = filterTag 
+  ? sortedPosts.filter(post => post.data.tags.includes(filterTag))
+  : sortedPosts;
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+---
+
+<Layout title={t('blog.title')} description={t('blog.description')}>
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <h1 class="text-3xl font-bold text-text mb-4">{t('blog.title')}</h1>
+    <p class="text-muted mb-8">{t('blog.description')}</p>
+    
+    <!-- Tags filter -->
+    {allTags.length > 0 && (
+      <div class="mb-8">
+        <div class="flex flex-wrap gap-2">
+          <a 
+            href={getLocalizedPath('/blog', lang)}
+            class:list={[
+              'tag',
+              !filterTag && 'ring-1 ring-accent'
+            ]}
+          >
+            {t('blog.allPosts')}
+          </a>
+          {allTags.map(tag => (
+            <a 
+              href={`${getLocalizedPath('/blog', lang)}?tag=${tag}`}
+              class:list={[
+                'tag',
+                filterTag === tag && 'ring-1 ring-accent'
+              ]}
+            >
+              {tag}
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+    
+    <!-- Posts list -->
+    <div class="space-y-6">
+      {filteredPosts.length === 0 ? (
+        <div class="card">
+          <p class="text-muted">
+            {lang === 'ru' ? 'Записей пока нет' : 'No posts yet'}
+          </p>
+        </div>
+      ) : (
+        filteredPosts.map(post => (
+          <a 
+            href={getLocalizedPath(`/blog/${post.slug}`, lang)} 
+            class="card block group"
+          >
+            <article>
+              <div class="flex items-center gap-3 mb-2">
+                <time class="text-xs text-muted font-mono">
+                  {formatDate(post.data.date)}
+                </time>
+                {post.data.tags.slice(0, 3).map(tag => (
+                  <span class="tag text-xs">{tag}</span>
+                ))}
+              </div>
+              <h2 class="text-xl font-semibold text-text group-hover:text-accent transition-colors mb-2">
+                {post.data.title}
+              </h2>
+              <p class="text-muted text-sm line-clamp-2">
+                {post.data.description}
+              </p>
+              <span class="inline-flex items-center gap-1 mt-3 text-sm text-accent">
+                {t('blog.readMore')}
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </article>
+          </a>
+        ))
+      )}
+    </div>
+  </div>
+</Layout>

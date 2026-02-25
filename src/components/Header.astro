@@ -1,0 +1,113 @@
+---
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@/i18n';
+import LanguageSwitch from '@/components/LanguageSwitch.astro';
+import ThemeSwitch from '@/components/ThemeSwitch';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { key: 'nav.projects' as const, path: '/projects' },
+  { key: 'nav.blog' as const, path: '/blog' },
+  { key: 'nav.changelog' as const, path: '/changelog' },
+  { key: 'nav.now' as const, path: '/now' },
+  { key: 'nav.uses' as const, path: '/uses' },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur-md">
+  <div class="mx-auto max-w-5xl px-4">
+    <nav class="flex h-16 items-center justify-between">
+      <a 
+        href={getLocalizedPath('/', lang)} 
+        class="flex items-center gap-2 font-mono text-lg font-semibold text-accent hover:glow-text transition-all"
+      >
+        <span class="text-muted">~/</span>rodion
+      </a>
+      
+      <div class="hidden md:flex items-center gap-1">
+        {navItems.map(({ key, path }) => {
+          const localizedPath = getLocalizedPath(path, lang);
+          const isActive = currentPath.startsWith(localizedPath);
+          return (
+            <a
+              href={localizedPath}
+              class:list={[
+                'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                isActive 
+                  ? 'text-accent bg-accent/10' 
+                  : 'text-muted hover:text-text hover:bg-surface',
+              ]}
+            >
+              {t(key)}
+            </a>
+          );
+        })}
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button
+          id="cmd-trigger"
+          class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border text-sm text-muted hover:text-text hover:border-accent/50 transition-colors"
+          title="Ctrl+K"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span class="font-mono text-xs">Ctrl+K</span>
+        </button>
+        
+        <ThemeSwitch client:load />
+        <LanguageSwitch />
+        
+        <button
+          id="mobile-menu-btn"
+          class="md:hidden p-2 rounded-md text-muted hover:text-text hover:bg-surface"
+          aria-label="Menu"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </nav>
+    
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden pb-4">
+      <div class="flex flex-col gap-1">
+        {navItems.map(({ key, path }) => {
+          const localizedPath = getLocalizedPath(path, lang);
+          const isActive = currentPath.startsWith(localizedPath);
+          return (
+            <a
+              href={localizedPath}
+              class:list={[
+                'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                isActive 
+                  ? 'text-accent bg-accent/10' 
+                  : 'text-muted hover:text-text hover:bg-surface',
+              ]}
+            >
+              {t(key)}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const menuBtn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  const cmdTrigger = document.getElementById('cmd-trigger');
+  
+  menuBtn?.addEventListener('click', () => {
+    menu?.classList.toggle('hidden');
+  });
+  
+  cmdTrigger?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('toggle-command-palette'));
+  });
+</script>

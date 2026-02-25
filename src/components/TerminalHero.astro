@@ -1,0 +1,73 @@
+---
+import type { Lang } from '@/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const lines = lang === 'ru' 
+  ? [
+      { prompt: true, text: 'whoami' },
+      { prompt: false, text: 'Rodion — разработчик, DevOps, AI энтузиаст' },
+      { prompt: true, text: 'cat interests.txt' },
+      { prompt: false, text: '> Системная архитектура' },
+      { prompt: false, text: '> Автоматизация и CI/CD' },
+      { prompt: false, text: '> AI/ML инструменты' },
+      { prompt: false, text: '> Open Source' },
+      { prompt: true, text: 'echo $STATUS' },
+      { prompt: false, text: 'Открыт к интересным проектам' },
+    ]
+  : [
+      { prompt: true, text: 'whoami' },
+      { prompt: false, text: 'Rodion — developer, DevOps, AI enthusiast' },
+      { prompt: true, text: 'cat interests.txt' },
+      { prompt: false, text: '> System architecture' },
+      { prompt: false, text: '> Automation & CI/CD' },
+      { prompt: false, text: '> AI/ML tooling' },
+      { prompt: false, text: '> Open Source' },
+      { prompt: true, text: 'echo $STATUS' },
+      { prompt: false, text: 'Open to interesting projects' },
+    ];
+---
+
+<div class="terminal-window max-w-2xl">
+  <div class="terminal-header">
+    <span class="terminal-dot bg-danger"></span>
+    <span class="terminal-dot bg-warn"></span>
+    <span class="terminal-dot bg-success"></span>
+    <span class="ml-4 text-xs text-muted font-mono">rodion@server:~</span>
+  </div>
+  <div class="terminal-body space-y-1">
+    {lines.map((line, i) => (
+      <div class="flex items-start gap-2" style={`animation: fadeIn 0.3s ease ${i * 0.1}s both`}>
+        {line.prompt ? (
+          <>
+            <span class="terminal-prompt shrink-0">$</span>
+            <span class="text-text">{line.text}</span>
+          </>
+        ) : (
+          <span class="text-muted ml-4">{line.text}</span>
+        )}
+      </div>
+    ))}
+    <div class="flex items-center gap-2 mt-2">
+      <span class="terminal-prompt">$</span>
+      <span class="terminal-cursor"></span>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

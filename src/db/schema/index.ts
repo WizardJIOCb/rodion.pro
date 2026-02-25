@@ -1,0 +1,103 @@
+import { pgTable, text, bigserial, boolean, timestamp, index, unique, jsonb } from 'drizzle-orm/pg-core';
+
+// Users table
+export const users = pgTable('users', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  email: text('email').notNull().unique(),
+  name: text('name'),
+  avatarUrl: text('avatar_url'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  isBanned: boolean('is_banned').notNull().default(false),
+});
+
+// OAuth accounts table
+export const oauthAccounts = pgTable('oauth_accounts', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  userId: bigserial('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull(),
+  providerUserId: text('provider_user_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  unique('oauth_provider_unique').on(table.provider, table.providerUserId),
+]);
+
+// Sessions table
+export const sessions = pgTable('sessions', {
+  id: text('id').primaryKey(),
+  userId: bigserial('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('sessions_user_idx').on(table.userId),
+  index('sessions_exp_idx').on(table.expiresAt),
+]);
+
+// Comments table
+export const comments = pgTable('comments', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  pageType: text('page_type').notNull(),
+  pageKey: text('page_key').notNull(),
+  lang: text('lang').notNull(),
+  userId: bigserial('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
+  parentId: bigserial('parent_id', { mode: 'number' }).references((): any => comments.id, { onDelete: 'cascade' }),
+  body: text('body').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }),
+  isHidden: boolean('is_hidden').notNull().default(false),
+  isDeleted: boolean('is_deleted').notNull().default(false),
+}, (table) => [
+  index('comments_page_idx').on(table.pageType, table.pageKey, table.lang, table.createdAt),
+  index('comments_parent_idx').on(table.parentId),
+]);
+
+// Reactions table (for posts and comments)
+export const reactions = pgTable('reactions', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  targetType: text('target_type').notNull(),
+  targetKey: text('target_key').notNull(),
+  lang: text('lang'),
+  userId: bigserial('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  emoji: text('emoji').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  unique('reactions_unique').on(table.targetType, table.targetKey, table.userId, table.emoji),
+  index('reactions_target_idx').on(table.targetType, table.targetKey),
+  index('reactions_user_idx').on(table.userId),
+]);
+
+// Comment flags (moderation)
+export const commentFlags = pgTable('comment_flags', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  commentId: bigserial('comment_id', { mode: 'number' }).notNull().references(() => comments.id, { onDelete: 'cascade' }),
+  userId: bigserial('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
+  reason: text('reason'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('flags_comment_idx').on(table.commentId),
+]);
+
+// Events table (changelog)
+export const events = pgTable('events', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  ts: timestamp('ts', { withTimezone: true }).notNull().defaultNow(),
+  source: text('source').notNull(),
+  kind: text('kind').notNull(),
+  project: text('project'),
+  title: text('title').notNull(),
+  url: text('url'),
+  tags: text('tags').array().notNull().default([]),
+  payload: jsonb('payload').notNull().default({}),
+}, (table) => [
+  index('events_ts_idx').on(table.ts),
+  index('events_project_idx').on(table.project),
+]);
+
+// Type exports
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Session = typeof sessions.$inferSelect;
+export type Comment = typeof comments.$inferSelect;
+export type NewComment = typeof comments.$inferInsert;
+export type Reaction = typeof reactions.$inferSelect;
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;

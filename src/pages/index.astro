@@ -1,0 +1,18 @@
+---
+// Redirect root to language-prefixed version
+const acceptLanguage = Astro.request.headers.get('accept-language') || '';
+const cookies = Astro.cookies;
+
+// Check cookie first
+const savedLang = cookies.get('lang')?.value;
+
+let targetLang = 'ru';
+
+if (savedLang === 'en' || savedLang === 'ru') {
+  targetLang = savedLang;
+} else if (acceptLanguage.toLowerCase().startsWith('en')) {
+  targetLang = 'en';
+}
+
+return Astro.redirect(`/${targetLang}/`, 302);
+---

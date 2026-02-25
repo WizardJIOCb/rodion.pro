@@ -1,0 +1,74 @@
+---
+import type { Event } from '@/db/schema';
+
+interface Props {
+  event: Event;
+  lang: 'ru' | 'en';
+}
+
+const { event, lang } = Astro.props;
+
+const kindIcons: Record<string, string> = {
+  feature: '✨',
+  fix: '🐛',
+  performance: '⚡',
+  refactor: '♻️',
+  docs: '📝',
+  release: '🚀',
+  deploy: '🌐',
+  commit: '📦',
+};
+
+const kindLabels: Record<string, { ru: string; en: string }> = {
+  feature: { ru: 'Фича', en: 'Feature' },
+  fix: { ru: 'Исправление', en: 'Fix' },
+  performance: { ru: 'Оптимизация', en: 'Performance' },
+  refactor: { ru: 'Рефакторинг', en: 'Refactor' },
+  docs: { ru: 'Документация', en: 'Docs' },
+  release: { ru: 'Релиз', en: 'Release' },
+  deploy: { ru: 'Деплой', en: 'Deploy' },
+  commit: { ru: 'Коммит', en: 'Commit' },
+};
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const icon = kindIcons[event.kind] || '📌';
+const label = kindLabels[event.kind]?.[lang] || event.kind;
+const payload = event.payload as Record<string, any>;
+---
+
+<div class="flex gap-4 py-4">
+  <div class="text-xl shrink-0">{icon}</div>
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="tag text-xs">{label}</span>
+      {event.project && (
+        <span class="text-xs text-muted font-mono">{event.project}</span>
+      )}
+      <span class="text-xs text-muted ml-auto shrink-0">
+        {formatDate(event.ts)}
+      </span>
+    </div>
+    <p class="text-text text-sm">
+      {event.url ? (
+        <a href={event.url} target="_blank" rel="noopener noreferrer" class="hover:text-accent">
+          {event.title}
+        </a>
+      ) : (
+        event.title
+      )}
+    </p>
+    {payload.sha && (
+      <span class="text-xs text-muted font-mono mt-1 inline-block">
+        {payload.sha}
+      </span>
+    )}
+  </div>
+</div>

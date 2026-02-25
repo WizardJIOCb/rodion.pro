@@ -1,0 +1,51 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import EventCard from '@/components/EventCard.astro';
+import { getLangFromUrl, useTranslations } from '@/i18n';
+import { db, events } from '@/db';
+import { desc } from 'drizzle-orm';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+let feedEvents: typeof events.$inferSelect[] = [];
+let dbError = false;
+
+try {
+  feedEvents = await db
+    .select()
+    .from(events)
+    .orderBy(desc(events.ts))
+    .limit(50);
+} catch (error) {
+  console.error('Error fetching events:', error);
+  dbError = true;
+}
+---
+
+<Layout title={t('nav.changelog')} description={t('changelog.description')}>
+  <div class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-3xl font-bold text-text mb-4">{t('changelog.title')}</h1>
+    <p class="text-muted mb-8">{t('changelog.description')}</p>
+    
+    {dbError ? (
+      <div class="card">
+        <p class="text-muted text-sm">
+          Failed to load events. Check database connection.
+        </p>
+      </div>
+    ) : feedEvents.length === 0 ? (
+      <div class="card">
+        <p class="text-muted text-sm">
+          No events yet. They will appear after GitHub webhook setup.
+        </p>
+      </div>
+    ) : (
+      <div class="divide-y divide-border">
+        {feedEvents.map(event => (
+          <EventCard event={event} lang={lang} />
+        ))}
+      </div>
+    )}
+  </div>
+</Layout>

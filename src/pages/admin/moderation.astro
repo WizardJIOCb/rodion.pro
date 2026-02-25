@@ -1,0 +1,194 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getCurrentUser } from '@/lib/session';
+import { db, comments, commentFlags, users } from '@/db';
+import { eq, desc, sql } from 'drizzle-orm';
+
+// Check admin access
+const currentUser = await getCurrentUser(Astro.cookies);
+
+if (!currentUser || !currentUser.isAdmin) {
+  return Astro.redirect('/ru/', 302);
+}
+
+// Get flagged comments
+const flaggedComments = await db
+  .select({
+    commentId: commentFlags.commentId,
+    flagCount: sql<number>`count(*)::int`,
+    latestReason: sql<string>`max(${commentFlags.reason})`,
+    commentBody: comments.body,
+    commentIsHidden: comments.isHidden,
+    commentCreatedAt: comments.createdAt,
+    userName: users.name,
+    userEmail: users.email,
+  })
+  .from(commentFlags)
+  .innerJoin(comments, eq(commentFlags.commentId, comments.id))
+  .leftJoin(users, eq(comments.userId, users.id))
+  .groupBy(
+    commentFlags.commentId,
+    comments.body,
+    comments.isHidden,
+    comments.createdAt,
+    users.name,
+    users.email
+  )
+  .orderBy(desc(sql`count(*)`))
+  .limit(50);
+
+// Get recent comments
+const recentComments = await db
+  .select({
+    id: comments.id,
+    body: comments.body,
+    isHidden: comments.isHidden,
+    createdAt: comments.createdAt,
+    pageType: comments.pageType,
+    pageKey: comments.pageKey,
+    userName: users.name,
+    userEmail: users.email,
+  })
+  .from(comments)
+  .leftJoin(users, eq(comments.userId, users.id))
+  .orderBy(desc(comments.createdAt))
+  .limit(50);
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('ru-RU', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+---
+
+<Layout title="Moderation" noindex>
+  <div class="mx-auto max-w-5xl px-4 py-12">
+    <h1 class="text-3xl font-bold text-text mb-8">Admin: Moderation</h1>
+    
+    <div class="grid gap-8 lg:grid-cols-2">
+      <!-- Flagged Comments -->
+      <section>
+        <h2 class="text-xl font-semibold text-accent mb-4">Flagged Comments</h2>
+        <div class="space-y-4">
+          {flaggedComments.length === 0 ? (
+            <div class="card">
+              <p class="text-muted text-sm">No flagged comments</p>
+            </div>
+          ) : (
+            flaggedComments.map(item => (
+              <div class="card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-muted">
+                    {item.userName || item.userEmail || 'Anonymous'}
+                  </span>
+                  <span class="tag text-xs">{item.flagCount} flags</span>
+                </div>
+                <p class="text-sm text-text mb-3 line-clamp-3">
+                  {item.commentBody}
+                </p>
+                {item.latestReason && (
+                  <p class="text-xs text-muted mb-3">
+                    Reason: {item.latestReason}
+                  </p>
+                )}
+                <div class="flex gap-2">
+                  {item.commentIsHidden ? (
+                    <button
+                      class="btn btn-secondary text-xs"
+                      data-action="unhide"
+                      data-id={item.commentId}
+                    >
+                      Unhide
+                    </button>
+                  ) : (
+                    <button
+                      class="btn btn-secondary text-xs"
+                      data-action="hide"
+                      data-id={item.commentId}
+                    >
+                      Hide
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+      
+      <!-- Recent Comments -->
+      <section>
+        <h2 class="text-xl font-semibold text-accent mb-4">Recent Comments</h2>
+        <div class="space-y-4 max-h-[600px] overflow-y-auto">
+          {recentComments.map(item => (
+            <div class:list={['card', item.isHidden && 'opacity-50']}>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-muted">
+                  {item.userName || item.userEmail || 'Anonymous'}
+                </span>
+                <span class="text-xs text-muted font-mono">
+                  {formatDate(item.createdAt)}
+                </span>
+              </div>
+              <p class="text-xs text-muted mb-1">
+                {item.pageType}/{item.pageKey}
+              </p>
+              <p class="text-sm text-text mb-3 line-clamp-2">
+                {item.body}
+              </p>
+              <div class="flex gap-2">
+                {item.isHidden ? (
+                  <button
+                    class="btn btn-ghost text-xs"
+                    data-action="unhide"
+                    data-id={item.id}
+                  >
+                    Unhide
+                  </button>
+                ) : (
+                  <button
+                    class="btn btn-ghost text-xs"
+                    data-action="hide"
+                    data-id={item.id}
+                  >
+                    Hide
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const target = e.currentTarget as HTMLButtonElement;
+      const action = target.dataset.action;
+      const id = target.dataset.id;
+      
+      if (!action || !id) return;
+      
+      try {
+        const response = await fetch(`/api/comments/${id}/${action}`, {
+          method: 'POST',
+        });
+        
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          alert('Action failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Action failed');
+      }
+    });
+  });
+</script>

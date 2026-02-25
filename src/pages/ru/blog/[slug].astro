@@ -1,0 +1,170 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect(getLocalizedPath('/blog', lang));
+}
+
+const posts = await getCollection(`blog-${lang}`);
+const post = posts.find(p => p.slug === slug);
+
+if (!post) {
+  return Astro.redirect(getLocalizedPath('/blog', lang));
+}
+
+const { Content } = await post.render();
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+---
+
+<Layout 
+  title={post.data.title} 
+  description={post.data.description}
+  type="article"
+  publishedTime={post.data.date.toISOString()}
+  image={post.data.hero}
+>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <!-- Back link -->
+    <a 
+      href={getLocalizedPath('/blog', lang)} 
+      class="inline-flex items-center gap-1 text-sm text-muted hover:text-accent transition-colors mb-8"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      {lang === 'ru' ? 'Назад к блогу' : 'Back to blog'}
+    </a>
+    
+    <!-- Header -->
+    <header class="mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <time class="text-sm text-muted font-mono">
+          {formatDate(post.data.date)}
+        </time>
+        {post.data.tags.map(tag => (
+          <a 
+            href={`${getLocalizedPath('/blog', lang)}?tag=${tag}`}
+            class="tag text-xs hover:ring-1 hover:ring-accent"
+          >
+            {tag}
+          </a>
+        ))}
+      </div>
+      <h1 class="text-3xl md:text-4xl font-bold text-text mb-4">
+        {post.data.title}
+      </h1>
+      <p class="text-lg text-muted">
+        {post.data.description}
+      </p>
+    </header>
+    
+    <!-- Hero image -->
+    {post.data.hero && (
+      <img 
+        src={post.data.hero} 
+        alt={post.data.title}
+        class="w-full rounded-lg border border-border mb-8"
+      />
+    )}
+    
+    <!-- Content -->
+    <div class="prose prose-invert prose-lg max-w-none">
+      <Content />
+    </div>
+    
+    <!-- Reactions placeholder -->
+    <div class="mt-12 pt-8 border-t border-border">
+      <div id="post-reactions" data-slug={slug} data-lang={lang}>
+        <!-- ReactionsBar will be mounted here -->
+      </div>
+    </div>
+    
+    <!-- Comments placeholder -->
+    <div class="mt-8">
+      <h2 class="text-xl font-semibold text-text mb-6">{t('comments.title')}</h2>
+      <div id="comments-thread" data-page-type="blog_post" data-page-key={slug} data-lang={lang}>
+        <!-- CommentsThread will be mounted here -->
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .prose {
+    @apply text-text;
+  }
+  
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    @apply text-text font-bold;
+  }
+  
+  .prose h2 {
+    @apply text-2xl mt-8 mb-4;
+  }
+  
+  .prose h3 {
+    @apply text-xl mt-6 mb-3;
+  }
+  
+  .prose p {
+    @apply mb-4 leading-relaxed;
+  }
+  
+  .prose a {
+    @apply text-accent hover:underline;
+  }
+  
+  .prose strong {
+    @apply text-text font-semibold;
+  }
+  
+  .prose code {
+    @apply bg-surface px-1.5 py-0.5 rounded text-sm font-mono text-accent;
+  }
+  
+  .prose pre {
+    @apply bg-surface border border-border rounded-lg p-4 overflow-x-auto my-4;
+  }
+  
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+  
+  .prose ul, .prose ol {
+    @apply my-4 pl-6;
+  }
+  
+  .prose li {
+    @apply mb-2;
+  }
+  
+  .prose ul li {
+    @apply list-disc;
+  }
+  
+  .prose ol li {
+    @apply list-decimal;
+  }
+  
+  .prose blockquote {
+    @apply border-l-4 border-accent pl-4 my-4 italic text-muted;
+  }
+  
+  .prose hr {
+    @apply border-border my-8;
+  }
+</style>

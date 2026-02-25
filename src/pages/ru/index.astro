@@ -1,0 +1,115 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@/i18n';
+import { getFeaturedProjects } from '@/data/projects';
+import TerminalHero from '@/components/TerminalHero.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Set language cookie
+Astro.cookies.set('lang', lang, {
+  path: '/',
+  maxAge: 60 * 60 * 24 * 365,
+  httpOnly: false,
+  sameSite: 'lax',
+});
+
+const title = lang === 'ru' ? 'Главная' : 'Home';
+const description = lang === 'ru' 
+  ? 'Персональный сайт Rodion - разработчик, DevOps, AI энтузиаст' 
+  : 'Personal website of Rodion - developer, DevOps, AI enthusiast';
+
+// Get featured projects
+const featuredProjects = getFeaturedProjects(lang);
+
+// Get latest blog posts
+const posts = await getCollection(`blog-${lang}`, ({ data }) => !data.draft);
+const latestPosts = posts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+---
+
+<Layout title={title} description={description}>
+  <div class="mx-auto max-w-5xl px-4 py-12">
+    <TerminalHero lang={lang} />
+    
+    <!-- Featured Projects -->
+    <section class="mt-16">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-text">{t('section.featured')}</h2>
+        <a href={getLocalizedPath('/projects', lang)} class="link text-sm">
+          {t('section.viewAll')} &rarr;
+        </a>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {featuredProjects.map(project => (
+          <ProjectCard {...project} lang={lang} />
+        ))}
+      </div>
+    </section>
+    
+    <!-- Latest Posts -->
+    <section class="mt-16">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-text">{t('section.latest')}</h2>
+        <a href={getLocalizedPath('/blog', lang)} class="link text-sm">
+          {t('section.viewAll')} &rarr;
+        </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {latestPosts.length === 0 ? (
+          <div class="card">
+            <p class="text-muted text-sm">
+              {lang === 'ru' ? 'Записи блога появятся здесь' : 'Blog posts will appear here'}
+            </p>
+          </div>
+        ) : (
+          latestPosts.map(post => (
+            <a 
+              href={getLocalizedPath(`/blog/${post.slug}`, lang)} 
+              class="card block group"
+            >
+              <time class="text-xs text-muted font-mono">
+                {formatDate(post.data.date)}
+              </time>
+              <h3 class="text-lg font-semibold text-text group-hover:text-accent transition-colors mt-2 mb-2">
+                {post.data.title}
+              </h3>
+              <p class="text-muted text-sm line-clamp-2">
+                {post.data.description}
+              </p>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+    
+    <!-- Recent Events -->
+    <section class="mt-16">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-text">{t('section.events')}</h2>
+        <a href={getLocalizedPath('/changelog', lang)} class="link text-sm">
+          {t('section.viewAll')} &rarr;
+        </a>
+      </div>
+      <div class="space-y-4">
+        <div class="card">
+          <p class="text-muted text-sm">
+            {lang === 'ru' ? 'События появятся здесь после подключения к базе данных' : 'Events will appear here after database connection'}
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
