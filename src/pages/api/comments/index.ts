@@ -1,9 +1,16 @@
 import type { APIRoute } from 'astro';
-import { db, comments, reactions, users } from '@/db';
+import { requireDb, hasDb, comments, reactions, users } from '@/db';
 import { eq, and, asc, isNull, sql } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/session';
 
 export const GET: APIRoute = async ({ url, cookies }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const pageType = url.searchParams.get('type');
     const pageKey = url.searchParams.get('key');
@@ -17,6 +24,7 @@ export const GET: APIRoute = async ({ url, cookies }) => {
     }
     
     const currentUser = await getCurrentUser(cookies);
+    const db = requireDb();
     
     // Get all comments for this page
     const allComments = await db
@@ -155,6 +163,13 @@ export const GET: APIRoute = async ({ url, cookies }) => {
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const currentUser = await getCurrentUser(cookies);
     
@@ -182,6 +197,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
     
+    const db = requireDb();
     const [newComment] = await db.insert(comments).values({
       pageType,
       pageKey,
@@ -190,6 +206,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       parentId: parentId || null,
       body: commentBody.trim(),
     }).returning();
+    
+    if (!newComment) {
+      throw new Error('Failed to create comment');
+    }
     
     return new Response(JSON.stringify({
       comment: {

@@ -1,10 +1,18 @@
 import type { APIRoute } from 'astro';
-import { getCurrentUser } from '@/lib/session';
+import { getCurrentUser, hasDb } from '@/lib/session';
 
 export { getCurrentUser, type CurrentUser } from '@/lib/session';
 
 export const GET: APIRoute = async ({ cookies }) => {
   try {
+    // Return null user if DB is not configured
+    if (!hasDb()) {
+      return new Response(JSON.stringify({ user: null }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
     const user = await getCurrentUser(cookies);
     
     return new Response(JSON.stringify({ user }), {

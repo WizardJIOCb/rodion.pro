@@ -1,0 +1,65 @@
+[data-hover-glow] {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-hover-glow]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background: conic-gradient(
+    from var(--angle, 0deg) at var(--mx, 50%) var(--my, 50%),
+    rgba(94, 234, 212, 0) 0deg,
+    rgba(94, 234, 212, calc(var(--intensity, 0) * 0.3)) 90deg,
+    rgba(94, 234, 212, 0) 180deg,
+    rgba(94, 234, 212, calc(var(--intensity, 0) * 0.3)) 270deg,
+    rgba(94, 234, 212, 0) 360deg
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 2px;
+  opacity: var(--intensity, 0);
+  transition: opacity 0.2s ease;
+}
+
+[data-hover-glow][data-glow="purple"]::before {
+  background: conic-gradient(
+    from var(--angle, 0deg) at var(--mx, 50%) var(--my, 50%),
+    rgba(192, 132, 252, 0) 0deg,
+    rgba(192, 132, 252, calc(var(--intensity, 0) * 0.3)) 90deg,
+    rgba(192, 132, 252, 0) 180deg,
+    rgba(192, 132, 252, calc(var(--intensity, 0) * 0.3)) 270deg,
+    rgba(192, 132, 252, 0) 360deg
+  );
+}
+
+[data-hover-glow][data-glow="gold"]::before {
+  background: conic-gradient(
+    from var(--angle, 0deg) at var(--mx, 50%) var(--my, 50%),
+    rgba(251, 191, 36, 0) 0deg,
+    rgba(251, 191, 36, calc(var(--intensity, 0) * 0.3)) 90deg,
+    rgba(251, 191, 36, 0) 180deg,
+    rgba(251, 191, 36, calc(var(--intensity, 0) * 0.3)) 270deg,
+    rgba(251, 191, 36, 0) 360deg
+  );
+}
+
+/* Edge-specific clipping */
+[data-hover-glow][data-edge="top"]::before {
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+}
+
+[data-hover-glow][data-edge="right"]::before {
+  clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+}
+
+[data-hover-glow][data-edge="bottom"]::before {
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+}
+
+[data-hover-glow][data-edge="left"]::before {
+  clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+}

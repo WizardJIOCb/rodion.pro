@@ -5,6 +5,7 @@ module.exports = {
       script: 'npm',
       args: 'run start',
       cwd: '/var/www/rodion.pro',
+      env_file: '/var/www/rodion.pro/.env',
       env: {
         NODE_ENV: 'production',
         PORT: 3100,

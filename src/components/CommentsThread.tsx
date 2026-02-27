@@ -151,6 +151,7 @@ export default function CommentsThread({ pageType, pageKey, lang, translations }
   const [submitting, setSubmitting] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [body, setBody] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load draft from localStorage
@@ -182,9 +183,21 @@ export default function CommentsThread({ pageType, pageKey, lang, translations }
         if (response.ok) {
           const data = await response.json();
           setComments(data.comments);
+          setError(null);
+        } else if (response.status === 503) {
+          setError(lang === 'ru' 
+            ? 'Комментарии временно недоступны (backend не настроен)'
+            : 'Comments are temporarily unavailable (backend not configured)');
+        } else {
+          setError(lang === 'ru' 
+            ? 'Не удалось загрузить комментарии'
+            : 'Failed to load comments');
         }
       } catch (error) {
         console.error('Error fetching comments:', error);
+        setError(lang === 'ru' 
+          ? 'Комментарии временно недоступны (сетевая ошибка)'
+          : 'Comments temporarily unavailable (network error)');
       } finally {
         setLoading(false);
       }
@@ -196,6 +209,7 @@ export default function CommentsThread({ pageType, pageKey, lang, translations }
     if (!body.trim() || submitting) return;
 
     setSubmitting(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/comments', {
@@ -217,8 +231,18 @@ export default function CommentsThread({ pageType, pageKey, lang, translations }
         return;
       }
 
+      if (response.status === 503) {
+        setError(lang === 'ru' 
+          ? 'Комментарии временно недоступны (backend не настроен)'
+          : 'Comments are temporarily unavailable (backend not configured)');
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to post comment');
+        setError(lang === 'ru' 
+          ? 'Не удалось отправить комментарий'
+          : 'Failed to post comment');
+        return;
       }
 
       const { comment } = await response.json();
@@ -248,6 +272,9 @@ export default function CommentsThread({ pageType, pageKey, lang, translations }
       }
     } catch (error) {
       console.error('Error posting comment:', error);
+      setError(lang === 'ru' 
+        ? 'Комментарии временно недоступны (сетевая ошибка)'
+        : 'Comments temporarily unavailable (network error)');
     } finally {
       setSubmitting(false);
     }
@@ -273,6 +300,13 @@ export default function CommentsThread({ pageType, pageKey, lang, translations }
 
   return (
     <div>
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+
       {/* Comment form */}
       <div className="mb-6">
         {replyTo && (

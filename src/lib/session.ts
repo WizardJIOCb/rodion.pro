@@ -1,4 +1,4 @@
-import { db, users, sessions } from '@/db';
+import { db, users, sessions, hasDb, requireDb } from '@/db';
 import { eq, and, gt } from 'drizzle-orm';
 import { getSessionCookie, isAdmin } from './auth';
 
@@ -11,11 +11,17 @@ export interface CurrentUser {
 }
 
 export async function getCurrentUser(cookies: import('astro').AstroCookies): Promise<CurrentUser | null> {
+  if (!hasDb()) {
+    return null;
+  }
+
   const sessionId = getSessionCookie(cookies);
   
   if (!sessionId) {
     return null;
   }
+  
+  const db = requireDb();
   
   // Find valid session
   const session = await db.query.sessions.findFirst({
@@ -46,3 +52,6 @@ export async function getCurrentUser(cookies: import('astro').AstroCookies): Pro
     isAdmin: isAdmin(user.email),
   };
 }
+
+// Re-export hasDb for convenience
+export { hasDb } from '@/db';

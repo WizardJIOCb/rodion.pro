@@ -5,6 +5,9 @@ import { getLangFromUrl, useTranslations, getLocalizedPath } from '@/i18n';
 import { getFeaturedProjects } from '@/data/projects';
 import TerminalHero from '@/components/TerminalHero.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
+import EventCard from '@/components/EventCard.astro';
+import { requireDb, events, hasDb } from '@/db';
+import { desc } from 'drizzle-orm';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -30,6 +33,25 @@ const posts = await getCollection(`blog-${lang}`, ({ data }) => !data.draft);
 const latestPosts = posts
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 3);
+
+// Get recent events
+let recentEvents: typeof events.$inferSelect[] = [];
+let eventsUnavailable = false;
+let dbConfigured = hasDb();
+
+if (dbConfigured) {
+  try {
+    const db = requireDb();
+    recentEvents = await db
+      .select()
+      .from(events)
+      .orderBy(desc(events.ts))
+      .limit(5);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    eventsUnavailable = true;
+  }
+}
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
@@ -78,7 +100,7 @@ const formatDate = (date: Date) => {
           latestPosts.map(post => (
             <a 
               href={getLocalizedPath(`/blog/${post.slug}`, lang)} 
-              class="card block group"
+              class="card block group" data-hover-glow
             >
               <time class="text-xs text-muted font-mono">
                 {formatDate(post.data.date)}
@@ -104,11 +126,29 @@ const formatDate = (date: Date) => {
         </a>
       </div>
       <div class="space-y-4">
-        <div class="card">
-          <p class="text-muted text-sm">
-            {lang === 'ru' ? 'События появятся здесь после подключения к базе данных' : 'Events will appear here after database connection'}
-          </p>
-        </div>
+        {!dbConfigured ? (
+          <div class="card">
+            <p class="text-muted text-sm">
+              {lang === 'ru' ? 'События появятся после настройки базы данных' : 'Events will appear after database setup'}
+            </p>
+          </div>
+        ) : eventsUnavailable ? (
+          <div class="card">
+            <p class="text-muted text-sm">
+              {lang === 'ru' ? 'Не удалось загрузить события' : 'Failed to load events'}
+            </p>
+          </div>
+        ) : recentEvents.length === 0 ? (
+          <div class="card">
+            <p class="text-muted text-sm">
+              {lang === 'ru' ? 'Событий пока нет' : 'No events yet'}
+            </p>
+          </div>
+        ) : (
+          recentEvents.map(event => (
+            <EventCard event={event} lang={lang} />
+          ))
+        )}
       </div>
     </section>
   </div>

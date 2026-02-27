@@ -13,11 +13,11 @@ export const ui = {
     'nav.home': 'Главная',
     'nav.projects': 'Проекты',
     'nav.blog': 'Блог',
-    'nav.changelog': 'Changelog',
-    'nav.now': 'Now',
+    'nav.changelog': 'Журнал изменений',
+    'nav.now': 'Сейчас',
     'nav.resume': 'Резюме',
-    'nav.contact': 'Контакт',
-    'nav.uses': 'Uses',
+    'nav.contact': 'Контакты',
+    'nav.uses': 'Инструменты',
     
     // Hero
     'hero.greeting': 'Привет, я',
@@ -189,8 +189,9 @@ export const ui = {
 export type TranslationKey = keyof typeof ui.ru;
 
 export function getLangFromUrl(url: URL): Lang {
-  const [, lang] = url.pathname.split('/');
-  if (lang in languages) {
+  const parts = url.pathname.split('/');
+  const lang = parts[1];
+  if (lang && lang in languages) {
     return lang as Lang;
   }
   return defaultLang;

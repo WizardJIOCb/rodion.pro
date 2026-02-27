@@ -2,18 +2,35 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = import.meta.env.DATABASE_URL ?? process.env.DATABASE_URL;
 
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is not set');
+let db: ReturnType<typeof drizzle> | null = null;
+
+if (connectionString) {
+  try {
+    const client = postgres(connectionString, {
+      max: 10,
+      idle_timeout: 20,
+      connect_timeout: 10,
+    });
+    db = drizzle(client, { schema });
+  } catch (error) {
+    console.warn('[db] Failed to initialize database connection:', error);
+    db = null;
+  }
+} else {
+  console.warn('[db] DATABASE_URL is not set');
 }
 
-const client = postgres(connectionString, {
-  max: 10,
-  idle_timeout: 20,
-  connect_timeout: 10,
-});
+export { db };
 
-export const db = drizzle(client, { schema });
+export const hasDb = (): boolean => !!db;
+
+export const requireDb = () => {
+  if (!db) {
+    throw new Error('Database is not configured');
+  }
+  return db;
+};
 
 export * from './schema';

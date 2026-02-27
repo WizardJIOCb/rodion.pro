@@ -2,7 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import EventCard from '@/components/EventCard.astro';
 import { getLangFromUrl, useTranslations } from '@/i18n';
-import { db, events } from '@/db';
+import { requireDb, events, hasDb } from '@/db';
 import { desc } from 'drizzle-orm';
 
 const lang = getLangFromUrl(Astro.url);
@@ -10,16 +10,20 @@ const t = useTranslations(lang);
 
 let feedEvents: typeof events.$inferSelect[] = [];
 let dbError = false;
+let dbConfigured = hasDb();
 
-try {
-  feedEvents = await db
-    .select()
-    .from(events)
-    .orderBy(desc(events.ts))
-    .limit(50);
-} catch (error) {
-  console.error('Error fetching events:', error);
-  dbError = true;
+if (dbConfigured) {
+  try {
+    const db = requireDb();
+    feedEvents = await db
+      .select()
+      .from(events)
+      .orderBy(desc(events.ts))
+      .limit(50);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    dbError = true;
+  }
 }
 ---
 
@@ -28,7 +32,16 @@ try {
     <h1 class="text-3xl font-bold text-text mb-4">{t('changelog.title')}</h1>
     <p class="text-muted mb-8">{t('changelog.description')}</p>
     
-    {dbError ? (
+    {!dbConfigured ? (
+      <div class="card">
+        <p class="text-muted text-sm">
+          Changelog unavailable: database not configured
+        </p>
+        <p class="text-muted text-xs mt-2">
+          Events will appear after DATABASE_URL is configured
+        </p>
+      </div>
+    ) : dbError ? (
       <div class="card">
         <p class="text-muted text-sm">
           Failed to load events. Check database connection.

@@ -20,11 +20,13 @@ export default function ReactionsBar({
   const [reactions, setReactions] = useState<Record<string, number>>(initialReactions);
   const [userReactions, setUserReactions] = useState<string[]>(initialUserReactions);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleReaction = useCallback(async (emoji: string) => {
     if (loading) return;
     
     setLoading(true);
+    setError(null);
     
     try {
       const response = await fetch('/api/reactions/toggle', {
@@ -40,8 +42,18 @@ export default function ReactionsBar({
         return;
       }
       
+      if (response.status === 503) {
+        setError(lang === 'ru' 
+          ? 'Реакции временно недоступны (backend не настроен)'
+          : 'Reactions are temporarily unavailable (backend not configured)');
+        return;
+      }
+      
       if (!response.ok) {
-        throw new Error('Failed to toggle reaction');
+        setError(lang === 'ru' 
+          ? 'Не удалось отправить реакцию'
+          : 'Failed to send reaction');
+        return;
       }
       
       const { added } = await response.json();
@@ -56,6 +68,9 @@ export default function ReactionsBar({
       );
     } catch (error) {
       console.error('Error toggling reaction:', error);
+      setError(lang === 'ru' 
+        ? 'Реакции временно недоступны (сетевая ошибка)'
+        : 'Reactions temporarily unavailable (network error)');
     } finally {
       setLoading(false);
     }
@@ -63,6 +78,13 @@ export default function ReactionsBar({
 
   return (
     <div className="flex flex-wrap gap-2">
+      {/* Error message */}
+      {error && (
+        <div className="w-full mb-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-sm text-red-400">
+          {error}
+        </div>
+      )}
+      
       {EMOJIS.map(emoji => {
         const count = reactions[emoji] || 0;
         const isActive = userReactions.includes(emoji);

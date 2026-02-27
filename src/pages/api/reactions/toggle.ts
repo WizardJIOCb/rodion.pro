@@ -1,11 +1,18 @@
 import type { APIRoute } from 'astro';
-import { db, reactions } from '@/db';
+import { requireDb, hasDb, reactions } from '@/db';
 import { eq, and } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/session';
 
 const ALLOWED_EMOJIS = ['👍', '🔥', '🤖', '💡', '😂', '🎯', '❤️'];
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const currentUser = await getCurrentUser(cookies);
     
@@ -32,6 +39,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+    
+    const db = requireDb();
     
     // Check if reaction already exists
     const existing = await db.query.reactions.findFirst({

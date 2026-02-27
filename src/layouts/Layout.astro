@@ -1,9 +1,11 @@
 ---
 import '@/styles/globals.css';
+import '@/styles/hover-edge-glow.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import CommandPalette from '@/components/CommandPalette';
 import { getLangFromUrl, getAlternateLocales } from '@/i18n';
+import { initHoverEdgeGlow } from '@/lib/ui/hoverEdgeGlow';
 
 interface Props {
   title: string;
@@ -63,6 +65,14 @@ const ogImage = image ? new URL(image, Astro.site).href : new URL('/og-default.p
         const theme = stored || 'soft-neon-teal';
         document.documentElement.setAttribute('data-theme', theme);
       })();
+    </script>
+    
+    <script is:inline>
+      // Initialize hover edge glow effect
+      document.addEventListener('DOMContentLoaded', () => {
+        window.initHoverEdgeGlow = initHoverEdgeGlow;
+        initHoverEdgeGlow();
+      });
     </script>
   </head>
   <body class="min-h-screen flex flex-col">

@@ -1,9 +1,11 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { getLangFromUrl, useTranslations } from '@/i18n';
+import { resumeSections } from '@/data/resume';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const sections = resumeSections;
 ---
 
 <Layout title={t('nav.resume')} description="My resume">
@@ -11,46 +13,62 @@ const t = useTranslations(lang);
     <h1 class="text-3xl font-bold text-text mb-8">{t('nav.resume')}</h1>
     
     <div class="space-y-8">
-      <!-- Summary -->
-      <section>
-        <h2 class="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
-          <span class="text-muted font-mono text-sm">#</span>
-          Summary
-        </h2>
-        <div class="card">
-          <p class="text-muted">
-            Developer with experience in system architecture, DevOps, and AI/ML tooling.
-          </p>
-        </div>
-      </section>
-      
-      <!-- Experience -->
-      <section>
-        <h2 class="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
-          <span class="text-muted font-mono text-sm">#</span>
-          Experience
-        </h2>
-        <div class="space-y-4">
-          <div class="card">
-            <p class="text-muted text-sm">Information will be added.</p>
-          </div>
-        </div>
-      </section>
-      
-      <!-- Skills -->
-      <section>
-        <h2 class="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
-          <span class="text-muted font-mono text-sm">#</span>
-          Skills
-        </h2>
-        <div class="card">
-          <div class="flex flex-wrap gap-2">
-            {['TypeScript', 'Node.js', 'Python', 'Go', 'Docker', 'Kubernetes', 'PostgreSQL', 'Redis'].map(skill => (
-              <span class="tag">{skill}</span>
-            ))}
-          </div>
-        </div>
-      </section>
+      {sections.map(section => (
+        <section>
+          <h2 class="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
+            <span class="text-muted font-mono text-sm">#</span>
+            {section.title.en}
+          </h2>
+          
+          {section.content ? (
+            <div class="card">
+              <p class="text-muted">
+                {section.content.en}
+              </p>
+            </div>
+          ) : section.items && section.items.length > 0 ? (
+            <div class="space-y-4">
+              {section.items.map(item => (
+                <div class="card">
+                  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                    <h3 class="font-medium text-text">{item.title}</h3>
+                    {item.period && (
+                      <span class="text-xs text-muted font-mono shrink-0">
+                        {item.period}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {item.company && (
+                    <p class="text-sm text-accent mb-2">{item.company}</p>
+                  )}
+                  
+                  {item.description && (
+                    <p class="text-muted text-sm mb-3">{item.description}</p>
+                  )}
+                  
+                  {item.achievements && item.achievements.length > 0 && (
+                    <ul class="text-sm text-muted space-y-1">
+                      {item.achievements.map(achievement => (
+                        <li class="flex items-start gap-2">
+                          <span class="text-accent mt-1">•</span>
+                          <span>{achievement}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="card">
+              <p class="text-muted text-sm">
+                Information will be added.
+              </p>
+            </div>
+          )}
+        </section>
+      ))}
     </div>
   </div>
 </Layout>

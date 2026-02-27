@@ -1,9 +1,16 @@
 import type { APIRoute } from 'astro';
-import { db, reactions } from '@/db';
+import { requireDb, hasDb, reactions } from '@/db';
 import { eq, and, sql } from 'drizzle-orm';
 import { getCurrentUser } from '../auth/me';
 
 export const GET: APIRoute = async ({ url, cookies }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const targetType = url.searchParams.get('targetType');
     const targetKey = url.searchParams.get('targetKey');
@@ -17,6 +24,7 @@ export const GET: APIRoute = async ({ url, cookies }) => {
     }
     
     const currentUser = await getCurrentUser(cookies);
+    const db = requireDb();
     
     // Get reaction counts
     const conditions = [
