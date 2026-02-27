@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, users, oauthAccounts, sessions } from '@/db';
+import { hasDb, requireDb, users, oauthAccounts, sessions } from '@/db';
 import { eq, and } from 'drizzle-orm';
 import {
   exchangeGoogleCode,
@@ -24,8 +24,14 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   if (!code) {
     return redirect(`${returnTo}?error=no_code`, 302);
   }
+
+  if (!hasDb()) {
+    console.error('Google OAuth callback: DB not configured');
+    return redirect(`${returnTo}?error=db_unavailable`, 302);
+  }
   
   try {
+    const db = requireDb();
     // Exchange code for tokens
     const tokens = await exchangeGoogleCode(code);
     

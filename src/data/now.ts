@@ -9,8 +9,8 @@ export interface NowSection {
     en: string;
   };
   items?: Array<{
-    title: string;
-    description?: string;
+    title: { ru: string; en: string };
+    description?: { ru: string; en: string };
     link?: string;
   }>;
 }
@@ -50,16 +50,16 @@ export const nowSections: NowSection[] = [
     },
     items: [
       {
-        title: 'Rust для системного программирования',
-        description: 'Изучаю Rust для написания высокопроизводительных сервисов'
+        title: { ru: 'Rust для системного программирования', en: 'Rust for systems programming' },
+        description: { ru: 'Изучаю Rust для написания высокопроизводительных сервисов', en: 'Learning Rust for building high-performance services' }
       },
       {
-        title: 'eBPF и сетевые технологии',
-        description: 'Изучаю eBPF для мониторинга и оптимизации сетевых взаимодействий'
+        title: { ru: 'eBPF и сетевые технологии', en: 'eBPF and networking' },
+        description: { ru: 'Изучаю eBPF для мониторинга и оптимизации сетевых взаимодействий', en: 'Studying eBPF for monitoring and optimizing network interactions' }
       },
       {
-        title: 'AI/ML инструменты',
-        description: 'Экспериментирую с LLM и инструментами машинного обучения'
+        title: { ru: 'AI/ML инструменты', en: 'AI/ML tools' },
+        description: { ru: 'Экспериментирую с LLM и инструментами машинного обучения', en: 'Experimenting with LLMs and machine learning tools' }
       }
     ]
   }

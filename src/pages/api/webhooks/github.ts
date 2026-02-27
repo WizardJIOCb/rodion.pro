@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, events } from '@/db';
+import { hasDb, requireDb, events } from '@/db';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // Commit types to show
@@ -45,7 +45,15 @@ function getCommitKind(message: string): string {
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
+    const db = requireDb();
     const secret = import.meta.env.GITHUB_WEBHOOK_SECRET;
     
     if (!secret) {

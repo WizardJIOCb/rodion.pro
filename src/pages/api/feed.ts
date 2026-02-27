@@ -1,9 +1,17 @@
 import type { APIRoute } from 'astro';
-import { db, events } from '@/db';
+import { hasDb, requireDb, events } from '@/db';
 import { desc, eq, and, sql } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ url }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
+    const db = requireDb();
     const lang = url.searchParams.get('lang') || 'ru';
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
     const offset = parseInt(url.searchParams.get('offset') || '0');

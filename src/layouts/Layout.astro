@@ -5,7 +5,7 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import CommandPalette from '@/components/CommandPalette';
 import { getLangFromUrl, getAlternateLocales } from '@/i18n';
-import { initHoverEdgeGlow } from '@/lib/ui/hoverEdgeGlow';
+
 
 interface Props {
   title: string;
@@ -67,10 +67,13 @@ const ogImage = image ? new URL(image, Astro.site).href : new URL('/og-default.p
       })();
     </script>
     
-    <script is:inline>
+    <script>
       // Initialize hover edge glow effect
-      document.addEventListener('DOMContentLoaded', () => {
-        window.initHoverEdgeGlow = initHoverEdgeGlow;
+      import { initHoverEdgeGlow } from '@/lib/ui/hoverEdgeGlow';
+      initHoverEdgeGlow();
+
+      // Re-init on Astro page transitions
+      document.addEventListener('astro:page-load', () => {
         initHoverEdgeGlow();
       });
     </script>

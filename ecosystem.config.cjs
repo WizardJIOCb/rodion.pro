@@ -2,10 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'rodion-pro',
-      script: 'npm',
-      args: 'run start',
+      script: './dist/server/entry.mjs',
       cwd: '/var/www/rodion.pro',
-      env_file: '/var/www/rodion.pro/.env',
+      node_args: '-r dotenv/config',
       env: {
         NODE_ENV: 'production',
         PORT: 3100,

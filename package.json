@@ -22,13 +22,14 @@
     "@astrojs/sitemap": "^3.2.0",
     "@astrojs/tailwind": "^6.0.0",
     "astro": "^5.0.0",
+    "cmdk": "^1.0.0",
+    "dotenv": "^17.3.1",
     "drizzle-orm": "^0.38.0",
+    "nanoid": "^5.0.0",
     "postgres": "^3.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "zod": "^3.24.0",
-    "cmdk": "^1.0.0",
-    "nanoid": "^5.0.0"
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

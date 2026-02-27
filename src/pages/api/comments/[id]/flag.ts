@@ -1,10 +1,17 @@
 import type { APIRoute } from 'astro';
-import { db, comments, commentFlags } from '@/db';
+import { hasDb, requireDb, comments, commentFlags } from '@/db';
 import { eq } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/session';
 
 // Flag a comment
 export const POST: APIRoute = async ({ params, request, cookies }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const currentUser = await getCurrentUser(cookies);
     
@@ -26,6 +33,8 @@ export const POST: APIRoute = async ({ params, request, cookies }) => {
     const body = await request.json();
     const { reason } = body;
     
+    const db = requireDb();
+
     // Check comment exists
     const comment = await db.query.comments.findFirst({
       where: eq(comments.id, commentId),

@@ -9,11 +9,11 @@ export interface ResumeSection {
     en: string;
   };
   items?: Array<{
-    title: string;
-    company?: string;
+    title: { ru: string; en: string };
+    company?: { ru: string; en: string };
     period?: string;
-    description?: string;
-    achievements?: string[];
+    description?: { ru: string; en: string };
+    achievements?: Array<{ ru: string; en: string }>;
   }>;
 }
 
@@ -37,25 +37,25 @@ export const resumeSections: ResumeSection[] = [
     },
     items: [
       {
-        title: 'Senior Software Engineer',
-        company: 'Tech Company',
+        title: { ru: 'Senior Software Engineer', en: 'Senior Software Engineer' },
+        company: { ru: 'Tech Company', en: 'Tech Company' },
         period: '2020 - Present',
-        description: 'Разработка и поддержка высоконагруженных распределенных систем',
+        description: { ru: 'Разработка и поддержка высоконагруженных распределенных систем', en: 'Development and maintenance of high-load distributed systems' },
         achievements: [
-          'Спроектировал и внедрил микросервисную архитектуру для обработки миллионов запросов в день',
-          'Оптимизировал производительность системы на 40%',
-          'Внедрил CI/CD pipeline с автоматическим тестированием и deployment'
+          { ru: 'Спроектировал и внедрил микросервисную архитектуру для обработки миллионов запросов в день', en: 'Designed and implemented microservices architecture handling millions of requests per day' },
+          { ru: 'Оптимизировал производительность системы на 40%', en: 'Optimized system performance by 40%' },
+          { ru: 'Внедрил CI/CD pipeline с автоматическим тестированием и deployment', en: 'Implemented CI/CD pipeline with automated testing and deployment' }
         ]
       },
       {
-        title: 'DevOps Engineer',
-        company: 'Startup Inc',
+        title: { ru: 'DevOps Engineer', en: 'DevOps Engineer' },
+        company: { ru: 'Startup Inc', en: 'Startup Inc' },
         period: '2018 - 2020',
-        description: 'Ответственный за инфраструктуру и процессы доставки',
+        description: { ru: 'Ответственный за инфраструктуру и процессы доставки', en: 'Responsible for infrastructure and delivery processes' },
         achievements: [
-          'Мигрировал всю инфраструктуру в облако AWS',
-          'Настроил мониторинг и alerting для всей системы',
-          'Создал автоматизированную систему backup и disaster recovery'
+          { ru: 'Мигрировал всю инфраструктуру в облако AWS', en: 'Migrated entire infrastructure to AWS cloud' },
+          { ru: 'Настроил мониторинг и alerting для всей системы', en: 'Set up monitoring and alerting for the entire system' },
+          { ru: 'Создал автоматизированную систему backup и disaster recovery', en: 'Built automated backup and disaster recovery system' }
         ]
       }
     ]
@@ -68,24 +68,24 @@ export const resumeSections: ResumeSection[] = [
     },
     items: [
       {
-        title: 'Backend Development',
-        description: 'TypeScript, Node.js, Python, Go, Rust'
+        title: { ru: 'Backend Development', en: 'Backend Development' },
+        description: { ru: 'TypeScript, Node.js, Python, Go, Rust', en: 'TypeScript, Node.js, Python, Go, Rust' }
       },
       {
-        title: 'Infrastructure & DevOps',
-        description: 'Docker, Kubernetes, AWS, Terraform, Ansible'
+        title: { ru: 'Infrastructure & DevOps', en: 'Infrastructure & DevOps' },
+        description: { ru: 'Docker, Kubernetes, AWS, Terraform, Ansible', en: 'Docker, Kubernetes, AWS, Terraform, Ansible' }
       },
       {
-        title: 'Databases',
-        description: 'PostgreSQL, Redis, MongoDB, Elasticsearch'
+        title: { ru: 'Databases', en: 'Databases' },
+        description: { ru: 'PostgreSQL, Redis, MongoDB, Elasticsearch', en: 'PostgreSQL, Redis, MongoDB, Elasticsearch' }
       },
       {
-        title: 'Monitoring & Observability',
-        description: 'Prometheus, Grafana, ELK stack, OpenTelemetry'
+        title: { ru: 'Monitoring & Observability', en: 'Monitoring & Observability' },
+        description: { ru: 'Prometheus, Grafana, ELK stack, OpenTelemetry', en: 'Prometheus, Grafana, ELK stack, OpenTelemetry' }
       },
       {
-        title: 'AI/ML Tools',
-        description: 'TensorFlow, PyTorch, LangChain, LLM APIs'
+        title: { ru: 'AI/ML Tools', en: 'AI/ML Tools' },
+        description: { ru: 'TensorFlow, PyTorch, LangChain, LLM APIs', en: 'TensorFlow, PyTorch, LangChain, LLM APIs' }
       }
     ]
   },
@@ -97,13 +97,13 @@ export const resumeSections: ResumeSection[] = [
     },
     items: [
       {
-        title: 'Магистр компьютерных наук',
-        company: 'Технический университет',
+        title: { ru: 'Магистр компьютерных наук', en: 'Master of Computer Science' },
+        company: { ru: 'Технический университет', en: 'Technical University' },
         period: '2016 - 2018'
       },
       {
-        title: 'Бакалавр информационных технологий',
-        company: 'Государственный университет',
+        title: { ru: 'Бакалавр информационных технологий', en: 'Bachelor of Information Technology' },
+        company: { ru: 'Государственный университет', en: 'State University' },
         period: '2012 - 2016'
       }
     ]

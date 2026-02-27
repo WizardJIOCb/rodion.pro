@@ -17,13 +17,13 @@ const sections = resumeSections;
         <section>
           <h2 class="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
             <span class="text-muted font-mono text-sm">#</span>
-            {section.title.ru}
+            {section.title[lang]}
           </h2>
           
           {section.content ? (
             <div class="card">
               <p class="text-muted">
-                {section.content.ru}
+                {section.content[lang]}
               </p>
             </div>
           ) : section.items && section.items.length > 0 ? (
@@ -31,7 +31,7 @@ const sections = resumeSections;
               {section.items.map(item => (
                 <div class="card">
                   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
-                    <h3 class="font-medium text-text">{item.title}</h3>
+                    <h3 class="font-medium text-text">{item.title[lang]}</h3>
                     {item.period && (
                       <span class="text-xs text-muted font-mono shrink-0">
                         {item.period}
@@ -40,11 +40,11 @@ const sections = resumeSections;
                   </div>
                   
                   {item.company && (
-                    <p class="text-sm text-accent mb-2">{item.company}</p>
+                    <p class="text-sm text-accent mb-2">{item.company[lang]}</p>
                   )}
                   
                   {item.description && (
-                    <p class="text-muted text-sm mb-3">{item.description}</p>
+                    <p class="text-muted text-sm mb-3">{item.description[lang]}</p>
                   )}
                   
                   {item.achievements && item.achievements.length > 0 && (
@@ -52,7 +52,7 @@ const sections = resumeSections;
                       {item.achievements.map(achievement => (
                         <li class="flex items-start gap-2">
                           <span class="text-accent mt-1">•</span>
-                          <span>{achievement}</span>
+                          <span>{achievement[lang]}</span>
                         </li>
                       ))}
                     </ul>
@@ -60,13 +60,7 @@ const sections = resumeSections;
                 </div>
               ))}
             </div>
-          ) : (
-            <div class="card">
-              <p class="text-muted text-sm">
-                Информация будет добавлена.
-              </p>
-            </div>
-          )}
+          ) : null}
         </section>
       ))}
     </div>

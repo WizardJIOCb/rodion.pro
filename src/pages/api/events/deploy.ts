@@ -1,7 +1,14 @@
 import type { APIRoute } from 'astro';
-import { db, events } from '@/db';
+import { hasDb, requireDb, events } from '@/db';
 
 export const POST: APIRoute = async ({ request }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const authHeader = request.headers.get('authorization');
     const expectedToken = import.meta.env.DEPLOY_TOKEN;
@@ -28,6 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
     
     const title = message || `Deployed ${project}${version ? ` v${version}` : ''} to ${environment || 'production'}`;
     
+    const db = requireDb();
     await db.insert(events).values({
       source: 'deploy',
       kind: 'deploy',

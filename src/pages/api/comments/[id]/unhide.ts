@@ -1,10 +1,17 @@
 import type { APIRoute } from 'astro';
-import { db, comments } from '@/db';
+import { hasDb, requireDb, comments } from '@/db';
 import { eq } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/session';
 
 // Unhide comment (admin only)
 export const POST: APIRoute = async ({ params, cookies }) => {
+  if (!hasDb()) {
+    return new Response(JSON.stringify({ error: 'DB not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const currentUser = await getCurrentUser(cookies);
     
@@ -23,6 +30,7 @@ export const POST: APIRoute = async ({ params, cookies }) => {
       });
     }
     
+    const db = requireDb();
     await db.update(comments)
       .set({ isHidden: false })
       .where(eq(comments.id, commentId));
