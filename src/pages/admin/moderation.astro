@@ -1,7 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { getCurrentUser } from '@/lib/session';
-import { db, comments, commentFlags, users } from '@/db';
+import { requireDb, comments, commentFlags, users } from '@/db';
 import { eq, desc, sql } from 'drizzle-orm';
 
 // Check admin access
@@ -12,6 +12,7 @@ if (!currentUser || !currentUser.isAdmin) {
 }
 
 // Get flagged comments
+const db = requireDb();
 const flaggedComments = await db
   .select({
     commentId: commentFlags.commentId,

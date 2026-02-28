@@ -1,4 +1,4 @@
-import { db, users, sessions, hasDb, requireDb } from '@/db';
+import { users, sessions, hasDb, requireDb } from '@/db';
 import { eq, and, gt } from 'drizzle-orm';
 import { getSessionCookie, isAdmin } from './auth';
 
