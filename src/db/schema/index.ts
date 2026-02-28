@@ -1,4 +1,4 @@
-import { pgTable, text, bigserial, boolean, timestamp, index, unique, jsonb, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, bigserial, bigint, boolean, timestamp, index, unique, jsonb, integer } from 'drizzle-orm/pg-core';
 
 // Users table
 export const users = pgTable('users', {
@@ -13,7 +13,7 @@ export const users = pgTable('users', {
 // OAuth accounts table
 export const oauthAccounts = pgTable('oauth_accounts', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
-  userId: bigserial('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   provider: text('provider').notNull(),
   providerUserId: text('provider_user_id').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -24,7 +24,7 @@ export const oauthAccounts = pgTable('oauth_accounts', {
 // Sessions table
 export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
-  userId: bigserial('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
@@ -38,8 +38,8 @@ export const comments = pgTable('comments', {
   pageType: text('page_type').notNull(),
   pageKey: text('page_key').notNull(),
   lang: text('lang').notNull(),
-  userId: bigserial('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
-  parentId: bigserial('parent_id', { mode: 'number' }).references((): any => comments.id, { onDelete: 'cascade' }),
+  userId: bigint('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
+  parentId: bigint('parent_id', { mode: 'number' }).references((): any => comments.id, { onDelete: 'cascade' }),
   body: text('body').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }),
@@ -56,7 +56,7 @@ export const reactions = pgTable('reactions', {
   targetType: text('target_type').notNull(),
   targetKey: text('target_key').notNull(),
   lang: text('lang'),
-  userId: bigserial('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   emoji: text('emoji').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
@@ -68,8 +68,8 @@ export const reactions = pgTable('reactions', {
 // Comment flags (moderation)
 export const commentFlags = pgTable('comment_flags', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
-  commentId: bigserial('comment_id', { mode: 'number' }).notNull().references(() => comments.id, { onDelete: 'cascade' }),
-  userId: bigserial('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
+  commentId: bigint('comment_id', { mode: 'number' }).notNull().references(() => comments.id, { onDelete: 'cascade' }),
+  userId: bigint('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
   reason: text('reason'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
