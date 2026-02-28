@@ -1,0 +1,93 @@
+---
+import Layout from '@/layouts/Layout.astro';
+
+const title = 'Public Activity';
+const description = 'Public view of activity monitoring';
+---
+
+<Layout title={title} description={description}>
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <h1 class="text-3xl font-bold text-text mb-8">Public Activity Status</h1>
+    <div id="public-activity-container" class="card p-6">
+      <div>Loading activity status...</div>
+    </div>
+  </div>
+  <script>
+    async function loadPublicActivity() {
+      try {
+        const response = await fetch('/api/activity/v1/public');
+        if (!response.ok) throw new Error('Failed to fetch activity');
+        
+        const data = await response.json();
+        const container = document.getElementById('public-activity-container');
+        
+        if (data.status === 'offline') {
+          container.innerHTML = `
+            <div class="text-center py-8">
+              <div class="text-2xl text-accent mb-2">🔴 Offline</div>
+              <p class="text-muted">No recent activity detected</p>
+            </div>
+          `;
+        } else {
+          const statusEmoji = data.status === 'coding' ? '💻' : 
+                            data.status === 'entertainment' ? '🎮' : 
+                            data.status === 'idle' ? '😴' : '👤';
+                            
+          const lastSeen = new Date(data.lastSeenAt);
+          const timeDiff = Math.floor((Date.now() - lastSeen.getTime()) / 1000);
+          let timeText = '';
+          
+          if (timeDiff < 60) {
+            timeText = 'just now';
+          } else if (timeDiff < 3600) {
+            const mins = Math.floor(timeDiff / 60);
+            timeText = `${mins}m ago`;
+          } else {
+            const hours = Math.floor(timeDiff / 3600);
+            timeText = `${hours}h ago`;
+          }
+          
+          const categoriesHtml = data.today.categories
+            .slice(0, 5)
+            .map(cat => {
+              const hours = Math.floor(cat.activeSec / 3600);
+              const mins = Math.floor((cat.activeSec % 3600) / 60);
+              return `<div class="flex justify-between py-1">
+                <span class="capitalize">${cat.category}</span>
+                <span>${hours > 0 ? `${hours}h ` : ''}${mins}m</span>
+              </div>`;
+            })
+            .join('');
+            
+          container.innerHTML = `
+            <div class="text-center py-4">
+              <div class="text-4xl mb-2">${statusEmoji}</div>
+              <div class="text-xl capitalize">${data.status}</div>
+              <div class="text-sm text-muted mt-1">last seen ${timeText}</div>
+            </div>
+            
+            <div class="mt-6">
+              <h3 class="font-semibold text-text mb-2">Today's Activity</h3>
+              ${categoriesHtml || '<p class="text-muted text-sm">No activity recorded yet</p>'}
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading public activity:', error);
+        const container = document.getElementById('public-activity-container');
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <div class="text-red-400 mb-2">Error loading activity</div>
+            <p class="text-muted text-sm">Please try again later</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Load data on page load
+    loadPublicActivity();
+    
+    // Refresh every 30 seconds
+    setInterval(loadPublicActivity, 30000);
+  </script>
+</Layout>

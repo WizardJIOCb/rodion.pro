@@ -1,0 +1,16 @@
+[Unit]
+Description=Activity Monitoring Service
+After=network.target
+
+[Service]
+Type=simple
+User=rodion
+WorkingDirectory=/var/www/rodion.pro
+Environment=NODE_ENV=production
+Environment=PORT=4010
+ExecStart=/usr/bin/npm start --prefix /var/www/rodion.pro/activity-service
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

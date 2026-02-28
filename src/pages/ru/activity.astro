@@ -1,0 +1,15 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import ActivityDashboard from '@/components/ActivityDashboard.tsx';
+
+const title = 'Панель активности';
+const description = 'Панель мониторинга активности в реальном времени';
+const lang = 'ru';
+---
+
+<Layout title={title} description={description}>
+  <div class="mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-3xl font-bold text-text mb-8">Панель активности</h1>
+    <ActivityDashboard lang={lang} client:load />
+  </div>
+</Layout>

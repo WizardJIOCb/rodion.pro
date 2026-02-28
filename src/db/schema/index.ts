@@ -1,4 +1,4 @@
-import { pgTable, text, bigserial, boolean, timestamp, index, unique, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, bigserial, boolean, timestamp, index, unique, jsonb, integer } from 'drizzle-orm/pg-core';
 
 // Users table
 export const users = pgTable('users', {
@@ -92,6 +92,50 @@ export const events = pgTable('events', {
   index('events_project_idx').on(table.project),
 ]);
 
+// ── Activity Monitoring ──────────────────────────────────────────────
+
+// Registered devices that send telemetry
+export const activityDevices = pgTable('activity_devices', {
+  id: text('id').primaryKey(), // e.g. 'pc-main'
+  name: text('name'),
+  apiKeyHash: text('api_key_hash').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+});
+
+// Minute-level aggregated activity data
+export const activityMinuteAgg = pgTable('activity_minute_agg', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  deviceId: text('device_id').notNull().references(() => activityDevices.id, { onDelete: 'cascade' }),
+  tsMinute: timestamp('ts_minute', { withTimezone: true }).notNull(),
+  app: text('app').notNull().default(''),
+  windowTitle: text('window_title').notNull().default(''),
+  category: text('category').notNull().default('unknown'),
+  activeSec: integer('active_sec').notNull().default(0),
+  afkSec: integer('afk_sec').notNull().default(0),
+  keys: integer('keys').notNull().default(0),
+  clicks: integer('clicks').notNull().default(0),
+  scroll: integer('scroll').notNull().default(0),
+}, (table) => [
+  unique('activity_minute_unique').on(table.deviceId, table.tsMinute, table.app, table.windowTitle, table.category),
+  index('activity_minute_ts_idx').on(table.deviceId, table.tsMinute),
+  index('activity_minute_category_idx').on(table.category, table.tsMinute),
+]);
+
+// Current state per device (upserted on each ingest)
+export const activityNow = pgTable('activity_now', {
+  deviceId: text('device_id').primaryKey().references(() => activityDevices.id, { onDelete: 'cascade' }),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  app: text('app'),
+  windowTitle: text('window_title'),
+  category: text('category').notNull().default('unknown'),
+  isAfk: boolean('is_afk').notNull().default(false),
+  countsTodayKeys: integer('counts_today_keys').notNull().default(0),
+  countsTodayClicks: integer('counts_today_clicks').notNull().default(0),
+  countsTodayScroll: integer('counts_today_scroll').notNull().default(0),
+  countsTodayActiveSec: integer('counts_today_active_sec').notNull().default(0),
+});
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -101,3 +145,7 @@ export type NewComment = typeof comments.$inferInsert;
 export type Reaction = typeof reactions.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
+export type ActivityDevice = typeof activityDevices.$inferSelect;
+export type NewActivityDevice = typeof activityDevices.$inferInsert;
+export type ActivityMinuteAgg = typeof activityMinuteAgg.$inferSelect;
+export type ActivityNow = typeof activityNow.$inferSelect;

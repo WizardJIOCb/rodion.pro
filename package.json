@@ -13,7 +13,9 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "lint": "eslint src --ext .ts,.tsx,.astro",
-    "typecheck": "astro check && tsc --noEmit"
+    "typecheck": "astro check && tsc --noEmit",
+    "activity:register": "node register-device.cjs",
+    "activity:agent": "cd activity-agent && npm start"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
@@ -22,13 +24,17 @@
     "@astrojs/sitemap": "^3.2.0",
     "@astrojs/tailwind": "^6.0.0",
     "astro": "^5.0.0",
+    "bcrypt": "^6.0.0",
     "cmdk": "^1.0.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.38.0",
     "nanoid": "^5.0.0",
+    "pg": "^8.19.0",
     "postgres": "^3.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "recharts": "^3.7.0",
+    "tsx": "^4.21.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
