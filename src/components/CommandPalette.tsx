@@ -26,13 +26,14 @@ export default function CommandPalette({ lang }: Props) {
   };
 
   const navigationItems: CommandItem[] = [
-    { id: 'home', label: lang === 'ru' ? 'Главная' : 'Home', action: () => navigate('/'), group: t.navigation, keywords: ['home', 'главная'] },
+    { id: 'activity', label: lang === 'ru' ? 'Активность' : 'Activity', action: () => navigate('/activity'), group: t.navigation, keywords: ['activity', 'активность', 'dashboard'] },
+    { id: 'home', label: lang === 'ru' ? 'Главная' : 'Home', action: () => navigate('/'), group: t.navigation, keywords: ['home', 'главная'] },    
     { id: 'projects', label: lang === 'ru' ? 'Проекты' : 'Projects', action: () => navigate('/projects'), group: t.navigation, keywords: ['projects', 'проекты'] },
     { id: 'blog', label: lang === 'ru' ? 'Блог' : 'Blog', action: () => navigate('/blog'), group: t.navigation, keywords: ['blog', 'блог', 'posts'] },
     { id: 'changelog', label: 'Changelog', action: () => navigate('/changelog'), group: t.navigation, keywords: ['changelog', 'events', 'история'] },
     { id: 'now', label: 'Now', action: () => navigate('/now'), group: t.navigation, keywords: ['now', 'сейчас'] },
     { id: 'uses', label: 'Uses', action: () => navigate('/uses'), group: t.navigation, keywords: ['uses', 'tools', 'инструменты'] },
-    { id: 'resume', label: lang === 'ru' ? 'Резюме' : 'Resume', action: () => navigate('/resume'), group: t.navigation, keywords: ['resume', 'резюме', 'cv'] },
+    { id: 'resume', label: lang === 'ru' ? 'Резюме' : 'Resume', action: () => navigate('/resume'), group: t.navigation, keywords: ['resume', 'резюме', 'cv'] },    
     { id: 'contact', label: lang === 'ru' ? 'Контакт' : 'Contact', action: () => navigate('/contact'), group: t.navigation, keywords: ['contact', 'контакт', 'email'] },
   ];
 
@@ -71,7 +72,7 @@ export default function CommandPalette({ lang }: Props) {
   }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    if (e.altKey && e.code === 'KeyK') {
       e.preventDefault();
       setIsOpen(prev => !prev);
     }
