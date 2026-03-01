@@ -494,9 +494,9 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
       })()}
 
       {/* Activity Timeline Chart */}
-      {statsData && statsData.series && (
+      {statsData && (
         <ActivityTimelineChart
-          series={statsData.series}
+          series={statsData.series || []}
           seriesByWindow={statsData.seriesByWindow}
           windowLabels={statsData.windowLabels}
           lang={lang}
