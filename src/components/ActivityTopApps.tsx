@@ -194,6 +194,7 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
                   }}
                 />
                 <span className="font-mono truncate flex-1" title={app.app}>{app.app}</span>
+                <span className="text-muted text-xs whitespace-nowrap">{totalActiveSec > 0 ? ((app.activeSec / totalActiveSec) * 100).toFixed(1) : '0'}%</span>
                 <span className="text-accent font-medium whitespace-nowrap">{formatDuration(app.activeSec)}</span>
               </div>
             ))}
