@@ -277,6 +277,7 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
                             {title.windowTitle || '(no title)'}
                           </span>
                           <span className="text-muted flex-shrink-0">{title.keys.toLocaleString()} {t.keys.toLowerCase()}</span>
+                          <span className="text-muted flex-shrink-0">{title.clicks.toLocaleString()} {t.clicks.toLowerCase()}</span>
                           <span className="text-accent font-medium flex-shrink-0 w-14 text-right">
                             {formatDuration(title.activeSec)}
                           </span>
