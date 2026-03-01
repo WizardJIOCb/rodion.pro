@@ -511,6 +511,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
           topApps={statsData.topApps}
           topTitles={statsData.topTitles || []}
           lang={lang}
+          selectedCategories={selectedCategories}
         />
       )}
 

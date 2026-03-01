@@ -30,6 +30,7 @@ interface ActivityTopAppsProps {
   topApps: TopApp[];
   topTitles: TopTitle[];
   lang: 'ru' | 'en';
+  selectedCategories?: string[];
 }
 
 function useThemeColors() {
@@ -80,18 +81,41 @@ const CustomPieTooltip = ({ active, payload, theme, lang, totals }: any) => {
   );
 };
 
-const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, lang }) => {
+const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, lang, selectedCategories = [] }) => {
   const theme = useThemeColors();
   const [expandedApp, setExpandedApp] = useState<string | null>(null);
 
-  const pieData = useMemo(() =>
-    topApps.slice(0, 10).map(a => ({
+  // When a category filter is active and few unique apps, show window titles in pie
+  const uniqueApps = useMemo(() => new Set(topApps.map(a => a.app)), [topApps]);
+  const showTitlesPie = selectedCategories.length > 0 && uniqueApps.size <= 3;
+
+  const pieData = useMemo(() => {
+    if (showTitlesPie) {
+      // Group topTitles, truncate long titles
+      const filtered = topTitles
+        .filter(t => t.windowTitle)
+        .sort((a, b) => b.activeSec - a.activeSec)
+        .slice(0, 10);
+      return filtered.map(t => {
+        const label = t.windowTitle.length > 50 ? t.windowTitle.substring(0, 47) + '...' : t.windowTitle;
+        return {
+          app: label,
+          category: t.category,
+          activeSec: t.activeSec,
+          keys: t.keys,
+          clicks: t.clicks,
+          scroll: t.scroll,
+          name: label,
+          value: t.activeSec,
+        };
+      });
+    }
+    return topApps.slice(0, 10).map(a => ({
       ...a,
       name: a.app,
       value: a.activeSec,
-    })),
-    [topApps],
-  );
+    }));
+  }, [topApps, topTitles, showTitlesPie]);
 
   const pieColors = useMemo(() =>
     PIE_COLOR_VARS.map(v => theme[v] || '#888'),
@@ -183,7 +207,7 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
           {/* Legend */}
           <div className="w-full lg:w-1/2 space-y-1.5">
             {pieData.map((app, i) => (
-              <div key={app.app} className="flex items-center gap-2 text-sm">
+              <div key={`${app.app}-${i}`} className="flex items-center gap-2 text-sm">
                 <span
                   style={{
                     width: 10,
