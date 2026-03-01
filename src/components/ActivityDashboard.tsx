@@ -83,6 +83,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
     month: null,
     allTime: null,
   });
+  const [timeSinceUpdate, setTimeSinceUpdate] = useState<string>('');
 
   const handleCategoryChange = useCallback((categories: string[]) => {
     setSelectedCategories(categories);
@@ -234,6 +235,20 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
     });
   }, [deviceId]);
 
+  // Live timer for "Last Update"
+  useEffect(() => {
+    if (!nowData) return;
+    const update = () => {
+      const diffSeconds = Math.floor((Date.now() - new Date(nowData.updatedAt).getTime()) / 1000);
+      if (diffSeconds < 60) setTimeSinceUpdate(`${diffSeconds}s ago`);
+      else if (diffSeconds < 3600) setTimeSinceUpdate(`${Math.floor(diffSeconds / 60)}m ${diffSeconds % 60}s ago`);
+      else setTimeSinceUpdate(`${Math.floor(diffSeconds / 3600)}h ${Math.floor((diffSeconds % 3600) / 60)}m ago`);
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [nowData?.updatedAt]);
+
   // Calculate time since last update
   const getTimeSinceUpdate = (timestamp: string) => {
     const now = new Date();
@@ -378,7 +393,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
             <div className="card p-6">
               <div className="text-sm text-muted mb-1">{t('activity.lastUpdate')}</div>
               <div className="text-xl">
-                {getTimeSinceUpdate(nowData.updatedAt)}
+                {timeSinceUpdate}
               </div>
             </div>
             <div className="card p-6">
