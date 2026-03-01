@@ -131,7 +131,8 @@ function getTimeRangeConfig(range: TimeRange, customFrom?: Date, customTo?: Date
 const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) => {
   const [nowData, setNowData] = useState<ActivityNow | null>(null);
   const [statsData, setStatsData] = useState<ActivityStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deviceId] = useState('pc-main');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -162,7 +163,24 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
   const [customTo, setCustomTo] = useState<string>(() => {
     return new Date().toISOString().slice(0, 16);
   });
+  // Draft values for custom inputs (don't trigger fetch until Apply)
+  const [draftFrom, setDraftFrom] = useState<string>(customFrom);
+  const [draftTo, setDraftTo] = useState<string>(customTo);
+  const [customRangeError, setCustomRangeError] = useState<string | null>(null);
   const [currentGroup, setCurrentGroup] = useState<'15min' | 'hour' | 'day'>('hour');
+
+  // Apply custom range with validation
+  const applyCustomRange = () => {
+    const from = new Date(draftFrom);
+    const to = new Date(draftTo);
+    if (from >= to) {
+      setCustomRangeError(lang === 'ru' ? 'Дата "от" должна быть раньше "до"' : '"From" must be before "To"');
+      return;
+    }
+    setCustomRangeError(null);
+    setCustomFrom(draftFrom);
+    setCustomTo(draftTo);
+  };
 
   const handleCategoryChange = useCallback((categories: string[]) => {
     setSelectedCategories(categories);
@@ -177,18 +195,24 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
 
   // Load initial data
   useEffect(() => {
+    const isFirstLoad = !nowData && !statsData;
+    
     const loadData = async () => {
-      setIsLoading(true);
+      if (isFirstLoad) {
+        setInitialLoading(true);
+      } else {
+        setStatsLoading(true);
+      }
       setError(null);
       
       try {
-        // Load current activity
-        // For now, we'll make the API endpoints available to the activity dashboard
-        // without strict device authentication since the dashboard runs on the same origin
-        const nowResponse = await fetch(`/api/activity/v1/now?deviceId=${deviceId}`);
-        if (!nowResponse.ok) throw new Error('Failed to load current activity');
-        const nowData = await nowResponse.json();
-        setNowData(nowData);
+        // Load current activity (only on first load)
+        if (isFirstLoad) {
+          const nowResponse = await fetch(`/api/activity/v1/now?deviceId=${deviceId}`);
+          if (!nowResponse.ok) throw new Error('Failed to load current activity');
+          const nowJson = await nowResponse.json();
+          setNowData(nowJson);
+        }
 
         // Load stats based on selected time range
         const config = getTimeRangeConfig(
@@ -203,12 +227,13 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
           `/api/activity/v1/stats?deviceId=${deviceId}&from=${config.from.toISOString()}&to=${config.to.toISOString()}&group=${config.group}${categoryParam}`
         );
         if (!statsResponse.ok) throw new Error('Failed to load statistics');
-        const statsData = await statsResponse.json();
-        setStatsData(statsData);
+        const statsJson = await statsResponse.json();
+        setStatsData(statsJson);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
-        setIsLoading(false);
+        setInitialLoading(false);
+        setStatsLoading(false);
       }
     };
 
@@ -325,42 +350,33 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
     if (!nowData) return;
     const update = () => {
       const diffSeconds = Math.floor((Date.now() - new Date(nowData.updatedAt).getTime()) / 1000);
-      if (diffSeconds < 60) setTimeSinceUpdate(`${diffSeconds}s ago`);
-      else if (diffSeconds < 3600) setTimeSinceUpdate(`${Math.floor(diffSeconds / 60)}m ${diffSeconds % 60}s ago`);
-      else setTimeSinceUpdate(`${Math.floor(diffSeconds / 3600)}h ${Math.floor((diffSeconds % 3600) / 60)}m ago`);
+      const ago = lang === 'ru' ? 'назад' : 'ago';
+      const s = lang === 'ru' ? 'с' : 's';
+      const m = lang === 'ru' ? 'м' : 'm';
+      const h = lang === 'ru' ? 'ч' : 'h';
+      if (diffSeconds < 60) setTimeSinceUpdate(`${diffSeconds}${s} ${ago}`);
+      else if (diffSeconds < 3600) setTimeSinceUpdate(`${Math.floor(diffSeconds / 60)}${m} ${diffSeconds % 60}${s} ${ago}`);
+      else setTimeSinceUpdate(`${Math.floor(diffSeconds / 3600)}${h} ${Math.floor((diffSeconds % 3600) / 60)}${m} ${ago}`);
     };
     update();
     const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
-  }, [nowData?.updatedAt]);
-
-  // Calculate time since last update
-  const getTimeSinceUpdate = (timestamp: string) => {
-    const now = new Date();
-    const lastUpdate = new Date(timestamp);
-    const diffSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
-
-    if (diffSeconds < 60) return `${diffSeconds}s ago`;
-    if (diffSeconds < 3600) {
-      const minutes = Math.floor(diffSeconds / 60);
-      return `${minutes}m ago`;
-    }
-    const hours = Math.floor(diffSeconds / 3600);
-    return `${hours}h ago`;
-  };
+  }, [nowData?.updatedAt, lang]);
 
   // Format seconds to human readable
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
+    const h = lang === 'ru' ? 'ч' : 'h';
+    const m = lang === 'ru' ? 'м' : 'm';
     
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}${h} ${minutes}${m}`;
     }
-    return `${minutes}m`;
+    return `${minutes}${m}`;
   };
 
-  if (isLoading) {
+  if (initialLoading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
@@ -548,8 +564,8 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
             <label className="text-xs text-muted">{t('activity.range.from')}</label>
             <input
               type="datetime-local"
-              value={customFrom}
-              onChange={(e) => setCustomFrom(e.target.value)}
+              value={draftFrom}
+              onChange={(e) => setDraftFrom(e.target.value)}
               className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
             />
           </div>
@@ -557,11 +573,24 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
             <label className="text-xs text-muted">{t('activity.range.to')}</label>
             <input
               type="datetime-local"
-              value={customTo}
-              onChange={(e) => setCustomTo(e.target.value)}
+              value={draftTo}
+              onChange={(e) => setDraftTo(e.target.value)}
               className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
             />
           </div>
+          <button
+            onClick={applyCustomRange}
+            className="px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'var(--bg)',
+            }}
+          >
+            {t('activity.range.apply')}
+          </button>
+          {customRangeError && (
+            <span className="text-xs text-red-400">{customRangeError}</span>
+          )}
         </div>
       )}
 
@@ -651,17 +680,25 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
       })()}
 
       {/* Activity Timeline Chart */}
-      {statsData && (
-        <ActivityTimelineChart
-          series={statsData.series || []}
-          seriesByWindow={statsData.seriesByWindow}
-          windowLabels={statsData.windowLabels}
-          lang={lang}
-          onCategoryChange={handleCategoryChange}
-          selectedCategories={selectedCategories}
-          group={currentGroup}
-        />
-      )}
+      <div className="relative">
+        {statsLoading && (
+          <div className="absolute inset-0 bg-bg/50 z-10 flex items-center justify-center rounded-lg">
+            <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {statsData && (
+          <ActivityTimelineChart
+            series={statsData.series || []}
+            seriesByWindow={statsData.seriesByWindow}
+            windowLabels={statsData.windowLabels}
+            lang={lang}
+            onCategoryChange={handleCategoryChange}
+            selectedCategories={selectedCategories}
+            group={currentGroup}
+            timeRange={timeRange}
+          />
+        )}
+      </div>
 
       {/* Top Apps with Pie Chart and Expandable Window Titles */}
       {statsData && statsData.topApps && statsData.topApps.length > 0 && (

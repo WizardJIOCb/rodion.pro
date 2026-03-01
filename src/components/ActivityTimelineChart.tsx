@@ -29,6 +29,7 @@ interface ActivityTimelineChartProps {
   onCategoryChange: (categories: string[]) => void;
   selectedCategories: string[];
   group?: '15min' | 'hour' | 'day';
+  timeRange?: '1h' | '4h' | 'today' | '7d' | '30d' | 'custom';
 }
 
 interface MetricConfig {
@@ -89,41 +90,6 @@ function formatDuration(seconds: number): string {
   if (h > 0) return `${h}h ${m}m`;
   return `${m}m`;
 }
-
-const MetricsTooltip = ({ active, payload, label, visibleMetrics, theme, lang }: any) => {
-  if (!active || !payload?.length) return null;
-
-  return (
-    <div
-      style={{
-        backgroundColor: theme['--surface'] || '#111823',
-        border: `1px solid ${theme['--border'] || '#243244'}`,
-        borderRadius: 8,
-        padding: '10px 14px',
-        color: theme['--text'] || '#e7eef7',
-        fontSize: 13,
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
-      {payload.map((entry: any) => {
-        const metric = METRICS.find(m => m.key === entry.dataKey);
-        if (!metric || !visibleMetrics[metric.key]) return null;
-        const value = metric.yAxisId === 'time'
-          ? formatDuration(entry.value)
-          : entry.value.toLocaleString();
-        return (
-          <div key={entry.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: entry.color, display: 'inline-block', flexShrink: 0 }} />
-            <span style={{ color: theme['--muted'] || '#a7b3c2' }}>
-              {lang === 'ru' ? metric.labelRu : metric.labelEn}:
-            </span>
-            <span style={{ fontWeight: 500 }}>{value}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 const SingleMetricTooltip = ({ active, payload, label, metric, theme, lang }: any) => {
   if (!active || !payload?.length) return null;
@@ -200,12 +166,24 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
   onCategoryChange,
   selectedCategories,
   group = 'hour',
+  timeRange = '4h',
 }) => {
   const theme = useThemeColors();
   const [mode, setMode] = useState<ChartMode>('metrics');
 
   // Single metric selection (simplified from multi-toggle)
   const [selectedMetric, setSelectedMetric] = useState<keyof SeriesPoint>('activeSec');
+
+  // Format time range label
+  const rangeLabels: Record<string, { en: string; ru: string }> = {
+    '1h': { en: 'Last hour', ru: 'Последний час' },
+    '4h': { en: 'Last 4 hours', ru: 'Последние 4 часа' },
+    'today': { en: 'Today', ru: 'Сегодня' },
+    '7d': { en: 'Last 7 days', ru: 'Последние 7 дней' },
+    '30d': { en: 'Last 30 days', ru: 'Последние 30 дней' },
+    'custom': { en: 'Custom range', ru: 'Выбранный период' },
+  };
+  const rangeLabel = rangeLabels[timeRange]?.[lang] || timeRange;
 
   const toggleCategory = (catKey: string) => {
     if (catKey === '') {
@@ -305,8 +283,8 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
   const resolveColor = (cssVar: string) => theme[cssVar] || '#888';
 
   const t = lang === 'ru'
-    ? { timeline: 'Хронология активности', showing: `Показано ${series.length} часов`, metrics: 'Метрики', categories: 'Категории', byWindow: 'По окнам', noWindowData: 'Нет данных по окнам' }
-    : { timeline: 'Activity Timeline', showing: `Showing ${series.length} hours`, metrics: 'Metrics', categories: 'Categories', byWindow: 'By Window', noWindowData: 'No window data available' };
+    ? { timeline: 'Хронология активности', showing: rangeLabel, metrics: 'Метрики', categories: 'Категории', byWindow: 'По окнам', noWindowData: 'Нет данных по окнам' }
+    : { timeline: 'Activity Timeline', showing: rangeLabel, metrics: 'Metrics', categories: 'Categories', byWindow: 'By Window', noWindowData: 'No window data available' };
 
   if (!series.length) {
     return (
