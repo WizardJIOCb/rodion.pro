@@ -54,9 +54,12 @@ function formatDuration(seconds: number): string {
 
 const PIE_COLOR_VARS = ['--accent', '--accent2', '--warn', '--success', '--danger', '--muted'];
 
-const CustomPieTooltip = ({ active, payload, theme, lang }: any) => {
+const CustomPieTooltip = ({ active, payload, theme, lang, totals }: any) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
+  const timePct = totals.activeSec > 0 ? ((d.activeSec / totals.activeSec) * 100).toFixed(1) : '0';
+  const keysPct = totals.keys > 0 ? ((d.keys / totals.keys) * 100).toFixed(1) : '0';
+  const clicksPct = totals.clicks > 0 ? ((d.clicks / totals.clicks) * 100).toFixed(1) : '0';
   return (
     <div
       style={{
@@ -70,9 +73,9 @@ const CustomPieTooltip = ({ active, payload, theme, lang }: any) => {
     >
       <div style={{ fontWeight: 600, marginBottom: 4 }}>{d.app}</div>
       <div style={{ color: theme['--muted'] || '#a7b3c2', fontSize: 11, marginBottom: 4 }}>{d.category}</div>
-      <div>{lang === 'ru' ? 'Время' : 'Time'}: <strong>{formatDuration(d.activeSec)}</strong></div>
-      <div>{lang === 'ru' ? 'Клавиши' : 'Keys'}: {d.keys.toLocaleString()}</div>
-      <div>{lang === 'ru' ? 'Клики' : 'Clicks'}: {d.clicks.toLocaleString()}</div>
+      <div>{lang === 'ru' ? 'Время' : 'Time'}: <strong>{formatDuration(d.activeSec)}</strong> <span style={{ color: theme['--muted'] || '#a7b3c2', fontSize: 11 }}>({timePct}%)</span></div>
+      <div>{lang === 'ru' ? 'Клавиши' : 'Keys'}: {d.keys.toLocaleString()} <span style={{ color: theme['--muted'] || '#a7b3c2', fontSize: 11 }}>({keysPct}%)</span></div>
+      <div>{lang === 'ru' ? 'Клики' : 'Clicks'}: {d.clicks.toLocaleString()} <span style={{ color: theme['--muted'] || '#a7b3c2', fontSize: 11 }}>({clicksPct}%)</span></div>
     </div>
   );
 };
@@ -99,6 +102,12 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
     topApps.reduce((sum, a) => sum + a.activeSec, 0),
     [topApps],
   );
+
+  const totals = useMemo(() => ({
+    activeSec: topApps.reduce((sum, a) => sum + a.activeSec, 0),
+    keys: topApps.reduce((sum, a) => sum + a.keys, 0),
+    clicks: topApps.reduce((sum, a) => sum + a.clicks, 0),
+  }), [topApps]);
 
   const titlesForApp = useMemo(() => {
     if (!expandedApp) return [];
@@ -160,7 +169,7 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
                     <Cell key={i} fill={pieColors[i % pieColors.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomPieTooltip theme={theme} lang={lang} />} />
+                <Tooltip content={<CustomPieTooltip theme={theme} lang={lang} totals={totals} />} />
               </PieChart>
             </ResponsiveContainer>
             {/* Center label */}

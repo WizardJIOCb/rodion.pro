@@ -60,6 +60,15 @@ interface ActivityDashboardProps {
   lang?: 'ru' | 'en';
 }
 
+interface PeriodSummary {
+  keys: number;
+  clicks: number;
+  scroll: number;
+  activeSec: number;
+}
+
+type PeriodKey = 'today' | 'week' | 'month' | 'allTime';
+
 const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) => {
   const [nowData, setNowData] = useState<ActivityNow | null>(null);
   const [statsData, setStatsData] = useState<ActivityStats | null>(null);
@@ -67,6 +76,13 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
   const [error, setError] = useState<string | null>(null);
   const [deviceId] = useState('pc-main');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [expandedPeriod, setExpandedPeriod] = useState<PeriodKey | null>('today');
+  const [periodStats, setPeriodStats] = useState<Record<PeriodKey, PeriodSummary | null>>({
+    today: null,
+    week: null,
+    month: null,
+    allTime: null,
+  });
 
   const handleCategoryChange = useCallback((categories: string[]) => {
     setSelectedCategories(categories);
@@ -170,6 +186,54 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
     };
   }, [deviceId, selectedCategories]);
 
+  // Load period summaries (week, month, all time)
+  useEffect(() => {
+    const fetchPeriodStats = async (from: Date, to: Date): Promise<PeriodSummary | null> => {
+      try {
+        const res = await fetch(
+          `/api/activity/v1/stats?deviceId=${deviceId}&from=${from.toISOString()}&to=${to.toISOString()}&group=day`
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        const apps: Array<{ activeSec: number; keys: number; clicks: number; scroll: number }> = data.topApps || [];
+        return apps.reduce(
+          (acc, a) => ({
+            keys: acc.keys + a.keys,
+            clicks: acc.clicks + a.clicks,
+            scroll: acc.scroll + a.scroll,
+            activeSec: acc.activeSec + a.activeSec,
+          }),
+          { keys: 0, clicks: 0, scroll: 0, activeSec: 0 },
+        );
+      } catch {
+        return null;
+      }
+    };
+
+    const now = new Date();
+
+    // Week: Monday 00:00
+    const weekStart = new Date(now);
+    const dayOfWeek = weekStart.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    weekStart.setDate(weekStart.getDate() - diffToMonday);
+    weekStart.setHours(0, 0, 0, 0);
+
+    // Month: 1st of current month
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+
+    // All time: far past
+    const allTimeStart = new Date(2020, 0, 1, 0, 0, 0, 0);
+
+    Promise.all([
+      fetchPeriodStats(weekStart, now),
+      fetchPeriodStats(monthStart, now),
+      fetchPeriodStats(allTimeStart, now),
+    ]).then(([week, month, allTime]) => {
+      setPeriodStats(prev => ({ ...prev, week, month, allTime }));
+    });
+  }, [deviceId]);
+
   // Calculate time since last update
   const getTimeSinceUpdate = (timestamp: string) => {
     const now = new Date();
@@ -228,6 +292,9 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
       en: {
         'activity.now': 'Now',
         'activity.todayTotals': "Today's Totals",
+        'activity.weekTotals': 'This Week',
+        'activity.monthTotals': 'This Month',
+        'activity.allTimeTotals': 'All Time',
         'activity.timeline': 'Activity Timeline',
         'activity.topApps': 'Top Applications',
         'activity.topCategories': 'Usage by Category',
@@ -256,6 +323,9 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
       ru: {
         'activity.now': 'Сейчас',
         'activity.todayTotals': 'Сегодня Всего',
+        'activity.weekTotals': 'За неделю',
+        'activity.monthTotals': 'За месяц',
+        'activity.allTimeTotals': 'За всё время',
         'activity.timeline': 'Хронология активности',
         'activity.topApps': 'Топ Приложений',
         'activity.topCategories': 'Категории использования',
@@ -323,30 +393,85 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
         )}
       </section>
 
-      {/* Today's Totals */}
-      {nowData && (
-        <section>
-          <h2 className="text-2xl font-bold text-text mb-6">{t('activity.todayTotals')}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="card p-4 text-center">
-              <div className="text-2xl font-bold text-accent">{nowData.countsToday.keys.toLocaleString()}</div>
-              <div className="text-sm text-muted">{t('activity.keys')}</div>
-            </div>
-            <div className="card p-4 text-center">
-              <div className="text-2xl font-bold text-accent">{nowData.countsToday.clicks.toLocaleString()}</div>
-              <div className="text-sm text-muted">{t('activity.clicks')}</div>
-            </div>
-            <div className="card p-4 text-center">
-              <div className="text-2xl font-bold text-accent">{nowData.countsToday.scroll.toLocaleString()}</div>
-              <div className="text-sm text-muted">{t('activity.scrolls')}</div>
-            </div>
-            <div className="card p-4 text-center">
-              <div className="text-2xl font-bold text-accent">{formatDuration(nowData.countsToday.activeSec)}</div>
-              <div className="text-sm text-muted">{t('activity.activeTime')}</div>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Period Summary Accordion */}
+      {nowData && (() => {
+        const periods: { key: PeriodKey; labelKey: string }[] = [
+          { key: 'today', labelKey: 'activity.todayTotals' },
+          { key: 'week', labelKey: 'activity.weekTotals' },
+          { key: 'month', labelKey: 'activity.monthTotals' },
+          { key: 'allTime', labelKey: 'activity.allTimeTotals' },
+        ];
+
+        const getSummary = (key: PeriodKey): PeriodSummary | null => {
+          if (key === 'today') {
+            return nowData ? {
+              keys: nowData.countsToday.keys,
+              clicks: nowData.countsToday.clicks,
+              scroll: nowData.countsToday.scroll,
+              activeSec: nowData.countsToday.activeSec,
+            } : null;
+          }
+          return periodStats[key];
+        };
+
+        return (
+          <section className="space-y-2">
+            {periods.map(({ key, labelKey }) => {
+              const isOpen = expandedPeriod === key;
+              const summary = getSummary(key);
+              return (
+                <div key={key} className="card p-0 overflow-hidden">
+                  <button
+                    onClick={() => setExpandedPeriod(isOpen ? null : key)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface/80 cursor-pointer"
+                    style={{ background: 'transparent' }}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      className="flex-shrink-0 transition-transform duration-200"
+                      style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                    >
+                      <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted" />
+                    </svg>
+                    <span className="text-lg font-bold text-text flex-1">{t(labelKey)}</span>
+                    {summary && (
+                      <span className="text-accent font-medium text-sm">{formatDuration(summary.activeSec)}</span>
+                    )}
+                    {!summary && key !== 'today' && (
+                      <span className="text-muted text-sm">...</span>
+                    )}
+                  </button>
+                  {isOpen && summary && (
+                    <div className="px-4 pb-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="card p-4 text-center">
+                          <div className="text-2xl font-bold text-accent">{summary.keys.toLocaleString()}</div>
+                          <div className="text-sm text-muted">{t('activity.keys')}</div>
+                        </div>
+                        <div className="card p-4 text-center">
+                          <div className="text-2xl font-bold text-accent">{summary.clicks.toLocaleString()}</div>
+                          <div className="text-sm text-muted">{t('activity.clicks')}</div>
+                        </div>
+                        <div className="card p-4 text-center">
+                          <div className="text-2xl font-bold text-accent">{summary.scroll.toLocaleString()}</div>
+                          <div className="text-sm text-muted">{t('activity.scrolls')}</div>
+                        </div>
+                        <div className="card p-4 text-center">
+                          <div className="text-2xl font-bold text-accent">{formatDuration(summary.activeSec)}</div>
+                          <div className="text-sm text-muted">{t('activity.activeTime')}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </section>
+        );
+      })()}
 
       {/* Activity Timeline Chart */}
       {statsData && statsData.series && (
