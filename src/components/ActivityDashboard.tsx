@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import ActivityTimelineChart from './ActivityTimelineChart';
 import ActivityTopApps from './ActivityTopApps';
+import ActivityNotesWidget from './ActivityNotesWidget';
 
 interface ActivityNow {
   deviceId: string;
@@ -58,6 +59,7 @@ interface ActivityStats {
 
 interface ActivityDashboardProps {
   lang?: 'ru' | 'en';
+  adminToken?: string;
 }
 
 interface PeriodSummary {
@@ -128,7 +130,7 @@ function getTimeRangeConfig(range: TimeRange, customFrom?: Date, customTo?: Date
   }
 }
 
-const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) => {
+const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', adminToken }) => {
   const [nowData, setNowData] = useState<ActivityNow | null>(null);
   const [statsData, setStatsData] = useState<ActivityStats | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -530,6 +532,11 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
           <div className="card p-6 text-center text-muted">{t('activity.noData')}</div>
         )}
       </section>
+
+      {/* Notes Widget */}
+      {adminToken && (
+        <ActivityNotesWidget adminToken={adminToken} deviceId={deviceId} lang={lang} />
+      )}
 
       {/* Privacy Notice */}
       <div className="text-xs text-muted bg-surface/50 border border-border rounded-md px-3 py-2 flex items-start gap-2">

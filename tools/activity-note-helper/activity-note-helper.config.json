@@ -1,0 +1,9 @@
+{
+  "serverBaseUrl": "http://localhost:4321",
+  "deviceId": "pc-main",
+  "deviceKey": "YOUR_DEVICE_KEY",
+  "hotkey": "Ctrl+Alt+N",
+  "redact": true,
+  "maxLen": 8192,
+  "blacklistApps": ["keepass.exe", "1password.exe"]
+}

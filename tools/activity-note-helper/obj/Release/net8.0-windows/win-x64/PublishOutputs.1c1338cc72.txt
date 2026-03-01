@@ -1,0 +1,2 @@
+c:\Projects\rodion.pro\tools\activity-note-helper\bin\Release\net8.0-windows\win-x64\publish\ActivityNoteHelper.pdb
+c:\Projects\rodion.pro\tools\activity-note-helper\bin\Release\net8.0-windows\win-x64\publish\ActivityNoteHelper.exe

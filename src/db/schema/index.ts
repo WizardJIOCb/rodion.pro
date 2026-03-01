@@ -1,4 +1,17 @@
-import { pgTable, text, bigserial, bigint, boolean, timestamp, index, unique, jsonb, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, bigserial, bigint, boolean, timestamp, index, unique, jsonb, integer, uuid, customType } from 'drizzle-orm/pg-core';
+
+// Custom bytea type for binary data (encrypted notes)
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType() {
+    return 'bytea';
+  },
+  toDriver(value: Buffer): Buffer {
+    return value;
+  },
+  fromDriver(value: Buffer): Buffer {
+    return Buffer.isBuffer(value) ? value : Buffer.from(value as unknown as string, 'hex');
+  },
+});
 
 // Users table
 export const users = pgTable('users', {
@@ -136,6 +149,33 @@ export const activityNow = pgTable('activity_now', {
   countsTodayActiveSec: integer('counts_today_active_sec').notNull().default(0),
 });
 
+// Activity notes (encrypted quick notes with preview)
+export const activityNotes = pgTable(
+  'activity_notes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    deviceId: text('device_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+
+    app: text('app'), // nullable if categoriesOnly
+    category: text('category').notNull().default('unknown'),
+
+    tag: text('tag'),
+    title: text('title'),
+
+    preview: text('preview').notNull(), // safe preview (trim+redact)
+    len: integer('len').notNull().default(0),
+
+    contentEnc: bytea('content_enc').notNull(), // packed: iv(12)+tag(16)+ciphertext
+
+    meta: jsonb('meta').notNull().default({}), // {source:'hotkey'|'ui', redacted:true,...}
+  },
+  (t) => [
+    index('activity_notes_device_created_idx').on(t.deviceId, t.createdAt),
+    index('activity_notes_device_app_created_idx').on(t.deviceId, t.app, t.createdAt),
+  ]
+);
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -149,3 +189,5 @@ export type ActivityDevice = typeof activityDevices.$inferSelect;
 export type NewActivityDevice = typeof activityDevices.$inferInsert;
 export type ActivityMinuteAgg = typeof activityMinuteAgg.$inferSelect;
 export type ActivityNow = typeof activityNow.$inferSelect;
+export type ActivityNote = typeof activityNotes.$inferSelect;
+export type NewActivityNote = typeof activityNotes.$inferInsert;

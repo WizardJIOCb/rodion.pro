@@ -1,0 +1,15 @@
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.GeneratedMSBuildEditorConfig.editorconfig
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.AssemblyInfoInputs.cache
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.AssemblyInfo.cs
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.csproj.CoreCompileInputs.cache
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.sourcelink.json
+c:\Projects\rodion.pro\tools\activity-note-helper\bin\Release\net8.0-windows\win-x64\ActivityNoteHelper.exe
+c:\Projects\rodion.pro\tools\activity-note-helper\bin\Release\net8.0-windows\win-x64\ActivityNoteHelper.deps.json
+c:\Projects\rodion.pro\tools\activity-note-helper\bin\Release\net8.0-windows\win-x64\ActivityNoteHelper.runtimeconfig.json
+c:\Projects\rodion.pro\tools\activity-note-helper\bin\Release\net8.0-windows\win-x64\ActivityNoteHelper.dll
+c:\Projects\rodion.pro\tools\activity-note-helper\bin\Release\net8.0-windows\win-x64\ActivityNoteHelper.pdb
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.dll
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\refint\ActivityNoteHelper.dll
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.pdb
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ActivityNoteHelper.genruntimeconfig.cache
+c:\Projects\rodion.pro\tools\activity-note-helper\obj\Release\net8.0-windows\win-x64\ref\ActivityNoteHelper.dll

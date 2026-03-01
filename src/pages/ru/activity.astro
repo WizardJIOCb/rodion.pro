@@ -5,11 +5,12 @@ import ActivityDashboard from '@/components/ActivityDashboard.tsx';
 const title = 'Панель активности';
 const description = 'Панель мониторинга активности в реальном времени';
 const lang = 'ru';
+const adminToken = import.meta.env.ACTIVITY_ADMIN_TOKEN || '';
 ---
 
 <Layout title={title} description={description}>
   <div class="mx-auto max-w-6xl px-4 py-12">
     <h1 class="text-3xl font-bold text-text mb-8">Панель активности</h1>
-    <ActivityDashboard lang={lang} client:load />
+    <ActivityDashboard lang={lang} adminToken={adminToken} client:load />
   </div>
 </Layout>
