@@ -20,10 +20,10 @@ internal static class Program
     static void Main()
     {
         ApplicationConfiguration.Initialize();
-        Toast.Init();
 
         var cfg = HelperConfig.Load();
         var app = new HiddenHotkeyHost(cfg);
+        Toast.Init(cfg, () => app.ReregisterHotkey());
         Application.Run(app);
     }
 }
@@ -78,6 +78,25 @@ sealed class HelperConfig
             cfg.MaxLen = maxLen;
 
         return cfg;
+    }
+
+    public static string GetConfigPath() => Path.Combine(AppContext.BaseDirectory, "activity-note-helper.config.json");
+
+    public void Save()
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+            File.WriteAllText(GetConfigPath(), json, Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Config save error: {ex.Message}");
+        }
     }
 }
 
@@ -184,20 +203,42 @@ static class NoteApi
 static class Toast
 {
     private static NotifyIcon? _ni;
+    private static HelperConfig? _cfg;
+    private static Action? _onConfigChanged;
 
-    public static void Init()
+    public static void Init(HelperConfig cfg, Action onConfigChanged)
     {
+        _cfg = cfg;
+        _onConfigChanged = onConfigChanged;
+
+        var contextMenu = new ContextMenuStrip();
+        var settingsItem = new ToolStripMenuItem("Settings", null, (_, _) => ShowSettings());
+        var exitItem = new ToolStripMenuItem("Exit", null, (_, _) => Application.Exit());
+        contextMenu.Items.Add(settingsItem);
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add(exitItem);
+
         _ni = new NotifyIcon
         {
             Visible = true,
             Icon = SystemIcons.Information,
-            Text = "Activity Note Helper"
+            Text = "Activity Note Helper",
+            ContextMenuStrip = contextMenu
         };
+    }
+
+    private static void ShowSettings()
+    {
+        if (_cfg == null) return;
+        using var dlg = new SettingsDialog(_cfg);
+        if (dlg.ShowDialog() == DialogResult.OK)
+        {
+            _onConfigChanged?.Invoke();
+        }
     }
 
     public static void Show(string title, string text, bool isError = false)
     {
-        if (_ni == null) Init();
         if (_ni == null) return;
 
         _ni.BalloonTipTitle = title;
@@ -238,20 +279,29 @@ sealed class HiddenHotkeyHost : Form
         FormBorderStyle = FormBorderStyle.None;
         Opacity = 0;
 
-        Load += (_, _) =>
-        {
-            var (mod, key) = ParseHotkey(_cfg.Hotkey);
-            if (!RegisterHotKey(Handle, HOTKEY_ID, mod, key))
-            {
-                Toast.Show("Activity Note", $"Failed to register hotkey: {_cfg.Hotkey}", isError: true);
-            }
-        };
+        Load += (_, _) => RegisterCurrentHotkey();
 
         FormClosing += (_, _) =>
         {
             UnregisterHotKey(Handle, HOTKEY_ID);
             Toast.Dispose();
         };
+    }
+
+    private void RegisterCurrentHotkey()
+    {
+        var (mod, key) = ParseHotkey(_cfg.Hotkey);
+        if (!RegisterHotKey(Handle, HOTKEY_ID, mod, key))
+        {
+            Toast.Show("Activity Note", $"Failed to register hotkey: {_cfg.Hotkey}", isError: true);
+        }
+    }
+
+    public void ReregisterHotkey()
+    {
+        UnregisterHotKey(Handle, HOTKEY_ID);
+        RegisterCurrentHotkey();
+        Toast.Show("Activity Note", $"Hotkey changed to: {_cfg.Hotkey}");
     }
 
     protected override void WndProc(ref Message m)
@@ -424,5 +474,156 @@ sealed class NoteDialog : Form
         };
 
         Shown += (_, _) => _textBox.Focus();
+    }
+}
+
+// -------------------- Settings Dialog --------------------
+sealed class SettingsDialog : Form
+{
+    private readonly HelperConfig _cfg;
+    private readonly TextBox _hotkeyBox;
+    private readonly TextBox _serverBox;
+    private readonly TextBox _deviceIdBox;
+    private readonly TextBox _deviceKeyBox;
+    private readonly CheckBox _redactCheck;
+    private readonly TextBox _blacklistBox;
+
+    public SettingsDialog(HelperConfig cfg)
+    {
+        _cfg = cfg;
+
+        Text = "Activity Note Helper - Settings";
+        Size = new Size(450, 380);
+        StartPosition = FormStartPosition.CenterScreen;
+        TopMost = true;
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
+        MinimizeBox = false;
+        BackColor = Color.FromArgb(26, 35, 50);
+        ForeColor = Color.FromArgb(231, 238, 247);
+
+        int y = 15;
+        int labelWidth = 100;
+        int inputWidth = 310;
+
+        // Hotkey
+        Controls.Add(CreateLabel("Hotkey:", 12, y, labelWidth));
+        _hotkeyBox = CreateTextBox(12 + labelWidth, y, inputWidth, cfg.Hotkey);
+        Controls.Add(_hotkeyBox);
+        y += 35;
+
+        // Server URL
+        Controls.Add(CreateLabel("Server URL:", 12, y, labelWidth));
+        _serverBox = CreateTextBox(12 + labelWidth, y, inputWidth, cfg.ServerBaseUrl);
+        Controls.Add(_serverBox);
+        y += 35;
+
+        // Device ID
+        Controls.Add(CreateLabel("Device ID:", 12, y, labelWidth));
+        _deviceIdBox = CreateTextBox(12 + labelWidth, y, inputWidth, cfg.DeviceId);
+        Controls.Add(_deviceIdBox);
+        y += 35;
+
+        // Device Key
+        Controls.Add(CreateLabel("Device Key:", 12, y, labelWidth));
+        _deviceKeyBox = CreateTextBox(12 + labelWidth, y, inputWidth, cfg.DeviceKey);
+        _deviceKeyBox.PasswordChar = '*';
+        Controls.Add(_deviceKeyBox);
+        y += 35;
+
+        // Redact
+        _redactCheck = new CheckBox
+        {
+            Text = "Redact secrets in preview",
+            Location = new Point(12 + labelWidth, y),
+            Size = new Size(inputWidth, 24),
+            Checked = cfg.Redact,
+            ForeColor = Color.FromArgb(231, 238, 247)
+        };
+        Controls.Add(_redactCheck);
+        y += 35;
+
+        // Blacklist
+        Controls.Add(CreateLabel("Blacklist:", 12, y, labelWidth));
+        _blacklistBox = CreateTextBox(12 + labelWidth, y, inputWidth, string.Join(", ", cfg.BlacklistApps));
+        Controls.Add(_blacklistBox);
+        y += 35;
+
+        // Config path info
+        var lblPath = new Label
+        {
+            Text = $"Config: {HelperConfig.GetConfigPath()}",
+            Location = new Point(12, y),
+            Size = new Size(410, 20),
+            ForeColor = Color.FromArgb(120, 140, 160),
+            Font = new Font("Segoe UI", 8)
+        };
+        Controls.Add(lblPath);
+        y += 30;
+
+        // Buttons
+        var btnCancel = new Button
+        {
+            Text = "Cancel",
+            Location = new Point(255, y),
+            Size = new Size(80, 30),
+            DialogResult = DialogResult.Cancel,
+            BackColor = Color.FromArgb(36, 50, 68),
+            ForeColor = Color.FromArgb(231, 238, 247),
+            FlatStyle = FlatStyle.Flat
+        };
+        btnCancel.FlatAppearance.BorderColor = Color.FromArgb(36, 50, 68);
+        Controls.Add(btnCancel);
+
+        var btnSave = new Button
+        {
+            Text = "Save",
+            Location = new Point(342, y),
+            Size = new Size(80, 30),
+            BackColor = Color.FromArgb(59, 130, 246),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat
+        };
+        btnSave.FlatAppearance.BorderColor = Color.FromArgb(59, 130, 246);
+        btnSave.Click += (_, _) => SaveAndClose();
+        Controls.Add(btnSave);
+
+        CancelButton = btnCancel;
+    }
+
+    private Label CreateLabel(string text, int x, int y, int width) => new Label
+    {
+        Text = text,
+        Location = new Point(x, y + 3),
+        Size = new Size(width, 20),
+        ForeColor = Color.FromArgb(167, 179, 194)
+    };
+
+    private TextBox CreateTextBox(int x, int y, int width, string value) => new TextBox
+    {
+        Location = new Point(x, y),
+        Size = new Size(width, 24),
+        Text = value,
+        BackColor = Color.FromArgb(10, 15, 22),
+        ForeColor = Color.FromArgb(231, 238, 247),
+        BorderStyle = BorderStyle.FixedSingle
+    };
+
+    private void SaveAndClose()
+    {
+        _cfg.Hotkey = _hotkeyBox.Text.Trim();
+        _cfg.ServerBaseUrl = _serverBox.Text.Trim();
+        _cfg.DeviceId = _deviceIdBox.Text.Trim();
+        _cfg.DeviceKey = _deviceKeyBox.Text.Trim();
+        _cfg.Redact = _redactCheck.Checked;
+        _cfg.BlacklistApps = _blacklistBox.Text
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToList();
+
+        _cfg.Save();
+        DialogResult = DialogResult.OK;
+        Close();
     }
 }

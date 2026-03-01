@@ -68,7 +68,7 @@ REM Kill existing process on port 4321 if any
 for /f "tokens=5" %%P in ('netstat -ano 2^>nul ^| findstr /r /c:":4321 .*LISTENING"') do (
   taskkill /F /PID %%P /T >nul 2>&1
 )
-start "rodion-dev-astro" cmd /c "title rodion-dev-astro & cd /d "%~dp0" & npm run dev"
+start "rodion-dev-astro" cmd /c "title rodion-dev-astro & cd /d "%~dp0" & npx dotenv -e .env -- npm run dev"
 echo       Astro starting on http://localhost:4321/
 
 REM --- 5. Start Activity Agent ---

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ActivityNoteHelper")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4b1038f10e472070f7ce5228da2bc24784f54b37")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+beaf1d860547b66e994eb90d8c9e1eb0fce0b0d6")]
 [assembly: System.Reflection.AssemblyProductAttribute("ActivityNoteHelper")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ActivityNoteHelper")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
