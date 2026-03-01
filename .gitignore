@@ -8,3 +8,4 @@ dist/
 Thumbs.db
 .dev/
 *.pid
+activity-agent/config.local.json

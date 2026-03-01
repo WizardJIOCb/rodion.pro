@@ -66,8 +66,14 @@ const inputCounter = new InputCounter();
 
 async function loadConfig(): Promise<AppConfig> {
   try {
-    const configPath = path.join(process.cwd(), 'config.json');
+    // Support --config <path> CLI argument, default to config.json
+    const configArgIdx = process.argv.indexOf('--config');
+    const configFile = configArgIdx !== -1 && process.argv[configArgIdx + 1]
+      ? process.argv[configArgIdx + 1]
+      : 'config.json';
+    const configPath = path.resolve(process.cwd(), configFile);
     const configContent = await fs.readFile(configPath, 'utf8');
+    console.log(`Loaded config from: ${configPath}`);
     return JSON.parse(configContent);
   } catch (error) {
     console.error('Failed to load config:', error);

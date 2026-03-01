@@ -13,7 +13,7 @@
   },
   "categories": [
     {
-      "match": "code\\.exe|Code\\.exe|idea64\\.exe|webstorm64\\.exe|cursor\\.exe|Cursor\\.exe",
+      "match": "code\\.exe|Code\\.exe|idea64\\.exe|webstorm64\\.exe|cursor\\.exe|Cursor\\.exe|Qoder\\.exe|qoder\\.exe|putty\\.exe|dbeaver\\.exe|cmd\\.exe|WindowsTerminal\\.exe|wt\\.exe|TortoiseGitProc\\.exe|TortoiseGitMerge\\.exe|TortoiseGitBlame\\.exe",
       "category": "coding"
     },
     {
@@ -21,15 +21,15 @@
       "category": "browser"
     },
     {
-      "match": "steam\\.exe|epicgameslauncher\\.exe",
-      "category": "entertainment"
+      "match": "steam\\.exe|steamwebhelper\\.exe|epicgameslauncher\\.exe|EpicGamesLauncher\\.exe",
+      "category": "games"
     },
     {
       "match": "telegram\\.exe|discord\\.exe|slack\\.exe",
       "category": "comms"
     },
     {
-      "match": "explorer\\.exe|taskmgr\\.exe|cmd\\.exe|powershell\\.exe|WindowsTerminal\\.exe",
+      "match": "explorer\\.exe|taskmgr\\.exe|powershell\\.exe",
       "category": "system"
     }
   ]
