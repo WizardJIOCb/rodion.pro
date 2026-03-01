@@ -76,7 +76,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
   const [error, setError] = useState<string | null>(null);
   const [deviceId] = useState('pc-main');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [expandedPeriod, setExpandedPeriod] = useState<PeriodKey | null>('today');
+  const [expandedPeriods, setExpandedPeriods] = useState<Set<PeriodKey>>(new Set(['today']));
   const [periodStats, setPeriodStats] = useState<Record<PeriodKey, PeriodSummary | null>>({
     today: null,
     week: null,
@@ -432,12 +432,17 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
         return (
           <section className="space-y-2">
             {periods.map(({ key, labelKey }) => {
-              const isOpen = expandedPeriod === key;
+              const isOpen = expandedPeriods.has(key);
               const summary = getSummary(key);
               return (
                 <div key={key} className="card p-0 overflow-hidden">
                   <button
-                    onClick={() => setExpandedPeriod(isOpen ? null : key)}
+                    onClick={() => setExpandedPeriods(prev => {
+                      const next = new Set(prev);
+                      if (next.has(key)) next.delete(key);
+                      else next.add(key);
+                      return next;
+                    })}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface/80 cursor-pointer"
                     style={{ background: 'transparent' }}
                   >
