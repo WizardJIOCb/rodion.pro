@@ -69,6 +69,65 @@ interface PeriodSummary {
 
 type PeriodKey = 'today' | 'week' | 'month' | 'allTime';
 
+type TimeRange = '1h' | '4h' | 'today' | '7d' | '30d' | 'custom';
+
+interface TimeRangeConfig {
+  from: Date;
+  to: Date;
+  group: '15min' | 'hour' | 'day';
+}
+
+function getTimeRangeConfig(range: TimeRange, customFrom?: Date, customTo?: Date): TimeRangeConfig {
+  const now = new Date();
+  const to = new Date(now);
+  to.setSeconds(59, 999);
+
+  switch (range) {
+    case '1h': {
+      const from = new Date(now.getTime() - 60 * 60 * 1000);
+      return { from, to, group: '15min' };
+    }
+    case '4h': {
+      const from = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+      return { from, to, group: '15min' };
+    }
+    case 'today': {
+      const from = new Date(now);
+      from.setHours(0, 0, 0, 0);
+      return { from, to, group: 'hour' };
+    }
+    case '7d': {
+      const from = new Date(now);
+      from.setDate(from.getDate() - 7);
+      from.setHours(0, 0, 0, 0);
+      return { from, to, group: 'day' };
+    }
+    case '30d': {
+      const from = new Date(now);
+      from.setDate(from.getDate() - 30);
+      from.setHours(0, 0, 0, 0);
+      return { from, to, group: 'day' };
+    }
+    case 'custom': {
+      if (!customFrom || !customTo) {
+        // Fallback to today
+        const from = new Date(now);
+        from.setHours(0, 0, 0, 0);
+        return { from, to, group: 'hour' };
+      }
+      const diffMs = customTo.getTime() - customFrom.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+      let group: '15min' | 'hour' | 'day';
+      if (diffHours <= 12) group = '15min';
+      else if (diffHours <= 48) group = 'hour';
+      else group = 'day';
+      return { from: customFrom, to: customTo, group };
+    }
+    default:
+      return getTimeRangeConfig('4h');
+  }
+}
+
 const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) => {
   const [nowData, setNowData] = useState<ActivityNow | null>(null);
   const [statsData, setStatsData] = useState<ActivityStats | null>(null);
@@ -84,10 +143,37 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
     allTime: null,
   });
   const [timeSinceUpdate, setTimeSinceUpdate] = useState<string>('');
+  
+  // Time range selector state
+  const [timeRange, setTimeRange] = useState<TimeRange>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('activity.range');
+      if (saved && ['1h', '4h', 'today', '7d', '30d', 'custom'].includes(saved)) {
+        return saved as TimeRange;
+      }
+    }
+    return '4h';
+  });
+  const [customFrom, setCustomFrom] = useState<string>(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now.toISOString().slice(0, 16);
+  });
+  const [customTo, setCustomTo] = useState<string>(() => {
+    return new Date().toISOString().slice(0, 16);
+  });
+  const [currentGroup, setCurrentGroup] = useState<'15min' | 'hour' | 'day'>('hour');
 
   const handleCategoryChange = useCallback((categories: string[]) => {
     setSelectedCategories(categories);
   }, []);
+
+  // Persist time range selection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('activity.range', timeRange);
+    }
+  }, [timeRange]);
 
   // Load initial data
   useEffect(() => {
@@ -104,17 +190,17 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
         const nowData = await nowResponse.json();
         setNowData(nowData);
 
-        // Load today's stats
-        const today = new Date();
-        const startOfDay = new Date(today);
-        startOfDay.setHours(0, 0, 0, 0);
-        
-        const endOfDay = new Date(today);
-        endOfDay.setHours(23, 59, 59, 999);
+        // Load stats based on selected time range
+        const config = getTimeRangeConfig(
+          timeRange,
+          timeRange === 'custom' ? new Date(customFrom) : undefined,
+          timeRange === 'custom' ? new Date(customTo) : undefined
+        );
+        setCurrentGroup(config.group);
         
         const categoryParam = selectedCategories.length > 0 ? `&category=${selectedCategories.join(',')}` : '';
         const statsResponse = await fetch(
-          `/api/activity/v1/stats?deviceId=${deviceId}&from=${startOfDay.toISOString()}&to=${endOfDay.toISOString()}&group=hour${categoryParam}`
+          `/api/activity/v1/stats?deviceId=${deviceId}&from=${config.from.toISOString()}&to=${config.to.toISOString()}&group=${config.group}${categoryParam}`
         );
         if (!statsResponse.ok) throw new Error('Failed to load statistics');
         const statsData = await statsResponse.json();
@@ -148,16 +234,15 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
     // Refresh stats periodically to keep charts updated
     const statsTimer = setInterval(async () => {
       try {
-        const today = new Date();
-        const startOfDay = new Date(today);
-        startOfDay.setHours(0, 0, 0, 0);
-        
-        const endOfDay = new Date(today);
-        endOfDay.setHours(23, 59, 59, 999);
+        const config = getTimeRangeConfig(
+          timeRange,
+          timeRange === 'custom' ? new Date(customFrom) : undefined,
+          timeRange === 'custom' ? new Date(customTo) : undefined
+        );
         
         const categoryParam = selectedCategories.length > 0 ? `&category=${selectedCategories.join(',')}` : '';
         const statsResponse = await fetch(
-          `/api/activity/v1/stats?deviceId=${deviceId}&from=${startOfDay.toISOString()}&to=${endOfDay.toISOString()}&group=hour${categoryParam}`
+          `/api/activity/v1/stats?deviceId=${deviceId}&from=${config.from.toISOString()}&to=${config.to.toISOString()}&group=${config.group}${categoryParam}`
         );
         if (!statsResponse.ok) throw new Error('Failed to load statistics');
         const statsData = await statsResponse.json();
@@ -185,7 +270,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
       clearInterval(statsTimer);
       clearInterval(nowTimer);
     };
-  }, [deviceId, selectedCategories]);
+  }, [deviceId, selectedCategories, timeRange, customFrom, customTo]);
 
   // Load period summaries (week, month, all time)
   useEffect(() => {
@@ -334,6 +419,17 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
         'activity.idle': 'Idle',
         'activity.unknown': 'Unknown',
         'activity.showingHours': 'Showing {count} hours of activity',
+        'activity.range.1h': '1h',
+        'activity.range.4h': '4h',
+        'activity.range.today': 'Today',
+        'activity.range.7d': '7d',
+        'activity.range.30d': '30d',
+        'activity.range.custom': 'Custom',
+        'activity.range.from': 'From',
+        'activity.range.to': 'To',
+        'activity.range.apply': 'Apply',
+        'activity.noData': 'No activity data available',
+        'activity.privacy': 'We store counters only (keys/clicks/scroll/active time). No actual text/keystrokes content is recorded.',
       },
       ru: {
         'activity.now': 'Сейчас',
@@ -365,6 +461,17 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
         'activity.idle': 'Неактивен',
         'activity.unknown': 'Неизвестно',
         'activity.showingHours': 'Показано {count} часов активности',
+        'activity.range.1h': '1ч',
+        'activity.range.4h': '4ч',
+        'activity.range.today': 'Сегодня',
+        'activity.range.7d': '7д',
+        'activity.range.30d': '30д',
+        'activity.range.custom': 'Период',
+        'activity.range.from': 'От',
+        'activity.range.to': 'До',
+        'activity.range.apply': 'Применить',
+        'activity.noData': 'Нет данных об активности',
+        'activity.privacy': 'Мы храним только счётчики (клавиши/клики/прокрутка/активное время). Тексты и содержимое не записываются.',
       }
     };
 
@@ -404,9 +511,59 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
             </div>
           </div>
         ) : (
-          <div className="card p-6 text-center text-muted">No activity data available</div>
+          <div className="card p-6 text-center text-muted">{t('activity.noData')}</div>
         )}
       </section>
+
+      {/* Privacy Notice */}
+      <div className="text-xs text-muted bg-surface/50 border border-border rounded-md px-3 py-2 flex items-start gap-2">
+        <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <span>{t('activity.privacy')}</span>
+      </div>
+
+      {/* Time Range Selector */}
+      <div className="flex flex-wrap items-center gap-2">
+        {(['1h', '4h', 'today', '7d', '30d', 'custom'] as TimeRange[]).map(range => (
+          <button
+            key={range}
+            onClick={() => setTimeRange(range)}
+            className="px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 border cursor-pointer"
+            style={{
+              backgroundColor: timeRange === range ? 'var(--accent)' : 'transparent',
+              borderColor: timeRange === range ? 'var(--accent)' : 'var(--border)',
+              color: timeRange === range ? 'var(--bg)' : 'var(--muted)',
+            }}
+          >
+            {t(`activity.range.${range}`)}
+          </button>
+        ))}
+      </div>
+
+      {/* Custom date inputs */}
+      {timeRange === 'custom' && (
+        <div className="flex flex-wrap items-end gap-3 p-3 bg-surface/50 border border-border rounded-md">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted">{t('activity.range.from')}</label>
+            <input
+              type="datetime-local"
+              value={customFrom}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted">{t('activity.range.to')}</label>
+            <input
+              type="datetime-local"
+              value={customTo}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Period Summary Accordion */}
       {nowData && (() => {
@@ -502,6 +659,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en' }) =>
           lang={lang}
           onCategoryChange={handleCategoryChange}
           selectedCategories={selectedCategories}
+          group={currentGroup}
         />
       )}
 

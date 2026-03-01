@@ -56,7 +56,7 @@ export default function CommandPalette({ lang }: Props) {
 
   const groupedItems = filteredItems.reduce((acc, item) => {
     if (!acc[item.group]) acc[item.group] = [];
-    acc[item.group].push(item);
+    acc[item.group]!.push(item);
     return acc;
   }, {} as Record<string, CommandItem[]>);
 

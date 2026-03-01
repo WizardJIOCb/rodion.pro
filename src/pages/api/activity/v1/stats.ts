@@ -15,7 +15,7 @@ export const GET: APIRoute = async ({ request, url, cookies }) => {
   const deviceId = url.searchParams.get('deviceId');
   const fromStr = url.searchParams.get('from');
   const toStr = url.searchParams.get('to');
-  const group = url.searchParams.get('group') || 'hour'; // 'hour' | 'day'
+  const group = url.searchParams.get('group') || 'hour'; // '15min' | 'hour' | 'day'
 
   if (!deviceId || !fromStr || !toStr) {
     return new Response(JSON.stringify({ error: 'Missing deviceId, from, or to' }), {
@@ -98,9 +98,11 @@ export const GET: APIRoute = async ({ request, url, cookies }) => {
       : undefined,
   );
 
-  // Time series grouped by hour or day
+  // Time series grouped by 15min, hour, or day
   const truncExpr = group === 'day'
     ? sql`date_trunc('day', ${schemaModule.activityMinuteAgg.tsMinute})`
+    : group === '15min'
+    ? sql`date_trunc('hour', ${schemaModule.activityMinuteAgg.tsMinute}) + floor(extract(minute from ${schemaModule.activityMinuteAgg.tsMinute}) / 15) * interval '15 minutes'`
     : sql`date_trunc('hour', ${schemaModule.activityMinuteAgg.tsMinute})`;
 
   const series = await db

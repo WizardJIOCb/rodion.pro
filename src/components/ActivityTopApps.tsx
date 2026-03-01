@@ -33,6 +33,8 @@ interface ActivityTopAppsProps {
   selectedCategories?: string[];
 }
 
+type SortKey = 'time' | 'keys' | 'clicks' | 'scroll';
+
 function useThemeColors() {
   const [colors, setColors] = useState<Record<string, string>>({});
   useEffect(() => {
@@ -84,6 +86,35 @@ const CustomPieTooltip = ({ active, payload, theme, lang, totals }: any) => {
 const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, lang, selectedCategories = [] }) => {
   const theme = useThemeColors();
   const [expandedApp, setExpandedApp] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>('time');
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedText(text);
+      setTimeout(() => setCopiedText(null), 1500);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  // Sort apps based on selected key
+  const sortedApps = useMemo(() => {
+    const sorted = [...topApps];
+    switch (sortKey) {
+      case 'time':
+        return sorted.sort((a, b) => b.activeSec - a.activeSec);
+      case 'keys':
+        return sorted.sort((a, b) => b.keys - a.keys);
+      case 'clicks':
+        return sorted.sort((a, b) => b.clicks - a.clicks);
+      case 'scroll':
+        return sorted.sort((a, b) => b.scroll - a.scroll);
+      default:
+        return sorted;
+    }
+  }, [topApps, sortKey]);
 
   // When a category filter is active and few unique apps, show window titles in pie
   const uniqueApps = useMemo(() => new Set(topApps.map(a => a.app)), [topApps]);
@@ -147,8 +178,11 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
         time: 'Время',
         keys: 'Клавиши',
         clicks: 'Клики',
+        scroll: 'Прокрутка',
         noTitles: 'Нет данных о заголовках окон',
         windowDetails: 'Детали по окнам',
+        sortBy: 'Сортировка',
+        copied: 'Скопировано',
       }
     : {
         title: 'Top Applications',
@@ -156,8 +190,11 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
         time: 'Time',
         keys: 'Keys',
         clicks: 'Clicks',
+        scroll: 'Scroll',
         noTitles: 'No window title data',
         windowDetails: 'Window Details',
+        sortBy: 'Sort by',
+        copied: 'Copied',
       };
 
   if (!topApps.length) {
@@ -171,7 +208,28 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-text mb-6">{t.title}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h2 className="text-2xl font-bold text-text">{t.title}</h2>
+        
+        {/* Sort selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted">{t.sortBy}:</span>
+          {(['time', 'keys', 'clicks', 'scroll'] as SortKey[]).map(key => (
+            <button
+              key={key}
+              onClick={() => setSortKey(key)}
+              className="px-2 py-1 rounded text-xs font-medium transition-all duration-200 border cursor-pointer"
+              style={{
+                backgroundColor: sortKey === key ? 'var(--accent)' : 'transparent',
+                borderColor: sortKey === key ? 'var(--accent)' : 'var(--border)',
+                color: sortKey === key ? 'var(--bg)' : 'var(--muted)',
+              }}
+            >
+              {t[key]}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Pie chart */}
       <div className="card p-4 mb-6">
@@ -228,44 +286,64 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
 
       {/* Expandable app list */}
       <div className="space-y-1">
-        {topApps.map((app, i) => {
+        {sortedApps.map((app, i) => {
           const isExpanded = expandedApp === app.app;
           const appTitles = isExpanded ? titlesForApp : [];
           const pct = totalActiveSec > 0 ? ((app.activeSec / totalActiveSec) * 100).toFixed(1) : '0';
 
           return (
-            <div key={`${app.app}-${app.category}`} className="card p-0 overflow-hidden">
+            <div key={`${app.app}-${app.category}`} className="card p-0 overflow-hidden group/app">
               {/* App row */}
-              <button
-                onClick={() => setExpandedApp(isExpanded ? null : app.app)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface/80 cursor-pointer"
-                style={{ background: 'transparent' }}
-              >
-                {/* Chevron */}
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="flex-shrink-0 transition-transform duration-200"
-                  style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+              <div className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface/80">
+                {/* Expand button */}
+                <button
+                  onClick={() => setExpandedApp(isExpanded ? null : app.app)}
+                  className="flex items-center gap-3 flex-1 cursor-pointer"
+                  style={{ background: 'transparent' }}
                 >
-                  <path d="M6 4l4 4-4 4" stroke={theme['--muted'] || '#a7b3c2'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                  {/* Chevron */}
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className="flex-shrink-0 transition-transform duration-200"
+                    style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >
+                    <path d="M6 4l4 4-4 4" stroke={theme['--muted'] || '#a7b3c2'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
 
-                {/* Color dot */}
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: pieColors[i % pieColors.length],
-                    flexShrink: 0,
-                  }}
-                />
+                  {/* Color dot */}
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: pieColors[i % pieColors.length],
+                      flexShrink: 0,
+                    }}
+                  />
 
-                {/* App name */}
-                <span className="font-mono text-sm truncate flex-1">{app.app}</span>
+                  {/* App name */}
+                  <span className="font-mono text-sm truncate flex-1" title={app.app}>{app.app}</span>
+                </button>
+
+                {/* Copy button */}
+                <button
+                  onClick={() => copyToClipboard(app.app)}
+                  className="opacity-0 group-hover/app:opacity-100 transition-opacity p-1 rounded hover:bg-surface2 cursor-pointer"
+                  title={t.copied}
+                >
+                  {copiedText === app.app ? (
+                    <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </button>
 
                 {/* Time bar + metrics */}
                 <div className="flex items-center gap-4 text-xs flex-shrink-0">
@@ -281,7 +359,7 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
                   <span className="text-accent font-medium w-16 text-right">{formatDuration(app.activeSec)}</span>
                   <span className="capitalize text-muted w-20 text-right hidden md:block">{app.category}</span>
                 </div>
-              </button>
+              </div>
 
               {/* Progress bar */}
               <div className="px-4 pb-1">
@@ -289,7 +367,7 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
                   <div
                     className="h-1 rounded-full transition-all duration-500"
                     style={{
-                      width: `${Math.min(100, (app.activeSec / (topApps[0]?.activeSec || 1)) * 100)}%`,
+                      width: `${Math.min(100, (app.activeSec / (sortedApps[0]?.activeSec || 1)) * 100)}%`,
                       backgroundColor: pieColors[i % pieColors.length],
                     }}
                   />
@@ -305,11 +383,27 @@ const ActivityTopApps: React.FC<ActivityTopAppsProps> = ({ topApps, topTitles, l
                   ) : (
                     <div className="space-y-1.5">
                       {appTitles.slice(0, 15).map((title, ti) => (
-                        <div key={ti} className="flex items-center gap-2 text-xs">
+                        <div key={ti} className="flex items-center gap-2 text-xs group/title">
                           <span className="text-muted flex-shrink-0">|-</span>
                           <span className="truncate flex-1" title={title.windowTitle}>
                             {title.windowTitle || '(no title)'}
                           </span>
+                          {/* Copy title button */}
+                          <button
+                            onClick={() => copyToClipboard(title.windowTitle || '')}
+                            className="opacity-0 group-hover/title:opacity-100 transition-opacity p-0.5 rounded hover:bg-surface cursor-pointer flex-shrink-0"
+                            title={t.copied}
+                          >
+                            {copiedText === title.windowTitle ? (
+                              <svg className="w-3 h-3 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-3 h-3 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </button>
                           <span className="text-muted flex-shrink-0">{title.keys.toLocaleString()} {t.keys.toLowerCase()}</span>
                           <span className="text-muted flex-shrink-0">{title.clicks.toLocaleString()} {t.clicks.toLowerCase()}</span>
                           <span className="text-accent font-medium flex-shrink-0 w-14 text-right">

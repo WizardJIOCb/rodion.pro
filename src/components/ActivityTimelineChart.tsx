@@ -28,6 +28,7 @@ interface ActivityTimelineChartProps {
   lang: 'ru' | 'en';
   onCategoryChange: (categories: string[]) => void;
   selectedCategories: string[];
+  group?: '15min' | 'hour' | 'day';
 }
 
 interface MetricConfig {
@@ -124,6 +125,36 @@ const MetricsTooltip = ({ active, payload, label, visibleMetrics, theme, lang }:
   );
 };
 
+const SingleMetricTooltip = ({ active, payload, label, metric, theme, lang }: any) => {
+  if (!active || !payload?.length) return null;
+  const entry = payload[0];
+  const value = metric.yAxisId === 'time'
+    ? formatDuration(entry.value)
+    : entry.value.toLocaleString();
+
+  return (
+    <div
+      style={{
+        backgroundColor: theme['--surface'] || '#111823',
+        border: `1px solid ${theme['--border'] || '#243244'}`,
+        borderRadius: 8,
+        padding: '10px 14px',
+        color: theme['--text'] || '#e7eef7',
+        fontSize: 13,
+      }}
+    >
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: entry.color, display: 'inline-block', flexShrink: 0 }} />
+        <span style={{ color: theme['--muted'] || '#a7b3c2' }}>
+          {lang === 'ru' ? metric.labelRu : metric.labelEn}:
+        </span>
+        <span style={{ fontWeight: 500 }}>{value}</span>
+      </div>
+    </div>
+  );
+};
+
 const WindowTooltip = ({ active, payload, label, theme, windowColors }: any) => {
   if (!active || !payload?.length) return null;
 
@@ -168,23 +199,13 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
   lang,
   onCategoryChange,
   selectedCategories,
+  group = 'hour',
 }) => {
   const theme = useThemeColors();
   const [mode, setMode] = useState<ChartMode>('metrics');
 
-  const [visibleMetrics, setVisibleMetrics] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    for (const m of METRICS) initial[m.key] = m.defaultOn;
-    return initial;
-  });
-
-  const toggleMetric = (key: string) => {
-    setVisibleMetrics(prev => {
-      const activeCount = Object.values(prev).filter(Boolean).length;
-      if (prev[key] && activeCount <= 1) return prev;
-      return { ...prev, [key]: !prev[key] };
-    });
-  };
+  // Single metric selection (simplified from multi-toggle)
+  const [selectedMetric, setSelectedMetric] = useState<keyof SeriesPoint>('activeSec');
 
   const toggleCategory = (catKey: string) => {
     if (catKey === '') {
@@ -201,11 +222,22 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
   };
 
   const transformedData = useMemo(() =>
-    series.map(p => ({
-      ...p,
-      hourLabel: `${new Date(p.t).getHours().toString().padStart(2, '0')}:00`,
-    })),
-    [series],
+    series.map(p => {
+      const d = new Date(p.t);
+      let timeLabel: string;
+      if (group === 'day') {
+        timeLabel = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      } else if (group === '15min') {
+        timeLabel = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+      } else {
+        timeLabel = `${d.getHours().toString().padStart(2, '0')}:00`;
+      }
+      return {
+        ...p,
+        hourLabel: timeLabel,
+      };
+    }),
+    [series, group],
   );
 
   // Prepare stacked area data for "By Window" mode
@@ -241,22 +273,33 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
       if (key === 'Other') {
         colors[key] = `${theme['--muted'] || '#888'}`;
       } else {
-        const cssVar = WINDOW_COLOR_VARS[colorIdx % WINDOW_COLOR_VARS.length];
+        const cssVar = WINDOW_COLOR_VARS[colorIdx % WINDOW_COLOR_VARS.length] as string;
         colors[key] = theme[cssVar] || '#888';
         colorIdx++;
       }
     }
 
-    const data = seriesByWindow.map(p => ({
-      ...p,
-      hourLabel: `${new Date(p.t as string).getHours().toString().padStart(2, '0')}:00`,
-    }));
+    const data = seriesByWindow.map(p => {
+      const d = new Date(p.t as string);
+      let timeLabel: string;
+      if (group === 'day') {
+        timeLabel = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      } else if (group === '15min') {
+        timeLabel = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+      } else {
+        timeLabel = `${d.getHours().toString().padStart(2, '0')}:00`;
+      }
+      return {
+        ...p,
+        hourLabel: timeLabel,
+      };
+    });
 
     return { data, keys, colors };
-  }, [seriesByWindow, windowLabels, theme]);
+  }, [seriesByWindow, windowLabels, theme, group]);
 
-  const hasTimeAxis = visibleMetrics.activeSec || visibleMetrics.afkSec;
-  const hasCountAxis = visibleMetrics.keys || visibleMetrics.clicks || visibleMetrics.scroll;
+  const currentMetric = METRICS.find(m => m.key === selectedMetric)!;
+  const isTimeMetric = currentMetric.yAxisId === 'time';
   const hasWindowData = seriesByWindow && seriesByWindow.length > 0;
 
   const resolveColor = (cssVar: string) => theme[cssVar] || '#888';
@@ -338,16 +381,16 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
         </button>
       </div>
 
-      {/* Metric toggle pills (only in metrics mode) */}
+      {/* Metric toggle pills (only in metrics mode) - single selection */}
       {mode === 'metrics' && (
         <div className="flex flex-wrap gap-2 mb-3">
           {METRICS.map(m => {
-            const isOn = visibleMetrics[m.key];
+            const isOn = selectedMetric === m.key;
             const color = resolveColor(m.colorVar);
             return (
               <button
                 key={m.key}
-                onClick={() => toggleMetric(m.key)}
+                onClick={() => setSelectedMetric(m.key)}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 border cursor-pointer"
                 style={{
                   backgroundColor: isOn ? `${color}20` : 'transparent',
@@ -441,90 +484,42 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
                   axisLine={{ stroke: theme['--border'] || '#243244' }}
                   tickLine={{ stroke: theme['--border'] || '#243244' }}
                 />
-                {hasTimeAxis && (
-                  <YAxis
-                    yAxisId="time"
-                    tick={{ fill: theme['--muted'] || '#a7b3c2', fontSize: 11 }}
-                    axisLine={{ stroke: theme['--border'] || '#243244' }}
-                    tickLine={false}
-                    tickFormatter={formatTimeTick}
-                    width={45}
-                  />
-                )}
-                {hasCountAxis && (
-                  <YAxis
-                    yAxisId="count"
-                    orientation="right"
-                    tick={{ fill: theme['--muted'] || '#a7b3c2', fontSize: 11 }}
-                    axisLine={{ stroke: theme['--border'] || '#243244' }}
-                    tickLine={false}
-                    width={50}
-                  />
-                )}
+                <YAxis
+                  yAxisId="main"
+                  tick={{ fill: theme['--muted'] || '#a7b3c2', fontSize: 11 }}
+                  axisLine={{ stroke: theme['--border'] || '#243244' }}
+                  tickLine={false}
+                  tickFormatter={isTimeMetric ? formatTimeTick : (v) => v.toLocaleString()}
+                  width={50}
+                />
                 <Tooltip
                   content={
-                    <MetricsTooltip
-                      visibleMetrics={visibleMetrics}
+                    <SingleMetricTooltip
+                      metric={currentMetric}
                       theme={theme}
                       lang={lang}
                     />
                   }
                 />
-
-                {visibleMetrics.activeSec && (
+                {currentMetric.type === 'area' ? (
                   <Area
-                    yAxisId="time"
+                    yAxisId="main"
                     type="monotone"
-                    dataKey="activeSec"
-                    stroke={resolveColor('--accent')}
-                    fill={`${resolveColor('--accent')}30`}
+                    dataKey={selectedMetric}
+                    stroke={resolveColor(currentMetric.colorVar)}
+                    fill={`${resolveColor(currentMetric.colorVar)}30`}
                     strokeWidth={2}
                     dot={false}
-                    activeDot={{ r: 4, fill: resolveColor('--accent') }}
+                    activeDot={{ r: 4, fill: resolveColor(currentMetric.colorVar) }}
                   />
-                )}
-                {visibleMetrics.afkSec && (
-                  <Area
-                    yAxisId="time"
-                    type="monotone"
-                    dataKey="afkSec"
-                    stroke={resolveColor('--muted')}
-                    fill={`${resolveColor('--muted')}20`}
-                    strokeWidth={1.5}
-                    dot={false}
-                    activeDot={{ r: 3, fill: resolveColor('--muted') }}
-                  />
-                )}
-                {visibleMetrics.keys && (
+                ) : (
                   <Line
-                    yAxisId="count"
+                    yAxisId="main"
                     type="monotone"
-                    dataKey="keys"
-                    stroke={resolveColor('--accent2')}
+                    dataKey={selectedMetric}
+                    stroke={resolveColor(currentMetric.colorVar)}
                     strokeWidth={2}
-                    dot={{ r: 3, fill: resolveColor('--accent2') }}
-                    activeDot={{ r: 5 }}
-                  />
-                )}
-                {visibleMetrics.clicks && (
-                  <Line
-                    yAxisId="count"
-                    type="monotone"
-                    dataKey="clicks"
-                    stroke={resolveColor('--warn')}
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: resolveColor('--warn') }}
-                    activeDot={{ r: 5 }}
-                  />
-                )}
-                {visibleMetrics.scroll && (
-                  <Line
-                    yAxisId="count"
-                    type="monotone"
-                    dataKey="scroll"
-                    stroke={resolveColor('--success')}
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: resolveColor('--success') }}
+                    dot={{ r: 3, fill: resolveColor(currentMetric.colorVar) }}
                     activeDot={{ r: 5 }}
                   />
                 )}
