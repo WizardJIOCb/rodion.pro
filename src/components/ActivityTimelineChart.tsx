@@ -268,7 +268,33 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
   if (!series.length) {
     return (
       <section>
-        <h2 className="text-2xl font-bold text-text mb-6">{t.timeline}</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-text">{t.timeline}</h2>
+        </div>
+
+        {/* Category filter chips — always visible */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className="text-xs text-muted self-center mr-1">{t.categories}:</span>
+          {CATEGORIES.map(cat => {
+            const isAll = cat.key === '';
+            const isOn = isAll ? selectedCategories.length === 0 : selectedCategories.includes(cat.key);
+            return (
+              <button
+                key={cat.key}
+                onClick={() => toggleCategory(cat.key)}
+                className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-mono transition-all duration-200 border cursor-pointer"
+                style={{
+                  backgroundColor: isOn ? `${theme['--accent'] || '#38e8d6'}15` : 'transparent',
+                  borderColor: isOn ? (theme['--accent'] || '#38e8d6') : (theme['--border'] || '#243244'),
+                  color: isOn ? (theme['--accent'] || '#38e8d6') : (theme['--muted'] || '#a7b3c2'),
+                }}
+              >
+                {lang === 'ru' ? cat.labelRu : cat.labelEn}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="card p-6 text-center text-muted">
           {lang === 'ru' ? 'Нет данных за выбранный период' : 'No data for selected period'}
         </div>
