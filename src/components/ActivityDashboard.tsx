@@ -279,7 +279,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
       }
     }, 60000); // Refresh stats every minute
     
-    // Also poll for now data as fallback in case SSE fails
+    // Also poll for now and stats data as fallback in case SSE fails
     const nowTimer = setInterval(async () => {
       try {
         const nowResponse = await fetch(`/api/activity/v1/now?deviceId=${deviceId}`);
@@ -289,7 +289,26 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
       } catch (err) {
         console.error('Error refreshing now data:', err);
       }
-    }, 10000); // Refresh now data every 10 seconds
+      
+      // Refresh stats (including top apps) every 10 seconds to keep data current
+      try {
+        const today = new Date();
+        const startOfDay = new Date(today);
+        startOfDay.setHours(0, 0, 0, 0);
+        
+        const endOfDay = new Date(today);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        const statsResponse = await fetch(
+          `/api/activity/v1/stats?deviceId=${deviceId}&from=${startOfDay.toISOString()}&to=${endOfDay.toISOString()}&group=hour`
+        );
+        if (!statsResponse.ok) throw new Error('Failed to load statistics');
+        const statsData = await statsResponse.json();
+        setStatsData(statsData);
+      } catch (err) {
+        console.error('Error refreshing stats data:', err);
+      }
+    }, 10000); // Refresh now and stats data every 10 seconds
 
     return () => {
       eventSource.removeEventListener('now', onNow);

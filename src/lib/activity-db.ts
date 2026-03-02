@@ -10,9 +10,24 @@ async function getSchema() {
 // Separate database connection for activity monitoring
 let activityDbInstance: ReturnType<typeof drizzle> | null = null;
 
-const getActivityConnectionString = (): string => {
-  // In production: set via systemd/environment
-  // In development: Astro/Vite loads .env automatically
+const getActivityConnectionString = async (): Promise<string> => {
+  // Load environment variables in case they aren't available in SSR context
+  if (!process.env.DATABASE_URL) {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const dotenv = await import('dotenv');
+      
+      const envPath = path.resolve(process.cwd(), '.env');
+      if (fs.existsSync(envPath)) {
+        const parsed = dotenv.parse(fs.readFileSync(envPath, 'utf8'));
+        process.env.DATABASE_URL = parsed.DATABASE_URL;
+      }
+    } catch (error) {
+      console.warn('Could not load .env file in SSR context:', error);
+    }
+  }
+  
   const dbUrl = process.env.DATABASE_URL;
   
   if (!dbUrl) {
@@ -24,6 +39,23 @@ const getActivityConnectionString = (): string => {
 
 export const hasActivityDb = async (): Promise<boolean> => {
   try {
+    // Check if DATABASE_URL is available, loading from .env if needed
+    if (!process.env.DATABASE_URL) {
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const dotenv = await import('dotenv');
+        
+        const envPath = path.resolve(process.cwd(), '.env');
+        if (fs.existsSync(envPath)) {
+          const parsed = dotenv.parse(fs.readFileSync(envPath, 'utf8'));
+          process.env.DATABASE_URL = parsed.DATABASE_URL;
+        }
+      } catch (error) {
+        console.warn('Could not load .env file in SSR context:', error);
+      }
+    }
+    
     return !!process.env.DATABASE_URL;
   } catch {
     return false;
@@ -35,7 +67,7 @@ export const requireActivityDb = async () => {
     return activityDbInstance;
   }
 
-  const connectionString = getActivityConnectionString();
+  const connectionString = await getActivityConnectionString();
   const schemaModule = await getSchema();
   
   const client = postgres(connectionString, {
