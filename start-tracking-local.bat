@@ -3,8 +3,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 
 echo ========================================
-echo   Rodion.Pro - Start Activity Tracking
-echo          (LOCAL DEV MODE)
+echo   Rodion.Pro - Start Activity Tracking (Local)
 echo ========================================
 echo.
 
@@ -28,11 +27,12 @@ echo Starting activity tracking to LOCAL server...
 echo Agent will send data to: http://localhost:4321
 echo.
 
-REM Launch agent minimized with local config
-start /MIN "rodion-tracking-local" cmd /c "cd /d "%~dp0activity-agent" & npx tsx src/index.ts --config config.local.json"
+REM Launch agent for local server
+start /MIN "rodion-tracking-local" cmd /c "cd /d "%~dp0activity-agent" & npm start"
 
 echo ========================================
 echo   Local tracking started!
 echo   Look for the green tray icon.
 echo   Right-click tray icon to stop.
 echo ========================================
+pause

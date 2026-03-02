@@ -3,7 +3,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 
 echo ========================================
-echo   Rodion.Pro - Start Activity Tracking
+echo   Rodion.Pro - Start Activity Tracking (Remote)
 echo ========================================
 echo.
 
@@ -23,15 +23,17 @@ if not exist "activity-agent\node_modules\" (
 REM --- Kill any existing agent ---
 powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"commandline like '%%activity-agent%%' and commandline like '%%tsx%%'\" -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 
+
 echo Starting activity tracking to production server...
 echo Agent will send data to: https://rodion.pro
 echo.
 
-REM Launch agent minimized (tray icon will be the UI)
-start /MIN "rodion-tracking" cmd /c "cd /d "%~dp0activity-agent" & npx tsx src/index.ts"
+REM Launch agent for remote server
+start /MIN "rodion-tracking-remote" cmd /c "cd /d "%~dp0activity-agent" & npm start"
 
 echo ========================================
-echo   Tracking started!
+echo   Remote tracking started!
 echo   Look for the green tray icon.
 echo   Right-click tray icon to stop.
 echo ========================================
+pause

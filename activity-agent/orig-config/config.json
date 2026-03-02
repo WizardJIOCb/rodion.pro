@@ -1,0 +1,36 @@
+{
+  "serverBaseUrl": "https://rodion.pro",
+  "deviceId": "pc-main",
+  "deviceKey": "MySecureActivityKey123!",
+  "pollIntervalSec": 10,
+  "privacy": {
+    "blacklistApps": [
+      "keepass.exe",
+      "1password.exe"
+    ],
+    "blacklistTitlePatterns": [],
+    "sendWindowTitle": true
+  },
+  "categories": [
+    {
+      "match": "code\\.exe|Code\\.exe|idea64\\.exe|webstorm64\\.exe|cursor\\.exe|Cursor\\.exe|Qoder\\.exe|qoder\\.exe|putty\\.exe|dbeaver\\.exe|cmd\\.exe|WindowsTerminal\\.exe|wt\\.exe|TortoiseGitProc\\.exe|TortoiseGitMerge\\.exe|TortoiseGitBlame\\.exe",
+      "category": "coding"
+    },
+    {
+      "match": "chrome\\.exe|firefox\\.exe|msedge\\.exe|brave\\.exe",
+      "category": "browser"
+    },
+    {
+      "match": "steam\\.exe|steamwebhelper\\.exe|epicgameslauncher\\.exe|EpicGamesLauncher\\.exe",
+      "category": "games"
+    },
+    {
+      "match": "telegram\\.exe|discord\\.exe|slack\\.exe",
+      "category": "comms"
+    },
+    {
+      "match": "explorer\\.exe|taskmgr\\.exe|powershell\\.exe",
+      "category": "system"
+    }
+  ]
+}

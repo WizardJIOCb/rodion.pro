@@ -1,5 +1,5 @@
 {
-  "serverBaseUrl": "http://localhost:4321",
+  "serverBaseUrl": "https://rodion.pro",
   "deviceId": "pc-main",
   "deviceKey": "MySecureActivityKey123!",
   "pollIntervalSec": 10,
@@ -13,24 +13,116 @@
   },
   "categories": [
     {
-      "match": "code\\.exe|Code\\.exe|idea64\\.exe|webstorm64\\.exe|cursor\\.exe|Cursor\\.exe|Qoder\\.exe|qoder\\.exe|putty\\.exe|dbeaver\\.exe|cmd\\.exe|WindowsTerminal\\.exe|wt\\.exe|TortoiseGitProc\\.exe|TortoiseGitMerge\\.exe|TortoiseGitBlame\\.exe",
+      "match": "(?:code|cursor|qoder|devenv|vs(?:code)?|rider(?:64)?|idea64|intellijidea64|webstorm(?:64)?|phpstorm(?:64)?|pycharm(?:64)?|goland(?:64)?|clion(?:64)?|datagrip(?:64)?|rubymine(?:64)?|fleet(?:64)?|studio64|eclipse|netbeans|codeblocks|androidstudio)\\.exe$",
       "category": "coding"
     },
     {
-      "match": "chrome\\.exe|firefox\\.exe|msedge\\.exe|brave\\.exe",
-      "category": "browser"
+      "match": "(?:sublime_text|notepad\\+\\+|atom|brackets|vim|gvim|emacs|neovide|kate|gedit)\\.exe$",
+      "category": "coding"
     },
     {
-      "match": "steam\\.exe|steamwebhelper\\.exe|epicgameslauncher\\.exe|EpicGamesLauncher\\.exe",
+      "match": "(?:windowsterminal|wt|cmd|powershell|pwsh|conhost|bash|wsl|putty|mobaxterm|xshell|securecrt|cmder|tabby|wezterm|alacritty|hyper)\\.exe$",
+      "category": "coding"
+    },
+    {
+      "match": "(?:gitkraken|githubdesktop|sourcetree|smartgit|fork|tortoisegitproc|tortoisegitmerge|tortoisegitblame|tortoisesvnproc|beyondcompare|winmergeu|meld|kdiff3)\\.exe$",
+      "category": "coding"
+    },
+    {
+      "match": "(?:dbeaver|pgadmin4|mysqlworkbench|heidisql|sqlitebrowser|navicat|tableplus|mongodbcompass.*|studio3t|redisinsight|postman|insomnia|soapui|fiddler|charles|proxifier)\\.exe$",
+      "category": "coding"
+    },
+    {
+      "match": "(?:docker desktop|dockerd|rancher desktop|podman desktop|lens|k9s|terraform|packer)\\.exe$",
+      "category": "devops"
+    },
+
+    {
+      "match": "(?:chrome|firefox|msedge|brave|opera|opera_gx|vivaldi|yandex|chromium|waterfox|tor|arc)\\.exe$",
+      "category": "browser"
+    },
+
+    {
+      "match": "(?:telegram|discord|slack|mattermost|element|signal|whatsapp|viber|skype|icq|wechat|line)\\.exe$",
+      "category": "comms"
+    },
+
+    {
+      "match": "(?:teams|zoom|webex|gotomeeting|gotowebinar|teamviewer|anydesk|chrome_remote_desktop_host|mstsc)\\.exe$",
+      "category": "meetings"
+    },
+
+    {
+      "match": "(?:notion|obsidian|logseq|joplin|evernote|standardnotes|simplenote|anki|todoist|ticktick|trello|clickup|asana)\\.exe$",
+      "category": "productivity"
+    },
+
+    {
+      "match": "(?:winword|excel|powerpnt|outlook|onenote|visio|mspub)\\.exe$",
+      "category": "office"
+    },
+    {
+      "match": "(?:acrord32|acrord64|acrobat|foxitpdfreader|sumatrapdf|pdfxedit|okular|soffice|soffice\\.bin|swriter|scalc|simpress|sdraw)\\.exe$",
+      "category": "office"
+    },
+
+    {
+      "match": "(?:photoshop|illustrator|afterfx|premierepro|audition|lightroom|xd|bridge)\\.exe$",
+      "category": "design"
+    },
+    {
+      "match": "(?:figma|krita|gimp-?2\\.10|inkscape|paintdotnet|clipstudiopaint|affinityphoto|affinitydesigner|affinitypublisher)\\.exe$",
+      "category": "design"
+    },
+    {
+      "match": "(?:blender|maya|3dsmax|houdini|zbrush|substance.*|quixelbridge|unrealeditor|unity|unityhub|godot)\\.exe$",
+      "category": "design"
+    },
+
+    {
+      "match": "(?:spotify|vlc|mpv|potplayer64|foobar2000|musicbee|itunes|plex)\\.exe$",
+      "category": "media"
+    },
+    {
+      "match": "(?:obs64|obs32|streamlabs.*|twitchstudio|xsplit.*|sharex|audacity|reaper|ableton.*|fl64|flstudio.*)\\.exe$",
+      "category": "media"
+    },
+
+    {
+      "match": "(?:steam|steamwebhelper|epicgameslauncher|goggalaxy|galaxyclient|itch|ubisoftconnect|uplay|upc|eadesktop|ealauncher|origin|battle\\.net(?: launcher)?|battlenet|riotclientservices|riotclientux|riotclientuxrender|minecraftlauncher|playnite.*|xboxpcapp|xboxapp|geforcenow)\\.exe$",
+      "category": "games"
+    },
+
+    {
+      "match": "(?:cs2|dota2|hl2|portal2|left4dead2|tf2|destiny2|r5apex|tslgame|rainbowsix|rainbowsix_vulcan|escapefromtarkov|dayz_x64|rustclient|rust|rocketleague|valorant-win64-shipping|valorant|leagueclient|leagueclientux|fortniteclient-win64-shipping|fortniteclient-win32-shipping)\\.exe$",
       "category": "games"
     },
     {
-      "match": "telegram\\.exe|discord\\.exe|slack\\.exe",
-      "category": "comms"
+      "match": "(?:gta5|fivem|rdr2|cyberpunk2077|witcher3|eldenring|sekiro|bg3|baldursgate3|hogwartslegacy|starfield|fallout4|skyrimse|tesv|mass_effect.*|dragonage.*)\\.exe$",
+      "category": "games"
     },
     {
-      "match": "explorer\\.exe|taskmgr\\.exe|powershell\\.exe",
+      "match": "(?:genshinimpact|honkai.*|starrail|zenlesszonezero|wutheringwaves|pathofexile.*|diablo.*|wow.*|overwatch|hearthstone|starcraft.*|heroesofthestorm.*)\\.exe$",
+      "category": "games"
+    },
+
+    {
+      "match": "(?:retroarch|pcsx2|dolphin|cemu|ryujinx|yuzu|duckstation|ppssppwindows|xenia|openemu)\\.exe$",
+      "category": "games"
+    },
+    {
+      "match": "(?:vrmonitor|vrserver|vrcompositor|oculusclient|oculusdash|virtualdesktop|ovrserver_x64)\\.exe$",
+      "category": "games"
+    },
+
+    {
+      "match": "(?:explorer|taskmgr|systemsettings|control|regedit|mmc|perfmon|resmon|msconfig|compmgmtlauncher|eventvwr)\\.exe$",
       "category": "system"
+    },
+
+    {
+      "match": "(?:7zfm|winrar|totalcmd64|totalcmd|onecommander|files|everything|listary|powertoys.*|snippingtool|mspaint|notepad|wordpad|greenshot|dropbox|onedrive|nextcloud|syncthing|qbittorrent)\\.exe$",
+      "category": "utilities"
     }
   ]
 }
