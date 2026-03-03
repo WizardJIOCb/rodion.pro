@@ -1,0 +1,194 @@
+---
+import type { Lang } from '@/i18n';
+import type { ResumeShort } from '@/data/resumeShort';
+
+interface Props {
+  data: ResumeShort;
+  lang: Lang;
+}
+
+const { data, lang } = Astro.props;
+
+const labels = {
+  experience: { ru: 'Опыт', en: 'Experience' },
+  location: { ru: 'Локация', en: 'Location' },
+  format: { ru: 'Формат', en: 'Format' },
+  keySpecialization: { ru: 'Ключевая специализация', en: 'Key Specialization' },
+  stack: { ru: 'Стек', en: 'Stack' },
+  moreDetails: { ru: 'Подробнее (стек + опыт + проекты)', en: 'More details (stack + experience + projects)' },
+  experienceLabel: { ru: 'Опыт работы', en: 'Work Experience' },
+  petProjects: { ru: 'Pet-проекты', en: 'Pet Projects' },
+};
+---
+
+<div class="resume-now-block mb-8">
+  <!-- Terminal-style header -->
+  <div class="font-mono text-sm text-muted mb-3">
+    <span class="text-accent">$</span> cat resume.short.md
+  </div>
+
+  <div class="card">
+    <!-- Header: Name, Title, Badges -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+      <div class="space-y-1">
+        <h2 class="text-xl font-semibold text-text">{data.name}</h2>
+        <p class="text-accent font-mono text-sm">{data.title}</p>
+        
+        <!-- Badges -->
+        <div class="flex flex-wrap gap-2 mt-2">
+          <span class="badge">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {labels.experience[lang]}: {data.experience}
+          </span>
+          <span class="badge">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {data.location}
+          </span>
+          <span class="badge">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            {data.workFormat}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Specialization chips -->
+    <div class="mb-4">
+      <p class="text-xs text-muted uppercase tracking-wide mb-2">{labels.keySpecialization[lang]}</p>
+      <div class="flex flex-wrap gap-1.5">
+        {data.keySpecialization.map(spec => (
+          <span class="tag text-xs">{spec}</span>
+        ))}
+      </div>
+    </div>
+
+    <!-- Highlights -->
+    <ul class="space-y-2 mb-4">
+      {data.highlights.map(item => (
+        <li class="flex items-start gap-2 text-sm text-muted">
+          <span class="text-accent mt-0.5 shrink-0">></span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+
+    <!-- Stack chips (compact) -->
+    <div class="mb-4">
+      <p class="text-xs text-muted uppercase tracking-wide mb-2">{labels.stack[lang]}</p>
+      <div class="flex flex-wrap gap-1.5">
+        {data.stackChips.map(tech => (
+          <span class="tag tag-secondary text-xs">{tech}</span>
+        ))}
+      </div>
+    </div>
+
+    <!-- CTA Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+      <a href={data.cta.resumeHref} class="btn btn-primary">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        {data.cta.resumeLabel}
+      </a>
+      <a href={data.cta.googleDocHref} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+        {data.cta.googleDocLabel}
+      </a>
+    </div>
+
+    <!-- Collapsible details -->
+    <details class="mt-4 pt-4 border-t border-border">
+      <summary class="text-sm text-muted cursor-pointer hover:text-accent transition-colors">
+        {labels.moreDetails[lang]}
+      </summary>
+      
+      <div class="mt-4 space-y-4">
+        <!-- Full Stack Details -->
+        <div>
+          <p class="text-xs text-muted uppercase tracking-wide mb-2">{labels.stack[lang]}</p>
+          <div class="space-y-2">
+            {data.stackDetails.map(section => (
+              <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span class="text-xs text-accent font-mono shrink-0">{section.section}:</span>
+                <span class="text-xs text-muted">{section.items.join(', ')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Experience -->
+        <div>
+          <p class="text-xs text-muted uppercase tracking-wide mb-2">{labels.experienceLabel[lang]}</p>
+          <div class="space-y-2">
+            {data.experienceShort.map(exp => (
+              <div class="text-sm">
+                <span class="text-text font-medium">{exp.company}</span>
+                <span class="text-muted"> — {exp.role}</span>
+                <p class="text-xs text-muted mt-0.5">{exp.bullets.join('; ')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Pet Projects -->
+        <div>
+          <p class="text-xs text-muted uppercase tracking-wide mb-2">{labels.petProjects[lang]}</p>
+          <div class="space-y-1">
+            {data.petProjects.map(proj => (
+              <div class="text-sm">
+                <span class="text-accent font-mono">{proj.name}</span>
+                <span class="text-muted"> — {proj.bullets.join('; ')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: var(--font-mono, monospace);
+    color: var(--muted);
+    background-color: color-mix(in srgb, var(--border) 50%, transparent);
+    border-radius: 0.25rem;
+  }
+
+  .tag-secondary {
+    background-color: color-mix(in srgb, var(--accent2) 10%, transparent);
+    color: var(--accent2);
+    border-color: color-mix(in srgb, var(--accent2) 20%, transparent);
+  }
+
+  details summary {
+    list-style: none;
+  }
+
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  details summary::before {
+    content: '+ ';
+    color: var(--accent);
+  }
+
+  details[open] summary::before {
+    content: '- ';
+  }
+</style>
