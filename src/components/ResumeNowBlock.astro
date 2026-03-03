@@ -73,7 +73,7 @@ const labels = {
     <ul class="space-y-2 mb-4">
       {data.highlights.map(item => (
         <li class="flex items-start gap-2 text-sm text-muted">
-          <span class="text-accent mt-0.5 shrink-0">></span>
+          <span class="text-accent shrink-0">></span>
           <span>{item}</span>
         </li>
       ))}
@@ -133,7 +133,7 @@ const labels = {
               <div class="text-sm">
                 <span class="text-text font-medium">{exp.company}</span>
                 <span class="text-muted"> — {exp.role}</span>
-                <p class="text-xs text-muted mt-0.5">{exp.bullets.join('; ')}</p>
+                <p class="text-xs text-muted">{exp.bullets.join('; ')}</p>
               </div>
             ))}
           </div>
