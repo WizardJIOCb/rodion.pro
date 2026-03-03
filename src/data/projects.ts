@@ -106,6 +106,37 @@ export const projects: Project[] = [
     },
     featured: true,
   },
+  {
+    id: 'reader-market',
+    title: {
+      ru: 'Reader.Market',
+      en: 'Reader.Market',
+    },
+    tagline: {
+      ru: 'Платформа для чтения и публикации контента',
+      en: 'Platform for reading and publishing content',
+    },
+    status: 'active',
+    links: {
+      site: 'https://reader.market',
+    },
+    stack: ['TypeScript', 'Node.js', 'React', 'PostgreSQL', 'Docker'],
+    highlights: {
+      ru: [
+        'Веб-приложение для чтения книг',
+        'Система комментариев и рецензий',
+        'Персонализированные рекомендации',
+        'Статистика чтения',
+      ],
+      en: [
+        'Web application for reading books',
+        'Comments and reviews system',
+        'Personalized recommendations',
+        'Reading statistics',
+      ],
+    },
+    featured: true,
+  },
 ];
 
 export function getProjectsByLang(lang: 'ru' | 'en') {
