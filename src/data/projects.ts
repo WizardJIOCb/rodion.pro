@@ -49,64 +49,6 @@ export const projects: Project[] = [
     featured: true,
   },
   {
-    id: 'ai-toolkit',
-    title: {
-      ru: 'AI Toolkit',
-      en: 'AI Toolkit',
-    },
-    tagline: {
-      ru: 'Набор утилит для работы с AI моделями',
-      en: 'Utilities for working with AI models',
-    },
-    status: 'active',
-    links: {
-      github: 'https://github.com/WizardJIOCb/ai-toolkit',
-    },
-    stack: ['Python', 'LangChain', 'OpenAI', 'FastAPI'],
-    highlights: {
-      ru: [
-        'Обёртки для популярных LLM API',
-        'Промпт-инжиниринг утилиты',
-        'RAG pipeline components',
-      ],
-      en: [
-        'Wrappers for popular LLM APIs',
-        'Prompt engineering utilities',
-        'RAG pipeline components',
-      ],
-    },
-    featured: true,
-  },
-  {
-    id: 'devops-templates',
-    title: {
-      ru: 'DevOps Templates',
-      en: 'DevOps Templates',
-    },
-    tagline: {
-      ru: 'Шаблоны для CI/CD и инфраструктуры',
-      en: 'Templates for CI/CD and infrastructure',
-    },
-    status: 'active',
-    links: {
-      github: 'https://github.com/WizardJIOCb/devops-templates',
-    },
-    stack: ['Docker', 'GitHub Actions', 'Terraform', 'Ansible'],
-    highlights: {
-      ru: [
-        'GitHub Actions workflows',
-        'Docker Compose конфигурации',
-        'Terraform модули для AWS/GCP',
-      ],
-      en: [
-        'GitHub Actions workflows',
-        'Docker Compose configurations',
-        'Terraform modules for AWS/GCP',
-      ],
-    },
-    featured: true,
-  },
-  {
     id: 'reader-market',
     title: {
       ru: 'Reader.Market',
@@ -133,6 +75,37 @@ export const projects: Project[] = [
         'Comments and reviews system',
         'Personalized recommendations',
         'Reading statistics',
+      ],
+    },
+    featured: true,
+  },
+  {
+    id: 'cyka-lol',
+    title: {
+      ru: 'Cyka.LOL',
+      en: 'Cyka.LOL',
+    },
+    tagline: {
+      ru: 'Блог, новости, стримы и экспериментальные проекты',
+      en: 'Blog, news, game streams and experimental projects',
+    },
+    status: 'active',
+    links: {
+      site: 'https://cyka.lol',
+    },
+    stack: ['TypeScript', 'Node.js', 'React', 'PostgreSQL', 'Redis'],
+    highlights: {
+      ru: [
+        'Блог и новости',
+        'Стримы игр',
+        'Экспериментальные проекты',
+        'Мультимедиа контент',
+      ],
+      en: [
+        'Blog and news',
+        'Game streaming',
+        'Experimental projects',
+        'Multimedia content',
       ],
     },
     featured: true,
