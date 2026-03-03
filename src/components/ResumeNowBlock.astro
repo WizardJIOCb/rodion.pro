@@ -145,7 +145,11 @@ const labels = {
           <div class="space-y-1">
             {data.petProjects.map(proj => (
               <div class="text-sm">
-                <span class="text-accent font-mono">{proj.name}</span>
+                {proj.link ? (
+                  <a href={proj.link} target="_blank" rel="noopener noreferrer" class="text-accent font-mono hover:underline">{proj.name}</a>
+                ) : (
+                  <span class="text-accent font-mono">{proj.name}</span>
+                )}
                 <span class="text-muted"> — {proj.bullets.join('; ')}</span>
               </div>
             ))}

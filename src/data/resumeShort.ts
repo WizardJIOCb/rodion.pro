@@ -11,6 +11,7 @@ export interface StackSection {
 
 export interface PetProject {
   name: string;
+  link?: string;
   bullets: string[];
 }
 
@@ -94,8 +95,8 @@ export const resumeShortRu: ResumeShort = {
     },
   ],
   petProjects: [
-    { name: 'reader.market', bullets: ['AI-платформа для книг'] },
-    { name: 'cyka.lol', bullets: ['Фан/экспериментальный проект'] },
+    { name: 'reader.market', link: 'https://reader.market', bullets: ['AI-платформа для книг'] },
+    { name: 'cyka.lol', link: 'https://cyka.lol', bullets: ['Фан/экспериментальный проект'] },
   ],
   cta: {
     resumeHref: '/ru/resume',
@@ -163,8 +164,8 @@ export const resumeShortEn: ResumeShort = {
     },
   ],
   petProjects: [
-    { name: 'reader.market', bullets: ['AI book platform'] },
-    { name: 'cyka.lol', bullets: ['Fan/experimental project'] },
+    { name: 'reader.market', link: 'https://reader.market', bullets: ['AI book platform'] },
+    { name: 'cyka.lol', link: 'https://cyka.lol', bullets: ['Fan/experimental project'] },
   ],
   cta: {
     resumeHref: '/en/resume',
