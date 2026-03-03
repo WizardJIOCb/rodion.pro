@@ -1,17 +1,73 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { getLangFromUrl, useTranslations } from '@/i18n';
-import { resumeSections } from '@/data/resume';
+import { resumeSections, resumeHeader } from '@/data/resume';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const sections = resumeSections;
+const header = resumeHeader;
+
+const labels = {
+  experience: { ru: 'Опыт', en: 'Experience' },
+  location: { ru: 'Локация', en: 'Location' },
+  format: { ru: 'Формат', en: 'Format' },
+  openInGoogleDocs: { ru: 'Открыть в Google Docs', en: 'Open in Google Docs' },
+  note: { ru: 'Примечание', en: 'Note' },
+  gamingNote: {
+    ru: 'Ранее основной фокус — геймдев, в последние годы — бизнес-проекты и стартапы.',
+    en: 'Previously focused on game development; recent years focused on business projects and startups.',
+  },
+};
 ---
 
 <Layout title={t('nav.resume')} description="My resume">
   <div class="mx-auto max-w-3xl px-4 py-12">
-    <h1 class="text-3xl font-bold text-text mb-8">{t('nav.resume')}</h1>
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="font-mono text-sm text-muted mb-3">
+        <span class="text-accent">$</span> cat resume.md
+      </div>
+      
+      <h1 class="text-3xl font-bold text-text mb-2">{header.name[lang]}</h1>
+      <p class="text-accent font-mono text-lg mb-4">{header.title}</p>
+      
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span class="badge">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {labels.experience[lang]}: {header.experience[lang]}
+        </span>
+        <span class="badge">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          {header.location[lang]}
+        </span>
+        <span class="badge">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          {header.workFormat}
+        </span>
+      </div>
+      
+      <a 
+        href={header.googleDocUrl} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="btn btn-secondary text-sm"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+        {labels.openInGoogleDocs[lang]}
+      </a>
+    </div>
     
+    <!-- Sections -->
     <div class="space-y-8">
       {sections.map(section => (
         <section>
@@ -26,9 +82,15 @@ const sections = resumeSections;
                 {section.content[lang]}
               </p>
             </div>
+          ) : section.chips ? (
+            <div class="flex flex-wrap gap-2">
+              {section.chips.map(chip => (
+                <span class="tag">{chip}</span>
+              ))}
+            </div>
           ) : section.items && section.items.length > 0 ? (
             <div class="space-y-4">
-              {section.items.map(item => (
+              {section.items.map((item, idx) => (
                 <div class="card">
                   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                     <h3 class="font-medium text-text">{item.title[lang]}</h3>
@@ -40,7 +102,15 @@ const sections = resumeSections;
                   </div>
                   
                   {item.company && (
-                    <p class="text-sm text-accent mb-2">{item.company[lang]}</p>
+                    <p class="text-sm text-accent mb-2">
+                      {item.link ? (
+                        <a href={item.link} target="_blank" rel="noopener noreferrer" class="hover:underline">
+                          {item.company[lang]}
+                        </a>
+                      ) : (
+                        item.company[lang]
+                      )}
+                    </p>
                   )}
                   
                   {item.description && (
@@ -51,11 +121,18 @@ const sections = resumeSections;
                     <ul class="text-sm text-muted space-y-1">
                       {item.achievements.map(achievement => (
                         <li class="flex items-start gap-2">
-                          <span class="text-accent mt-1">•</span>
+                          <span class="text-accent">•</span>
                           <span>{achievement[lang]}</span>
                         </li>
                       ))}
                     </ul>
+                  )}
+                  
+                  {/* Gaming note for last experience item */}
+                  {section.id === 'experience' && item.company?.[lang]?.includes(lang === 'ru' ? 'Игровая' : 'Gaming') && (
+                    <p class="text-xs text-muted mt-3 italic border-l-2 border-border pl-3">
+                      {labels.note[lang]}: {labels.gamingNote[lang]}
+                    </p>
                   )}
                 </div>
               ))}
@@ -66,3 +143,17 @@ const sections = resumeSections;
     </div>
   </div>
 </Layout>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: var(--font-mono, monospace);
+    color: var(--muted);
+    background-color: color-mix(in srgb, var(--border) 50%, transparent);
+    border-radius: 0.25rem;
+  }
+</style>
