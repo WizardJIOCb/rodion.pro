@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "activity-note-helper", "activity-note-helper", "{BE18B6A1-3C88-10F5-252B-16DD968623C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityNoteHelper", "tools\activity-note-helper\ActivityNoteHelper.csproj", "{A07CF6E9-F90D-05E9-8989-7CC0732E3774}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A07CF6E9-F90D-05E9-8989-7CC0732E3774}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A07CF6E9-F90D-05E9-8989-7CC0732E3774}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A07CF6E9-F90D-05E9-8989-7CC0732E3774}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A07CF6E9-F90D-05E9-8989-7CC0732E3774}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BE18B6A1-3C88-10F5-252B-16DD968623C2} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{A07CF6E9-F90D-05E9-8989-7CC0732E3774} = {BE18B6A1-3C88-10F5-252B-16DD968623C2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A96AF40A-C395-4FAA-8546-50364A96224E}
+	EndGlobalSection
+EndGlobal

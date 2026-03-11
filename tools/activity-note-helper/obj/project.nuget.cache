@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "e6gB7CucDMY=",
+  "dgSpecHash": "+xORMCoQGlk=",
   "success": true,
-  "projectFilePath": "c:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj",
+  "projectFilePath": "C:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Rodion\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.24\\microsoft.net.illink.tasks.8.0.24.nupkg.sha512"
   ],

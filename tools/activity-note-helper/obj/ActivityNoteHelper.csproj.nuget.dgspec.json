@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj": {}
+    "C:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj": {}
   },
   "projects": {
-    "c:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj": {
+    "C:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj",
+        "projectUniqueName": "C:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj",
         "projectName": "ActivityNoteHelper",
-        "projectPath": "c:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj",
+        "projectPath": "C:\\Projects\\rodion.pro\\tools\\activity-note-helper\\ActivityNoteHelper.csproj",
         "packagesPath": "C:\\Users\\Rodion\\.nuget\\packages\\",
-        "outputPath": "c:\\Projects\\rodion.pro\\tools\\activity-note-helper\\obj\\",
+        "outputPath": "C:\\Projects\\rodion.pro\\tools\\activity-note-helper\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Rodion\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -70,11 +70,6 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.418/PortableRuntimeIdentifierGraph.json"
-        }
-      },
-      "runtimes": {
-        "win-x64": {
-          "#import": []
         }
       }
     }
