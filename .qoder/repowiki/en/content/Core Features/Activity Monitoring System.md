@@ -28,16 +28,17 @@
 - [src/pages/api/activity/v2/rules/index.ts](file://src/pages/api/activity/v2/rules/index.ts)
 - [src/pages/api/activity/v2/markers.ts](file://src/pages/api/activity/v2/markers.ts)
 - [src/pages/api/activity/v2/timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
+- [src/pages/api/activity/v1/stream.ts](file://src/pages/api/activity/v1/stream.ts)
+- [src/components/ActivityDashboard.tsx](file://src/components/ActivityDashboard.tsx)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added comprehensive v2 API system documentation with new endpoints and authentication
-- Documented new PostgreSQL schema with 6 additional tables for v2 functionality
-- Added advanced sessionization algorithms and timeline endpoint documentation
-- Enhanced authentication system coverage with device-level security and admin token verification
-- Updated database schema design to include v2 tables and relationships
-- Added privacy enforcement mechanisms and artifact management system
+- Enhanced v2 artifacts/batch API endpoint with improved data processing and real-time heartbeat tracking
+- Added payload field name compatibility (both 'payload' and 'payloadJson')
+- Implemented SSE broadcasting for live dashboard updates
+- Updated frontend component with optimized polling intervals (30s stats refresh, 10s now data refresh)
+- Improved user experience while preserving time range selections
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -61,7 +62,7 @@ The Activity Monitoring System is a comprehensive personal website platform buil
 
 The platform combines Astro 5 (SSR with Node adapter), React 19 islands, TypeScript, Tailwind CSS, PostgreSQL with Drizzle ORM, and Google OAuth 2.0 to create a robust, scalable web application. The activity monitoring system specifically focuses on tracking user computer activity including application usage, window focus, keyboard input, mouse clicks, scrolling, and AFK detection.
 
-**Updated** Enhanced with comprehensive v2 API system featuring advanced sessionization algorithms, privacy enforcement mechanisms, and device-level security with admin token verification.
+**Updated** Enhanced with comprehensive v2 API system featuring advanced sessionization algorithms, privacy enforcement mechanisms, device-level security with admin token verification, and real-time streaming capabilities.
 
 ## System Architecture
 
@@ -73,6 +74,7 @@ subgraph "Client Layer"
 Browser[Browser Client]
 React[React Components]
 Astro[Astro Islands]
+ActivityDashboard[Activity Dashboard]
 end
 subgraph "API Layer"
 AuthAPI[Authentication API]
@@ -88,21 +90,25 @@ ActivitySvc[Activity Service]
 ActivityV2Svc[Activity V2 Service]
 CommunitySvc[Community Service]
 EventSvc[Event Service]
+SSEManager[SSE Broadcasting]
 end
 subgraph "Data Layer"
 Postgres[(PostgreSQL Database)]
 Drizzle[Drizzle ORM]
 end
 Browser --> Astro
+Astro --> ActivityDashboard
+ActivityDashboard --> ActivityV1API
+ActivityDashboard --> ActivityV2API
 Astro --> AuthAPI
-Astro --> ActivityV1API
-Astro --> ActivityV2API
 Astro --> CommunityAPI
 AuthAPI --> SessionMgr
 ActivityV1API --> ActivitySvc
 ActivityV2API --> ActivityV2Svc
 CommunityAPI --> CommunitySvc
 WebhookAPI --> EventSvc
+ActivityV2Svc --> SSEManager
+SSEManager --> ActivityV2Svc
 SessionMgr --> Drizzle
 ActivitySvc --> Drizzle
 ActivityV2Svc --> Drizzle
@@ -116,6 +122,7 @@ Drizzle --> Postgres
 - [src/lib/session.ts:1-58](file://src/lib/session.ts#L1-L58)
 - [src/lib/auth.ts:1-101](file://src/lib/auth.ts#L1-L101)
 - [src/lib/activity-auth.ts:1-101](file://src/lib/activity-auth.ts#L1-L101)
+- [src/lib/activity.ts:15-50](file://src/lib/activity.ts#L15-L50)
 
 The architecture implements several key design patterns:
 
@@ -123,14 +130,16 @@ The architecture implements several key design patterns:
 - **Repository Pattern**: Database operations abstracted through Drizzle ORM
 - **Service Layer**: Business logic encapsulated in dedicated service classes
 - **API Gateway Pattern**: Centralized API endpoints with consistent error handling
-- **Event-Driven Architecture**: Webhooks and real-time updates through PostgreSQL triggers
+- **Event-Driven Architecture**: Webhooks and real-time updates through PostgreSQL triggers and SSE broadcasting
 - **Multi-Version API Support**: Coexistence of v1 and v2 activity monitoring endpoints
+- **Streaming Architecture**: Real-time updates via Server-Sent Events (SSE)
 
 **Section sources**
 - [src/db/index.ts:1-48](file://src/db/index.ts#L1-L48)
 - [src/lib/session.ts:1-58](file://src/lib/session.ts#L1-L58)
 - [src/lib/auth.ts:1-101](file://src/lib/auth.ts#L1-L101)
 - [src/lib/activity-auth.ts:1-101](file://src/lib/activity-auth.ts#L1-L101)
+- [src/lib/activity.ts:15-50](file://src/lib/activity.ts#L15-L50)
 
 ## Activity Monitoring Core Components
 
@@ -276,6 +285,7 @@ ACTIVITY_DEVICES ||--o{ ACTIVITY_MINUTE_AGG : "has"
 ACTIVITY_DEVICES ||--|| ACTIVITY_NOW : "has"
 ACTIVITY_DEVICES ||--o{ ACTIVITY_NOTES : "generates"
 ACTIVITY_DEVICES ||--o{ ACTIVITY_ARTIFACTS : "produces"
+ACTIVITY_DEVICES ||--o{ ACTIVITY_SESSIONS : "generates"
 ACTIVITY_PROJECTS ||--o{ ACTIVITY_ARTIFACTS : "targets"
 ACTIVITY_PROJECTS ||--o{ ACTIVITY_SESSIONS : "defines"
 ```
@@ -574,17 +584,18 @@ AuthCallback-->>Client : Redirect to original page
 
 ### Activity Monitoring APIs
 
-**Updated** Enhanced with comprehensive v2 API system featuring device-level authentication, artifact management, project catalog, inference rules, and advanced sessionization.
+**Updated** Enhanced with comprehensive v2 API system featuring device-level authentication, artifact management, project catalog, inference rules, and advanced sessionization with real-time streaming capabilities.
 
 #### V1 Legacy API
 - **Device Registration**: API key-based device onboarding
 - **Telemetry Ingestion**: Secure data upload with validation
 - **Analytics Queries**: Historical data retrieval and aggregation
 - **Real-time Status**: Current device state monitoring
+- **Server-Sent Events**: Real-time streaming for live dashboards
 
 #### V2 Enhanced API
 - **Device Authentication**: x-device-id + x-device-key headers
-- **Batch Artifact Ingestion**: Efficient bulk data upload
+- **Batch Artifact Ingestion**: Efficient bulk data upload with heartbeat tracking
 - **Project Management**: CRUD operations for project catalog
 - **Inference Rules**: Dynamic classification rules management
 - **Manual Markers**: User-generated activity markers
@@ -624,11 +635,12 @@ Success --> End
 - [src/pages/api/auth/google/callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
 - [src/pages/api/comments/index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
 - [src/pages/api/activity/v1/ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [src/pages/api/activity/v2/artifacts/batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [src/pages/api/activity/v2/artifacts/batch.ts:1-188](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L188)
 - [src/pages/api/activity/v2/projects/index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
 - [src/pages/api/activity/v2/rules/index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
 - [src/pages/api/activity/v2/markers.ts:1-49](file://src/pages/api/activity/v2/markers.ts#L1-L49)
 - [src/pages/api/activity/v2/timeline.ts:1-90](file://src/pages/api/activity/v2/timeline.ts#L1-L90)
+- [src/pages/api/activity/v1/stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
 
 ## Authentication and Authorization
 
@@ -850,7 +862,7 @@ ReturnSuccess --> End
 
 **Section sources**
 - [src/db/schema/index.ts:217-234](file://src/db/schema/index.ts#L217-L234)
-- [src/pages/api/activity/v2/artifacts/batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [src/pages/api/activity/v2/artifacts/batch.ts:1-188](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L188)
 - [src/pages/api/activity/v2/markers.ts:1-49](file://src/pages/api/activity/v2/markers.ts#L1-L49)
 
 ## Community Features
@@ -1027,7 +1039,7 @@ The system is optimized for high performance and scalability:
 - **Performance Budgets**: Hard limits on bundle sizes and load times
 - **Uptime Monitoring**: 24/7 system health monitoring
 
-**Updated** Enhanced with v2-specific optimizations including sessionization algorithms, artifact deduplication, and privacy enforcement performance considerations.
+**Updated** Enhanced with v2-specific optimizations including sessionization algorithms, artifact deduplication, privacy enforcement performance considerations, and real-time streaming capabilities.
 
 ## Troubleshooting Guide
 
@@ -1053,24 +1065,30 @@ Common issues and their solutions:
 **Problem**: Device authentication failing or v2 endpoints returning unauthorized
 **Solution**: Verify x-device-id and x-device-key headers, check device registration, validate API key hashing, ensure admin token configuration
 
+### Real-Time Streaming Issues
+
+**Problem**: Live dashboard updates not appearing or delayed
+**Solution**: Check SSE connection status, verify broadcastSSE function is being called, ensure client-side EventSource is properly configured, validate network connectivity
+
 ### Performance Issues
 
 **Problem**: Slow page loads or API response times
 **Solution**: Analyze database query performance, check connection pooling, implement caching strategies, review CDN configuration
 
-**Updated** Added troubleshooting guidance for v2-specific issues including device authentication, artifact processing, and sessionization problems.
+**Updated** Added troubleshooting guidance for v2-specific issues including device authentication, artifact processing, sessionization problems, and real-time streaming failures.
 
 **Section sources**
 - [src/db/index.ts:18-45](file://src/db/index.ts#L18-L45)
 - [src/lib/auth.ts:41-95](file://src/lib/auth.ts#L41-L95)
 - [src/lib/activity-auth.ts:22-49](file://src/lib/activity-auth.ts#L22-L49)
 - [src/pages/api/webhooks/github.ts:47-142](file://src/pages/api/webhooks/github.ts#L47-L142)
+- [src/lib/activity.ts:37-50](file://src/lib/activity.ts#L37-L50)
 
 ## Conclusion
 
 The Activity Monitoring System represents a comprehensive solution for personal productivity tracking integrated with a modern web platform. The system successfully combines advanced activity monitoring capabilities with community features, authentication, and robust operational tooling.
 
-**Updated** Enhanced with comprehensive v2 API system featuring advanced sessionization algorithms, privacy enforcement mechanisms, and device-level security with admin token verification.
+**Updated** Enhanced with comprehensive v2 API system featuring advanced sessionization algorithms, privacy enforcement mechanisms, device-level security with admin token verification, and real-time streaming capabilities.
 
 Key strengths of the implementation include:
 
@@ -1082,5 +1100,7 @@ Key strengths of the implementation include:
 - **Advanced Analytics**: Sophisticated sessionization and artifact management
 - **Privacy First**: Comprehensive privacy enforcement and data protection
 - **Multi-Tier Authentication**: Robust device-level and admin security
+- **Real-Time Streaming**: Live dashboard updates via Server-Sent Events
+- **Enhanced Data Processing**: Improved artifact ingestion with heartbeat tracking
 
-The system provides a solid foundation for personal productivity insights while maintaining excellent user experience and developer maintainability. Future enhancements could include additional analytics capabilities, expanded device support, advanced visualization features, and integration with external services for automated activity summarization and reporting.
+The system provides a solid foundation for personal productivity insights while maintaining excellent user experience and developer maintainability. Future enhancements could include additional analytics capabilities, expanded device support, advanced visualization features, integration with external services for automated activity summarization and reporting, and enhanced real-time collaboration features.

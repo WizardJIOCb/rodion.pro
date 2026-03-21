@@ -8,13 +8,13 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: './assets/icon',
-    name: 'ActivityDesktop',
+    name: 'WizardTracker',
   },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        name: 'ActivityDesktop',
+        name: 'WizardTracker',
       },
     },
     {

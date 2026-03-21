@@ -96,7 +96,7 @@ export const resumeShortRu: ResumeShort = {
   ],
   petProjects: [
     { name: 'reader.market', link: 'https://reader.market', bullets: ['AI-платформа для книг'] },
-    { name: 'cyka.lol', link: 'https://cyka.lol', bullets: ['Фан/экспериментальный проект'] },
+    /*{ name: 'cyka.lol', link: 'https://cyka.lol', bullets: ['Фан/экспериментальный проект'] },*/
   ],
   cta: {
     resumeHref: '/ru/resume',
@@ -165,7 +165,7 @@ export const resumeShortEn: ResumeShort = {
   ],
   petProjects: [
     { name: 'reader.market', link: 'https://reader.market', bullets: ['AI book platform'] },
-    { name: 'cyka.lol', link: 'https://cyka.lol', bullets: ['Fan/experimental project'] },
+    /*{ name: 'cyka.lol', link: 'https://cyka.lol', bullets: ['Fan/experimental project'] },*/
   ],
   cta: {
     resumeHref: '/en/resume',

@@ -50,11 +50,11 @@ export function createTray(mainWindow: BrowserWindow): Tray {
   const icon = createTrayIcon();
   tray = new Tray(icon);
 
-  tray.setToolTip('Activity Desktop - Tracking');
+  tray.setToolTip('Wizard Tracker');
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Activity Desktop',
+      label: 'Wizard Tracker',
       enabled: false,
     },
     { type: 'separator' },

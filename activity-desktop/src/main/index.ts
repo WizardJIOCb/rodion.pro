@@ -1,4 +1,4 @@
-// Main process entry point for Activity Desktop
+// Main process entry point for Wizard Tracker
 import { app, BrowserWindow } from 'electron';
 import { createMainWindow, getMainWindow } from './window';
 import { registerIpcHandlers, setMainWindow, forwardStateUpdates, forwardSyncUpdates } from './ipc/ipc-handlers';

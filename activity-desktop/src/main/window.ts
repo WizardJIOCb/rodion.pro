@@ -12,7 +12,7 @@ export function createMainWindow(): BrowserWindow {
     height: 720,
     minWidth: 400,
     minHeight: 600,
-    title: 'Activity Desktop',
+    title: 'Wizard Tracker',
     show: false,
     frame: true,
     resizable: true,

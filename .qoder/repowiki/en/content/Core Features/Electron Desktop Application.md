@@ -27,15 +27,17 @@
 - [MiniTimeSeriesChart.tsx](file://activity-desktop/src/renderer/components/charts/MiniTimeSeriesChart.tsx)
 - [useTimeline.ts](file://activity-desktop/src/renderer/hooks/useTimeline.ts)
 - [aggregateTimeline.ts](file://activity-desktop/src/renderer/utils/aggregateTimeline.ts)
+- [styles.css](file://activity-desktop/src/renderer/styles.css)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added comprehensive real-time tracking visualization components including LivePulse, TimeSinceUpdate, TopAppsList, and new chart components
-- Enhanced useTimeline hook with automatic refresh capabilities and sync update subscriptions
-- Implemented advanced timeline aggregation utilities for 24-hour activity bars, category donuts, and time series analysis
-- Updated tab components with new visualization features and real-time data displays
-- Enhanced privacy filtering with category-only mode and configurable blacklists
+- Enhanced CategoryDonut chart with improved tooltip styling using CSS variables for theme consistency
+- Implemented better z-index management for tooltip positioning with wrapperStyle configuration
+- Added pointer event control to prevent tooltip interference with chart interactions
+- Improved TopAppsList component with consistent tooltip styling and z-index management
+- Enhanced CSS styling with recharts-tooltip-wrapper class for better tooltip handling
+- Refined user interaction experience with improved pointer event control across visualization components
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -55,7 +57,7 @@
 15. [Conclusion](#conclusion)
 
 ## Introduction
-This document describes the comprehensive Electron desktop application for local activity monitoring and synchronization on Windows. The application provides a full-featured solution that tracks user activity (keyboard, mouse, scrolling), detects application focus and idle time, applies advanced privacy filtering, stores events locally in a SQLite database, and periodically syncs data to a remote server. The application features a modern React-based UI with system tray integration, multi-tab interface, comprehensive privacy controls, and sophisticated real-time visualization components.
+This document describes the comprehensive Electron desktop application for local activity monitoring and synchronization on Windows. The application provides a full-featured solution that tracks user activity (keyboard, mouse, scrolling), detects application focus and idle time, applies advanced privacy filtering, stores events locally in a SQLite database, and periodically syncs data to a remote server. The application features a modern React-based UI with system tray integration, multi-tab interface, comprehensive privacy controls, and sophisticated real-time visualization components with enhanced user interaction capabilities.
 
 ## Project Structure
 The application follows a sophisticated layered architecture designed for Windows desktop environments:
@@ -63,7 +65,7 @@ The application follows a sophisticated layered architecture designed for Window
 - **Renderer Process**: React application with tabbed interface for status, timeline, markers, privacy, and settings
 - **Privacy Layer**: Advanced filtering system with configurable blacklists, domain redaction, and category-only mode
 - **Storage Layer**: Local persistence using better-sqlite3 with migrations, indexing, and transactional operations
-- **Visualization Layer**: Real-time components for live pulse indicators, time displays, and interactive charts
+- **Visualization Layer**: Real-time components for live pulse indicators, time displays, and interactive charts with enhanced tooltip management
 - **Analytics Layer**: Timeline aggregation utilities for comprehensive activity analysis
 - **Native Integration**: Windows-specific input capture using uiohook-napi and koffi libraries
 - **Build System**: Electron Forge with Webpack for production packaging and distribution
@@ -85,6 +87,7 @@ R_App["React App<br/>Multi-Tab Interface"]
 R_UI["Tab Components<br/>Real-time Updates"]
 R_Hooks["Custom Hooks<br/>State Management"]
 R_Visualization["Visualization Components<br/>Live Pulse & Charts"]
+R_Styles["Enhanced Styles<br/>Tooltip & Z-index Management"]
 end
 subgraph "Native Integration"
 N_Input["Input Capture<br/>uiohook-napi"]
@@ -114,6 +117,7 @@ MP_Privacy --> R_App
 R_App --> R_UI
 R_App --> R_Hooks
 R_App --> R_Visualization
+R_Visualization --> R_Styles
 B_Forge --> B_Webpack
 B_Forge --> B_Makers
 ```
@@ -152,7 +156,7 @@ The application consists of several interconnected core components that work tog
 - **Real-time State Updates**: Subscribes to collector and sync state changes for immediate UI updates
 - **Configuration Management**: Handles setup screen and configuration validation
 - **Component Architecture**: Modular tab components with specialized functionality
-- **Visualization Components**: Live pulse indicators, time displays, and interactive charts for real-time monitoring
+- **Visualization Components**: Live pulse indicators, time displays, and interactive charts for real-time monitoring with enhanced tooltip management
 
 **Storage and Persistence**
 - **SQLite Database**: Local storage with WAL mode, foreign key constraints, and proper indexing
@@ -644,7 +648,7 @@ The React-based user interface provides a comprehensive dashboard with intuitive
 
 **Visual Design**
 - **Theme Integration**: Consistent styling with dark/light theme support
-- **Chart Integration**: Recharts-based visualizations for activity data
+- **Chart Integration**: Recharts-based visualizations for activity data with enhanced tooltip management
 - **Accessibility**: Keyboard navigation and screen reader support
 - **Performance**: Optimized rendering for smooth user experience
 
@@ -694,7 +698,7 @@ App --> SettingsTab : "activeTab='settings'"
 - [App.tsx:1-71](file://activity-desktop/src/renderer/App.tsx#L1-L71)
 
 ## Real-time Visualization Components
-The application now features comprehensive real-time visualization components that provide immediate feedback on system status and activity patterns:
+The application now features comprehensive real-time visualization components that provide immediate feedback on system status and activity patterns with enhanced user interaction capabilities:
 
 **LivePulse Component**
 - **Purpose**: Visual indicator for real-time activity status with animated pulsing effect
@@ -713,11 +717,14 @@ The application now features comprehensive real-time visualization components th
 - **Features**: Percentage-based progress visualization, category coloring, and duration formatting
 - **Functionality**: Dynamic ranking with configurable maximum items and responsive design
 - **Performance**: Efficient rendering with memoized calculations and optimized DOM updates
+- **Enhanced Tooltip Management**: Improved z-index control and pointer event handling for better user interaction
 
 **CategoryDonut Chart**
-- **Purpose**: Pie chart visualization of activity distribution across categories
-- **Features**: Interactive tooltips, responsive container, category-based coloring, and percentage display
+- **Purpose**: Pie chart visualization of activity distribution across categories with enhanced tooltip styling
+- **Features**: Interactive tooltips with CSS variable theming, responsive container, category-based coloring, and percentage display
 - **Design**: Central total duration display with legend and gradient styling
+- **Enhanced Tooltip Styling**: Custom tooltip component using CSS variables (--bg-card, --border, --text, --text-dim) for consistent theming
+- **Improved User Interaction**: Better z-index management with wrapperStyle={{ zIndex: 10, pointerEvents: 'none' }} for tooltip positioning without interfering with chart interactions
 - **Integration**: Recharts-based with custom tooltip styling and responsive layout
 
 **DaySummaryCard Component**
@@ -726,12 +733,18 @@ The application now features comprehensive real-time visualization components th
 - **Formatting**: Human-readable duration formatting with appropriate units
 - **Design**: Card-based layout with accent colors for key metrics
 
+**Enhanced CSS Styling**
+- **Tooltip Wrapper Class**: Added .recharts-tooltip-wrapper with outline: none !important for better tooltip handling
+- **Pointer Event Control**: Consistent pointer-events-none usage across tooltip overlays to prevent interaction interference
+- **Z-index Management**: Standardized z-index: 10 for tooltip wrappers to ensure proper layering
+
 **Section sources**
 - [LivePulse.tsx:1-25](file://activity-desktop/src/renderer/components/LivePulse.tsx#L1-L25)
 - [TimeSinceUpdate.tsx:1-41](file://activity-desktop/src/renderer/components/TimeSinceUpdate.tsx#L1-L41)
-- [TopAppsList.tsx:1-54](file://activity-desktop/src/renderer/components/TopAppsList.tsx#L1-L54)
-- [CategoryDonut.tsx:1-103](file://activity-desktop/src/renderer/components/charts/CategoryDonut.tsx#L1-L103)
+- [TopAppsList.tsx:1-232](file://activity-desktop/src/renderer/components/TopAppsList.tsx#L1-L232)
+- [CategoryDonut.tsx:1-118](file://activity-desktop/src/renderer/components/charts/CategoryDonut.tsx#L1-L118)
 - [DaySummaryCard.tsx:1-37](file://activity-desktop/src/renderer/components/charts/DaySummaryCard.tsx#L1-L37)
+- [styles.css:61-63](file://activity-desktop/src/renderer/styles.css#L61-L63)
 
 ## Enhanced Timeline Analytics
 The timeline aggregation system has been significantly enhanced with new visualization components and improved data processing capabilities:
@@ -893,6 +906,7 @@ The application is optimized for efficient resource usage while maintaining resp
 - **Animation Management**: CSS animations for smooth visual feedback
 - **Component Memoization**: React.memo for expensive visualization components
 - **Real-time Updates**: Debounced updates for frequently changing data
+- **Enhanced Tooltip Performance**: Improved z-index and pointer event management reduces tooltip rendering conflicts
 
 ## Troubleshooting Guide
 Comprehensive troubleshooting guidance for common issues and their solutions:
@@ -926,12 +940,20 @@ Comprehensive troubleshooting guidance for common issues and their solutions:
 - **Live Pulse Animation Problems**: Check CSS animation support and theme variable availability
 - **Time Display Updates**: Ensure proper date parsing and interval cleanup
 - **Aggregation Performance**: Monitor useTimeline hook efficiency and data volume limits
+- **Tooltip Positioning Issues**: Verify z-index management and pointer event control in chart components
+- **Theme Consistency Problems**: Check CSS variable usage in custom tooltip components
 
 **System Integration Problems**
 - **Tray Icon Issues**: Verify native image generation and context menu registration
 - **Input Capture Failures**: Check uiohook-napi installation and permission requirements
 - **Window Detection Problems**: Ensure koffi library compatibility and Windows API access
 - **Startup Integration**: Verify Squirrel installer integration and auto-launch configuration
+
+**Enhanced Tooltip Issues**
+- **Tooltip Overlap Problems**: Verify wrapperStyle z-index values and pointerEvents configuration
+- **Tooltip Interaction Conflicts**: Check pointer-events-none usage on tooltip overlays
+- **Theme Variable Inconsistencies**: Ensure CSS variables are properly defined for tooltip styling
+- **Responsive Tooltip Positioning**: Verify tooltip positioning and responsive container usage
 
 **Section sources**
 - [index.ts:68-95](file://activity-desktop/src/main/index.ts#L68-L95)
@@ -943,12 +965,22 @@ Comprehensive troubleshooting guidance for common issues and their solutions:
 The comprehensive Electron desktop application represents a mature, production-ready solution for local activity monitoring on Windows. The implementation demonstrates advanced architectural patterns including secure IPC communication, robust privacy controls, efficient database design, and seamless native integration. The modular component structure ensures maintainability while the comprehensive feature set addresses real-world productivity tracking needs.
 
 **Recent Enhancements**
-The application has been significantly enhanced with comprehensive real-time visualization capabilities:
+The application has been significantly enhanced with comprehensive real-time visualization capabilities and improved user interaction:
 - **Live Pulse System**: Visual indicators for immediate status feedback
 - **Enhanced Timeline Analytics**: 24-hour activity bars, category donuts, and time series charts
 - **Improved Data Aggregation**: Sophisticated timeline processing with multiple visualization formats
 - **Real-time Updates**: Automatic refresh mechanisms for current day data
+- **Enhanced Tooltip Management**: Improved CategoryDonut chart tooltip styling with CSS variables, better z-index management, and pointer event control
 - **Performance Optimizations**: Efficient rendering and memory management for visualization components
+- **User Experience Improvements**: Better tooltip positioning and interaction handling across all chart components
+
+**Key Improvements**
+The recent enhancements focus on improving user interaction and visual consistency:
+- **CategoryDonut Tooltip Enhancement**: Custom tooltip styling using CSS variables for consistent theming across light/dark modes
+- **Z-index Management**: Standardized wrapperStyle configuration with z-index: 10 for proper tooltip layering
+- **Pointer Event Control**: pointerEvents: 'none' on tooltip overlays to prevent interference with chart interactions
+- **Consistent Styling**: Unified approach to tooltip styling across TopAppsList and CategoryDonut components
+- **CSS Integration**: Enhanced styles.css with recharts-tooltip-wrapper class for better tooltip handling
 
 Key strengths of the implementation include:
 - **Security-First Design**: Comprehensive privacy filtering and secure IPC communication
@@ -956,6 +988,7 @@ Key strengths of the implementation include:
 - **User Experience**: Intuitive multi-tab interface with real-time updates and visual feedback
 - **System Integration**: Native Windows capabilities with proper system integration
 - **Maintainability**: Clean architecture with proper separation of concerns
-- **Visualization Excellence**: Comprehensive real-time data visualization with interactive components
+- **Visualization Excellence**: Comprehensive real-time data visualization with enhanced user interaction capabilities
+- **Theme Consistency**: Unified styling approach using CSS variables for consistent appearance across components
 
 The application successfully transforms from a basic concept to a full-featured Windows desktop application, providing users with powerful activity tracking capabilities while maintaining strict privacy controls and system performance standards. The comprehensive documentation and troubleshooting guidance ensure both developer and user success with this sophisticated Electron application.

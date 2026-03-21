@@ -195,6 +195,20 @@ export function stopSyncWorker(): void {
   }
 }
 
+export function restartSyncWorker(): void {
+  if (syncInterval) {
+    clearInterval(syncInterval);
+  }
+  const config = getAllConfig();
+  const intervalSec = config['sync.intervalSec'];
+  syncInterval = setInterval(() => {
+    scheduledSync().catch(err => {
+      console.error('[sync-worker] Error:', err);
+    });
+  }, intervalSec * 1000);
+  console.log(`[sync-worker] Sync interval changed to ${intervalSec}s`);
+}
+
 export async function syncNow(): Promise<void> {
   lastSyncAttempt = 0; // bypass backoff
   await syncBatch();

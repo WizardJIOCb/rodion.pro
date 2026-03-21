@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useConfig } from '../hooks/useConfig';
 import { useSyncStatus } from '../hooks/useSyncStatus';
+import { applyFontScale, FONT_SCALE_MAP } from '../App';
 
 const api = window.activityAPI;
+
+const SCALE_LABELS = ['Compact', 'Small', '', 'Default', '', '', 'Large', '', '', 'Max'];
 
 export function SettingsTab() {
   const { config, update } = useConfig();
@@ -11,6 +14,14 @@ export function SettingsTab() {
   const [testing, setTesting] = useState(false);
 
   if (!config) return null;
+
+  const fontScale = config['ui.fontScale'] ?? 5;
+  const scalePct = FONT_SCALE_MAP[Math.max(0, Math.min(9, fontScale - 1))] ?? 100;
+
+  const handleFontScaleChange = (value: number) => {
+    applyFontScale(value);
+    update({ 'ui.fontScale': value });
+  };
 
   const handleTest = async () => {
     setTesting(true);
@@ -26,6 +37,33 @@ export function SettingsTab() {
 
   return (
     <div className="space-y-4">
+      {/* Interface */}
+      <div className="bg-[var(--bg-card)] rounded-lg p-4 border border-[var(--border)]">
+        <h2 className="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-3">Interface</h2>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs text-[var(--text-dim)]">Font size</label>
+            <span className="text-sm font-medium text-[var(--accent)]">
+              {fontScale} / 10
+              <span className="text-xs text-[var(--text-dim)] ml-1.5">({scalePct}%)</span>
+            </span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={10}
+            step={1}
+            value={fontScale}
+            onChange={e => handleFontScaleChange(parseInt(e.target.value))}
+            className="w-full accent-[var(--accent)] cursor-pointer"
+          />
+          <div className="flex justify-between text-xs text-[var(--text-dim)] mt-1">
+            <span>A</span>
+            <span className="text-base">A</span>
+          </div>
+        </div>
+      </div>
+
       {/* Server connection */}
       <div className="bg-[var(--bg-card)] rounded-lg p-4 border border-[var(--border)]">
         <h2 className="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-3">Server</h2>

@@ -193,6 +193,15 @@ export function startCollecting(): void {
   intervalHandle = setInterval(collectTick, config['collect.pollIntervalSec'] * 1000);
 }
 
+export function restartCollecting(): void {
+  if (intervalHandle) {
+    clearInterval(intervalHandle);
+  }
+  const config = getAllConfig();
+  intervalHandle = setInterval(collectTick, config['collect.pollIntervalSec'] * 1000);
+  console.log(`[collector] Poll interval changed to ${config['collect.pollIntervalSec']}s`);
+}
+
 export function stopCollecting(): void {
   if (intervalHandle) {
     clearInterval(intervalHandle);

@@ -8,6 +8,8 @@ import { SetupScreen } from './components/SetupScreen';
 
 const api = window.activityAPI;
 
+export const FONT_SCALE_MAP = [75, 83, 91, 100, 108, 116, 125, 133, 141, 150];
+
 type Tab = 'status' | 'timeline' | 'markers' | 'privacy' | 'settings';
 
 const TABS: { id: Tab; label: string }[] = [
@@ -18,12 +20,19 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'settings', label: 'Settings' },
 ];
 
+export function applyFontScale(scale: number) {
+  const pct = FONT_SCALE_MAP[Math.max(0, Math.min(9, scale - 1))] ?? 100;
+  document.documentElement.style.setProperty('--font-scale', `${pct}%`);
+}
+
 export function App() {
   const [activeTab, setActiveTab] = useState<Tab>('status');
   const [configured, setConfigured] = useState<boolean | null>(null);
 
   useEffect(() => {
     api.isConfigured().then(setConfigured);
+    // Apply saved font scale on startup
+    api.getConfig().then(cfg => applyFontScale(cfg['ui.fontScale']));
   }, []);
 
   if (configured === null) {

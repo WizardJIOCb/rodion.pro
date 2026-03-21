@@ -14,6 +14,11 @@
   --warning: #ff9800;
   --error: #f44336;
   --border: #2a3a5c;
+  --font-scale: 100%;
+}
+
+html {
+  font-size: var(--font-scale);
 }
 
 * {
@@ -60,4 +65,23 @@ body {
 
 .recharts-tooltip-wrapper {
   outline: none !important;
+}
+
+/* Accordion expand/collapse */
+.accordion-body {
+  transition: max-height 300ms ease, opacity 200ms ease;
+  overflow: hidden;
+}
+
+/* Smooth chart metric switching */
+.chart-fade {
+  transition: opacity 150ms ease;
+}
+
+/* Chevron rotation */
+.chevron {
+  transition: transform 200ms ease;
+}
+.chevron-open {
+  transform: rotate(90deg);
 }

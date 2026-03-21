@@ -54,15 +54,19 @@
 - [activity-agent/package.json](file://activity-agent/package.json)
 - [activity-agent/src/index.ts](file://activity-agent/src/index.ts)
 - [activity-agent/config.local.json](file://activity-agent/config.local.json)
+- [.gitignore](file://.gitignore)
+- [activity-desktop/webpack.rules.ts](file://activity-desktop/webpack.rules.ts)
+- [activity-desktop/webpack.renderer.config.ts](file://activity-desktop/webpack.renderer.config.ts)
+- [activity-desktop/webpack.main.config.ts](file://activity-desktop/webpack.main.config.ts)
+- [activity-desktop/package.json](file://activity-desktop/package.json)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added Visual Studio solution file (rodion.pro.sln) for enhanced development environment organization with nested project structure
-- Integrated ActivityNoteHelper .NET 8 WinForms application as a nested project within the Visual Studio solution
-- Enhanced development tooling with organized project hierarchy for better IDE navigation and build management
-- Added comprehensive quick notes functionality with encrypted note storage and privacy controls
-- Expanded activity monitoring infrastructure with additional API endpoints for note management
+- Updated webpack build system with asset-relocator-loader runtime removal optimization for Electron Forge builds
+- Enhanced development workflow with .gitignore updates including 'nul' and '.ssh-pass.sh' entries
+- Improved build performance and reduced bundle size through webpack optimization
+- Streamlined development environment with better file management and cleanup
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -84,7 +88,7 @@
 ## Introduction
 This document describes the complete build and deployment processes for rodion.pro, encompassing the Astro build configuration, asset optimization, environment variable handling, production build pipeline, and the new comprehensive local development infrastructure. The system now includes containerized deployment with Docker, systemd service management, comprehensive activity monitoring with privacy controls, real-time dashboards, automated deployment workflows, and enhanced local development environment with nginx reverse proxy configuration and activity tracking automation. It covers server requirements, the complete deployment workflow from server preparation to production launch, database migration, application building, and process management with pm2 and systemd. Additionally, it documents nginx reverse proxy configuration, SSL certificate setup with Let's Encrypt, load balancing considerations, monitoring setup, log management, backup strategies, maintenance procedures, rollback procedures, performance monitoring, and scaling considerations for production environments.
 
-**Updated** Enhanced with comprehensive local development infrastructure including nginx.conf reverse proxy configuration for production-like environment testing, start-tracking-local.bat automation script for streamlined activity tracking workflow, and expanded Windows development automation with activity agent management and tray icon support. **Updated** Added Visual Studio solution file (rodion.pro.sln) for enhanced development environment organization with nested project structure, integrating the ActivityNoteHelper .NET 8 WinForms application as a dedicated tool within the solution hierarchy.
+**Updated** Enhanced with comprehensive local development infrastructure including nginx.conf reverse proxy configuration for production-like environment testing, start-tracking-local.bat automation script for streamlined activity tracking workflow, and expanded Windows development automation with activity agent management and tray icon support. **Updated** Added Visual Studio solution file (rodion.pro.sln) for enhanced development environment organization with nested project structure, integrating the ActivityNoteHelper .NET 8 WinForms application as a dedicated tool within the solution hierarchy. **Updated** Implemented webpack build system optimizations including asset-relocator-loader runtime removal for improved build performance and reduced bundle size in Electron Forge applications.
 
 ## Project Structure
 The project is an Astro SSR application with a Node adapter, React islands, TypeScript, Tailwind CSS, and PostgreSQL via Drizzle ORM. The system now includes a dedicated activity monitoring service with its own API endpoints, database schema, and frontend components, along with comprehensive local development infrastructure. Key build and deployment artifacts include:
@@ -102,6 +106,7 @@ The project is an Astro SSR application with a Node adapter, React islands, Type
 - **Updated** Comprehensive Windows development automation scripts with activity tracking capabilities
 - **Updated** Visual Studio solution file organizing development tools with nested project structure for improved IDE navigation
 - **Updated** ActivityNoteHelper .NET 8 WinForms application providing quick notes functionality with encrypted storage and privacy controls
+- **Updated** Optimized webpack build system with asset-relocator-loader runtime removal for improved build performance
 
 ```mermaid
 graph TB
@@ -125,6 +130,8 @@ EE["System Tray Icon<br/>Process Management"] --> FF["Activity Tracking<br/>Mini
 GG["Visual Studio Solution<br/>Nested Project Structure"] --> HH["ActivityNoteHelper<br/>.NET 8 WinForms App"]
 II["Quick Notes API<br/>Encrypted Storage"] --> JJ["Secure Note Management"]
 KK["ActivityNoteHelper<br/>Config & Tools"] --> LL["Hotkey Support<br/>Privacy Controls<br/>Toast Notifications"]
+MM["Optimized Webpack Build<br/>Asset-Relocator-Loader Removal"] --> NN["Improved Build Performance<br/>Reduced Bundle Size"]
+OO["Enhanced Development Workflow<br/>.gitignore Updates<br/>nul & .ssh-pass.sh Entries"] --> PP["Streamlined Development<br/>Better File Management"]
 ```
 
 **Diagram sources**
@@ -145,6 +152,9 @@ KK["ActivityNoteHelper<br/>Config & Tools"] --> LL["Hotkey Support<br/>Privacy C
 - [rodion.pro.sln:1-33](file://rodion.pro.sln#L1-L33)
 - [tools/activity-note-helper/ActivityNoteHelper.csproj:1-13](file://tools/activity-note-helper/ActivityNoteHelper.csproj#L1-L13)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 **Section sources**
 - [README.md:1-244](file://README.md#L1-L244)
@@ -164,6 +174,9 @@ KK["ActivityNoteHelper<br/>Config & Tools"] --> LL["Hotkey Support<br/>Privacy C
 - [rodion.pro.sln:1-33](file://rodion.pro.sln#L1-L33)
 - [tools/activity-note-helper/ActivityNoteHelper.csproj:1-13](file://tools/activity-note-helper/ActivityNoteHelper.csproj#L1-L13)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 ## Core Components
 - Astro build configuration defines SSR output, the Node adapter in standalone mode, integrations (React, Tailwind, MDX, Sitemap), i18n locales and routing, and the site URL.
@@ -180,6 +193,7 @@ KK["ActivityNoteHelper<br/>Config & Tools"] --> LL["Hotkey Support<br/>Privacy C
 - **Updated** Enhanced activity agent with local configuration support, system tray icon, and improved error handling for development workflows.
 - **Updated** Visual Studio solution file organizes development tools with nested project structure for improved IDE navigation and build management.
 - **Updated** ActivityNoteHelper .NET 8 WinForms application provides quick notes functionality with encrypted storage, privacy controls, hotkey support, and toast notifications.
+- **Updated** Optimized webpack build system with asset-relocator-loader runtime removal for improved build performance and reduced bundle size in Electron Forge applications.
 
 **Section sources**
 - [astro.config.ts:8-37](file://astro.config.ts#L8-L37)
@@ -198,6 +212,8 @@ KK["ActivityNoteHelper<br/>Config & Tools"] --> LL["Hotkey Support<br/>Privacy C
 - [rodion.pro.sln:1-33](file://rodion.pro.sln#L1-L33)
 - [tools/activity-note-helper/ActivityNoteHelper.csproj:1-13](file://tools/activity-note-helper/ActivityNoteHelper.csproj#L1-L13)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
 
 ## Architecture Overview
 The production runtime architecture centers on an Astro SSR application served by a Node adapter, behind an nginx reverse proxy with SSL termination, and managed by pm2 with dotenv integration for environment variable loading. The system now includes a dedicated activity monitoring service running on port 4010, managed by systemd, with its own database connection and API endpoints. Database operations are handled by PostgreSQL with Drizzle ORM and migrations, including specialized activity monitoring tables and new activity notes table. Development environments benefit from comprehensive automated setup scripts for Windows users with enhanced error handling and process management, plus containerized deployment options with Docker and local development infrastructure with nginx reverse proxy configuration.
@@ -229,6 +245,8 @@ CC["Visual Studio Solution<br/>Nested Project Structure"]
 DD["ActivityNoteHelper<br/>.NET 8 WinForms App"]
 EE["Quick Notes API<br/>Encrypted Storage"]
 FF["Privacy Controls<br/>Hotkey Support<br/>Toast Notifications"]
+GG["Optimized Webpack Build<br/>Asset-Relocator-Loader Removal<br/>Improved Performance"]
+HH["Enhanced Development Workflow<br/>.gitignore nul & .ssh-pass.sh<br/>Better File Management"]
 ```
 
 **Diagram sources**
@@ -245,6 +263,9 @@ FF["Privacy Controls<br/>Hotkey Support<br/>Toast Notifications"]
 - [activity-agent/src/index.ts:355-367](file://activity-agent/src/index.ts#L355-L367)
 - [rodion.pro.sln:1-33](file://rodion.pro.sln#L1-L33)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 ## Development Environment Automation
 
@@ -697,6 +718,8 @@ Dist --> Preview["Preview command"]
 - Build command generates SSR assets under dist/server and dist/client.
 - Tailwind CSS is configured with content globs covering Astro and TS sources; dark mode and custom theme variables are supported.
 - TypeScript configuration extends Astro's strict base, enabling JSX with React and strict null checks.
+- **Updated** Optimized webpack build system with asset-relocator-loader runtime removal for improved build performance and reduced bundle size in Electron Forge applications.
+- **Updated** Enhanced development workflow with .gitignore updates including 'nul' and '.ssh-pass.sh' entries for better file management and cleanup.
 
 ```mermaid
 flowchart TD
@@ -706,17 +729,25 @@ Build --> DistClient["dist/client<br/>static assets"]
 DistServer --> Preview["npm run preview"]
 Tailwind["Tailwind Config"] --> CSS["Compiled CSS"]
 Types["TypeScript Config"] --> TypeCheck["Type Checking"]
+Webpack["Optimized Webpack Build<br/>Asset-Relocator-Loader Removal"] --> Perf["Improved Performance<br/>Reduced Bundle Size"]
+GitIgnore["Enhanced .gitignore<br/>nul & .ssh-pass.sh Entries"] --> Workflow["Streamlined Development<br/>Better File Management"]
 ```
 
 **Diagram sources**
 - [package.json:5-16](file://package.json#L5-L16)
 - [tailwind.config.ts:3-32](file://tailwind.config.ts#L3-L32)
 - [tsconfig.json:3-12](file://tsconfig.json#L3-L12)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 **Section sources**
 - [package.json:5-16](file://package.json#L5-L16)
 - [tailwind.config.ts:3-32](file://tailwind.config.ts#L3-L32)
 - [tsconfig.json:3-12](file://tsconfig.json#L3-L12)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 ### Environment Variable Handling
 - Required variables include site URL, database connection string, GitHub webhook secret, deploy token, Google OAuth client credentials, admin emails, activity monitoring configuration, and optional Cloudflare Turnstile keys.
@@ -739,6 +770,8 @@ DevScripts["Enhanced Windows Dev Scripts<br/>Auto-.env setup<br/>Improved error 
 LocalInfra["Local Development Infrastructure<br/>nginx.conf reverse proxy<br/>Activity tracking scripts"] --> Runtime
 DBLayer["Safe DB Layer<br/>hasDb()/requireDb()"] --> Runtime
 NotesEnv["ActivityNoteHelper<br/>Env Overrides<br/>ACTIVITY_* Variables"] --> Runtime
+OptimizedBuild["Optimized Webpack Build<br/>Asset-Relocator-Loader Removal"] --> Runtime
+EnhancedWorkflow["Enhanced Development Workflow<br/>.gitignore nul & .ssh-pass.sh<br/>Better File Management"] --> Runtime
 ```
 
 **Diagram sources**
@@ -751,6 +784,9 @@ NotesEnv["ActivityNoteHelper<br/>Env Overrides<br/>ACTIVITY_* Variables"] --> Ru
 - [start-tracking-local.bat:1-39](file://start-tracking-local.bat#L1-L39)
 - [src/db/index.ts:18-45](file://src/db/index.ts#L18-L45)
 - [tools/activity-note-helper/Program.cs:68-79](file://tools/activity-note-helper/Program.cs#L68-L79)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 **Section sources**
 - [.env.example:1-26](file://.env.example#L1-L26)
@@ -762,6 +798,9 @@ NotesEnv["ActivityNoteHelper<br/>Env Overrides<br/>ACTIVITY_* Variables"] --> Ru
 - [nginx.conf:1-39](file://nginx.conf#L1-L39)
 - [start-tracking-local.bat:1-39](file://start-tracking-local.bat#L1-L39)
 - [tools/activity-note-helper/Program.cs:68-79](file://tools/activity-note-helper/Program.cs#L68-L79)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 ### Database Schema and Migrations
 - Drizzle schema defines users, oauth_accounts, sessions, comments, reactions, comment_flags, events, and new activity monitoring tables with appropriate constraints and indexes.
@@ -1075,10 +1114,14 @@ LocalDev --> ActProxy
 - Cache static assets at CDN level and leverage browser caching headers
 - **Updated** Activity service benefits from separate caching strategies from main application
 - **Updated** Local development infrastructure with nginx reverse proxy provides production-like performance testing
+- **Updated** Activity agent with minimized operation and efficient polling reduces local development resource usage
 - **Updated** ActivityNoteHelper optimized for minimal resource usage with efficient encryption and secure storage
+- **Updated** Visual Studio solution file improves IDE performance with organized project hierarchy and faster build times
+- **Updated** Optimized webpack build system provides improved build performance and reduced bundle size
+- **Updated** Enhanced development workflow with better file management and cleanup
 
 ## Dependency Analysis
-The application's build and runtime dependencies are declared in package.json. Astro SSR relies on the Node adapter, while integrations include React, Tailwind, MDX, and Sitemap. Database operations depend on Drizzle ORM and PostgreSQL. Environment variables are consumed at runtime and typed via src/env.d.ts. **Updated** The activity monitoring infrastructure adds new dependencies including Express for the activity service, SSE management utilities, and privacy filtering components. **Updated** Enhanced dotenv integration provides automatic environment variable loading for production deployments. **Updated** Local development infrastructure includes nginx reverse proxy dependencies and activity agent TypeScript dependencies. **Updated** Visual Studio solution file organizes development tools with nested project structure for improved IDE navigation. **Updated** ActivityNoteHelper .NET 8 WinForms application adds WinForms dependencies and encryption libraries for secure note storage.
+The application's build and runtime dependencies are declared in package.json. Astro SSR relies on the Node adapter, while integrations include React, Tailwind, MDX, and Sitemap. Database operations depend on Drizzle ORM and PostgreSQL. Environment variables are consumed at runtime and typed via src/env.d.ts. **Updated** The activity monitoring infrastructure adds new dependencies including Express for the activity service, SSE management utilities, and privacy filtering components. **Updated** Enhanced dotenv integration provides automatic environment variable loading for production deployments. **Updated** Local development infrastructure includes nginx reverse proxy dependencies and activity agent TypeScript dependencies. **Updated** Visual Studio solution file organizes development tools with nested project structure for improved IDE navigation. **Updated** ActivityNoteHelper .NET 8 WinForms application adds WinForms dependencies and encryption libraries for secure note storage. **Updated** Optimized webpack build system removes asset-relocator-loader runtime for improved build performance and reduced bundle size.
 
 ```mermaid
 graph LR
@@ -1109,6 +1152,8 @@ VSProj --> WinForms["WinForms Dependencies"]
 VSProj --> Crypto["Encryption Libraries"]
 VSProj --> Config["Config Management"]
 NotesAPI["Notes API<br/>Encrypted Storage"] --> NotesDeps["Crypto, Sanitization<br/>Privacy Controls"]
+OptimizedBuild["Optimized Webpack Build<br/>Asset-Relocator-Loader Removal"] --> BuildPerf["Improved Performance<br/>Reduced Bundle Size"]
+EnhancedWorkflow["Enhanced Development Workflow<br/>.gitignore nul & .ssh-pass.sh<br/>Better File Management"] --> DevEfficiency["Streamlined Development<br/>Cleaner File Management"]
 ```
 
 **Diagram sources**
@@ -1125,6 +1170,9 @@ NotesAPI["Notes API<br/>Encrypted Storage"] --> NotesDeps["Crypto, Sanitization<
 - [rodion.pro.sln:1-33](file://rodion.pro.sln#L1-L33)
 - [tools/activity-note-helper/ActivityNoteHelper.csproj:1-13](file://tools/activity-note-helper/ActivityNoteHelper.csproj#L1-L13)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 **Section sources**
 - [package.json:18-32](file://package.json#L18-L32)
@@ -1140,6 +1188,9 @@ NotesAPI["Notes API<br/>Encrypted Storage"] --> NotesDeps["Crypto, Sanitization<
 - [rodion.pro.sln:1-33](file://rodion.pro.sln#L1-L33)
 - [tools/activity-note-helper/ActivityNoteHelper.csproj:1-13](file://tools/activity-note-helper/ActivityNoteHelper.csproj#L1-L13)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 ## Performance Considerations
 - Use Astro SSR with the Node adapter for improved initial page load performance
@@ -1156,6 +1207,8 @@ NotesAPI["Notes API<br/>Encrypted Storage"] --> NotesDeps["Crypto, Sanitization<
 - **Updated** Activity agent with minimized operation and efficient polling reduces local development resource usage
 - **Updated** ActivityNoteHelper optimized for minimal resource usage with efficient encryption and secure storage
 - **Updated** Visual Studio solution file improves IDE performance with organized project hierarchy and faster build times
+- **Updated** Optimized webpack build system provides improved build performance and reduced bundle size through asset-relocator-loader runtime removal
+- **Updated** Enhanced development workflow with better file management and cleanup through .gitignore updates
 
 ## Troubleshooting Guide
 Common issues and resolutions:
@@ -1178,6 +1231,8 @@ Common issues and resolutions:
 - **Updated** ActivityNoteHelper not capturing notes: verify hotkey registration, check device credentials, ensure API endpoint accessibility
 - **Updated** Encrypted note storage failures: verify encryption keys, check database connectivity, ensure activity_notes table exists
 - **Updated** Visual Studio solution file issues: verify Visual Studio version compatibility, check nested project dependencies, ensure proper solution GUID configuration
+- **Updated** Webpack build performance issues: verify asset-relocator-loader removal is properly configured, check renderer configuration excludes problematic loaders
+- **Updated** Development workflow problems: verify .gitignore contains 'nul' and '.ssh-pass.sh' entries for proper file management and cleanup
 
 **Section sources**
 - [.env.example:1-26](file://.env.example#L1-L26)
@@ -1196,9 +1251,12 @@ Common issues and resolutions:
 - [activity-agent/src/index.ts:355-367](file://activity-agent/src/index.ts#L355-L367)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
 - [rodion.pro.sln:1-33](file://rodion.pro.sln#L1-L33)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)
 
 ## Conclusion
-This guide outlines a complete build and deployment strategy for rodion.pro, covering Astro SSR configuration, environment handling, database migrations, production process management with pm2 using dotenv integration, and nginx reverse proxy with SSL. The enhanced development automation with comprehensive Windows scripts (start-dev-work-now.bat, stop-dev-work-now.bat) replaces older scripts and provides significantly improved local setup experience with better error handling and process management. The improved PM2 configuration ensures reliable production deployments with automatic environment variable loading through dotenv integration. **Updated** The new activity monitoring infrastructure provides comprehensive privacy-focused data collection, real-time dashboards, and automated deployment workflows. The system now includes Docker-based containerized deployment, systemd service management for the activity monitoring service, integrated monitoring capabilities, and comprehensive local development infrastructure with nginx.conf reverse proxy configuration and activity tracking automation. **Updated** Enhanced dotenv integration provides seamless environment variable management across development and production environments. **Updated** The standalone Node adapter mode optimizes deployment performance and resource utilization. **Updated** Local development infrastructure with nginx reverse proxy configuration enables production-like environment testing and activity tracking automation. **Updated** The Visual Studio solution file (rodion.pro.sln) enhances development environment organization with nested project structure, integrating the ActivityNoteHelper .NET 8 WinForms application for improved IDE navigation and build management. **Updated** ActivityNoteHelper provides comprehensive quick notes functionality with encrypted storage, privacy controls, hotkey support, and toast notifications. By following the documented workflow and operational practices, teams can reliably deploy and maintain the application in production, with clear paths for monitoring, backups, scaling, and rollbacks across both the main application and the activity monitoring service.
+This guide outlines a complete build and deployment strategy for rodion.pro, covering Astro SSR configuration, environment handling, database migrations, production process management with pm2 using dotenv integration, and nginx reverse proxy with SSL. The enhanced development automation with comprehensive Windows scripts (start-dev-work-now.bat, stop-dev-work-now.bat) replaces older scripts and provides significantly improved local setup experience with better error handling and process management. The improved PM2 configuration ensures reliable production deployments with automatic environment variable loading through dotenv integration. **Updated** The new activity monitoring infrastructure provides comprehensive privacy-focused data collection, real-time dashboards, and automated deployment workflows. The system now includes Docker-based containerized deployment, systemd service management for the activity monitoring service, integrated monitoring capabilities, and comprehensive local development infrastructure with nginx.conf reverse proxy configuration and activity tracking automation. **Updated** Enhanced dotenv integration provides seamless environment variable management across development and production environments. **Updated** The standalone Node adapter mode optimizes deployment performance and resource utilization. **Updated** Local development infrastructure with nginx reverse proxy configuration enables production-like environment testing and activity tracking automation. **Updated** The Visual Studio solution file (rodion.pro.sln) enhances development environment organization with nested project structure, integrating the ActivityNoteHelper .NET 8 WinForms application for improved IDE navigation and build management. **Updated** ActivityNoteHelper provides comprehensive quick notes functionality with encrypted storage, privacy controls, hotkey support, and toast notifications. **Updated** Optimized webpack build system provides improved build performance and reduced bundle size through asset-relocator-loader runtime removal. **Updated** Enhanced development workflow with better file management and cleanup through .gitignore updates including 'nul' and '.ssh-pass.sh' entries. By following the documented workflow and operational practices, teams can reliably deploy and maintain the application in production, with clear paths for monitoring, backups, scaling, and rollbacks across both the main application and the activity monitoring service.
 
 ## Appendices
 - Environment variables reference and descriptions are provided in the repository's README
@@ -1218,6 +1276,8 @@ This guide outlines a complete build and deployment strategy for rodion.pro, cov
 - **Updated** Visual Studio solution file organizes development tools with nested project structure for improved IDE navigation
 - **Updated** ActivityNoteHelper .NET 8 WinForms application provides quick notes functionality with encrypted storage and privacy controls
 - **Updated** ActivityNoteHelper configuration supports environment variable overrides for flexible deployment scenarios
+- **Updated** Optimized webpack build system removes asset-relocator-loader runtime for improved build performance and reduced bundle size
+- **Updated** Enhanced development workflow with .gitignore updates including 'nul' and '.ssh-pass.sh' entries for better file management and cleanup
 
 **Section sources**
 - [README.md:227-239](file://README.md#L227-L239)
@@ -1240,3 +1300,6 @@ This guide outlines a complete build and deployment strategy for rodion.pro, cov
 - [tools/activity-note-helper/ActivityNoteHelper.csproj:1-13](file://tools/activity-note-helper/ActivityNoteHelper.csproj#L1-L13)
 - [tools/activity-note-helper/Program.cs:1-630](file://tools/activity-note-helper/Program.cs#L1-L630)
 - [tools/activity-note-helper/activity-note-helper.config.json:1-10](file://tools/activity-note-helper/activity-note-helper.config.json#L1-L10)
+- [activity-desktop/webpack.rules.ts:1-29](file://activity-desktop/webpack.rules.ts#L1-L29)
+- [activity-desktop/webpack.renderer.config.ts:1-39](file://activity-desktop/webpack.renderer.config.ts#L1-L39)
+- [.gitignore:9-10](file://.gitignore#L9-L10)

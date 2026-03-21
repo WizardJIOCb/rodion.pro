@@ -2,7 +2,7 @@
   "name": "activity-desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "Rodion.Pro Activity Desktop - Local activity tracker",
+  "description": "Wizard Tracker - Local activity tracker",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",

@@ -5,11 +5,11 @@ import { ipcMain, type BrowserWindow, type IpcMainInvokeEvent } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
 import type { DesktopConfig } from '../../shared/types';
 
-import { getState, setPaused } from '../collectors/orchestrator';
+import { getState, setPaused, restartCollecting } from '../collectors/orchestrator';
 import { getAllConfig, updateConfig, isConfigured } from '../store/config-repo';
 import { getEventsInRange } from '../store/events-repo';
 import { getMarkersInRange, insertMarker } from '../store/markers-repo';
-import { getSyncStatus, syncNow, testConnectivity } from '../sync/sync-worker';
+import { getSyncStatus, syncNow, testConnectivity, restartSyncWorker } from '../sync/sync-worker';
 import { previewFilter } from '../privacy/filter';
 
 let mainWindow: BrowserWindow | null = null;
@@ -73,6 +73,14 @@ export function registerIpcHandlers(): void {
     const safe = { ...partial };
     delete (safe as Record<string, unknown>)['server.deviceKey'];
     updateConfig(safe);
+
+    // Hot-reload intervals if relevant settings changed
+    if ('collect.pollIntervalSec' in safe || 'collect.afkThresholdMs' in safe) {
+      restartCollecting();
+    }
+    if ('sync.intervalSec' in safe || 'sync.batchSize' in safe) {
+      restartSyncWorker();
+    }
   });
 
   // Pause/Resume

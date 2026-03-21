@@ -202,7 +202,7 @@ export const resumeSections: ResumeSection[] = [
           ru: 'Платформа для чтения книг с использованием ИИ. Full-stack + DevOps реализация. AI-интеграции.',
           en: 'AI-powered book reading platform. Full-stack + DevOps implementation. AI integrations.',
         },
-      },
+      }/*,
       {
         title: { ru: 'cyka.lol', en: 'cyka.lol' },
         link: 'https://cyka.lol',
@@ -210,7 +210,7 @@ export const resumeSections: ResumeSection[] = [
           ru: 'Фан-проект / экспериментальная площадка.',
           en: 'Fan project / experimental platform.',
         },
-      },
+      },*/
     ],
   },
 ];

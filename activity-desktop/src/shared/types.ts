@@ -50,6 +50,7 @@ export interface DesktopConfig {
   'sync.batchSize': number;
   'sync.intervalSec': number;
   'sync.maxRetries': number;
+  'ui.fontScale': number;
 }
 
 export const DEFAULT_CONFIG: DesktopConfig = {
@@ -66,6 +67,7 @@ export const DEFAULT_CONFIG: DesktopConfig = {
   'sync.batchSize': 20,
   'sync.intervalSec': 30,
   'sync.maxRetries': 5,
+  'ui.fontScale': 5,
 };
 
 export interface SyncStatus {

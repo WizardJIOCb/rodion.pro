@@ -47,7 +47,7 @@ export function SetupScreen({ onComplete }: SetupScreenProps) {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="w-96 bg-[var(--bg-card)] rounded-lg p-6 border border-[var(--border)]">
-        <h1 className="text-lg font-bold mb-1">Activity Desktop</h1>
+        <h1 className="text-lg font-bold mb-1">Wizard Tracker</h1>
         <p className="text-sm text-[var(--text-dim)] mb-6">Configure your device to start tracking</p>
 
         <div className="space-y-3">

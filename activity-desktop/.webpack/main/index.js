@@ -5747,6 +5747,7 @@ exports.getState = getState;
 exports.setPaused = setPaused;
 exports.onStateUpdate = onStateUpdate;
 exports.startCollecting = startCollecting;
+exports.restartCollecting = restartCollecting;
 exports.stopCollecting = stopCollecting;
 const win32_1 = __webpack_require__(/*! ./win32 */ "./src/main/collectors/win32.ts");
 const input_counter_1 = __webpack_require__(/*! ./input-counter */ "./src/main/collectors/input-counter.ts");
@@ -5907,6 +5908,14 @@ function startCollecting() {
     collectTick(); // initial collection
     const config = (0, config_repo_1.getAllConfig)();
     intervalHandle = setInterval(collectTick, config['collect.pollIntervalSec'] * 1000);
+}
+function restartCollecting() {
+    if (intervalHandle) {
+        clearInterval(intervalHandle);
+    }
+    const config = (0, config_repo_1.getAllConfig)();
+    intervalHandle = setInterval(collectTick, config['collect.pollIntervalSec'] * 1000);
+    console.log(`[collector] Poll interval changed to ${config['collect.pollIntervalSec']}s`);
 }
 function stopCollecting() {
     if (intervalHandle) {
@@ -6099,6 +6108,13 @@ function registerIpcHandlers() {
         const safe = { ...partial };
         delete safe['server.deviceKey'];
         (0, config_repo_1.updateConfig)(safe);
+        // Hot-reload intervals if relevant settings changed
+        if ('collect.pollIntervalSec' in safe || 'collect.afkThresholdMs' in safe) {
+            (0, orchestrator_1.restartCollecting)();
+        }
+        if ('sync.intervalSec' in safe || 'sync.batchSize' in safe) {
+            (0, sync_worker_1.restartSyncWorker)();
+        }
     });
     // Pause/Resume
     electron_1.ipcMain.handle(ipc_channels_1.IPC.PAUSE, (_event, minutes) => {
@@ -6710,6 +6726,7 @@ exports.onSyncUpdate = onSyncUpdate;
 exports.getSyncStatus = getSyncStatus;
 exports.startSyncWorker = startSyncWorker;
 exports.stopSyncWorker = stopSyncWorker;
+exports.restartSyncWorker = restartSyncWorker;
 exports.syncNow = syncNow;
 exports.testConnectivity = testConnectivity;
 const axios_1 = __importDefault(__webpack_require__(/*! axios */ "./node_modules/axios/dist/node/axios.cjs"));
@@ -6876,6 +6893,19 @@ function stopSyncWorker() {
         syncInterval = null;
     }
 }
+function restartSyncWorker() {
+    if (syncInterval) {
+        clearInterval(syncInterval);
+    }
+    const config = (0, config_repo_1.getAllConfig)();
+    const intervalSec = config['sync.intervalSec'];
+    syncInterval = setInterval(() => {
+        scheduledSync().catch(err => {
+            console.error('[sync-worker] Error:', err);
+        });
+    }, intervalSec * 1000);
+    console.log(`[sync-worker] Sync interval changed to ${intervalSec}s`);
+}
 async function syncNow() {
     lastSyncAttempt = 0; // bypass backoff
     await syncBatch();
@@ -6969,10 +6999,10 @@ function createTrayIcon() {
 function createTray(mainWindow) {
     const icon = createTrayIcon();
     tray = new electron_1.Tray(icon);
-    tray.setToolTip('Activity Desktop - Tracking');
+    tray.setToolTip('Wizard Tracker');
     const contextMenu = electron_1.Menu.buildFromTemplate([
         {
-            label: 'Activity Desktop',
+            label: 'Wizard Tracker',
             enabled: false,
         },
         { type: 'separator' },
@@ -7053,7 +7083,7 @@ function createMainWindow() {
         height: 720,
         minWidth: 400,
         minHeight: 600,
-        title: 'Activity Desktop',
+        title: 'Wizard Tracker',
         show: false,
         frame: true,
         resizable: true,
@@ -7192,6 +7222,7 @@ exports.DEFAULT_CONFIG = {
     'sync.batchSize': 20,
     'sync.intervalSec': 30,
     'sync.maxRetries': 5,
+    'ui.fontScale': 5,
 };
 exports.MARKER_PRESETS = [
     { type: 'started_work', label: 'Начал работу' },
@@ -13135,7 +13166,7 @@ var exports = __webpack_exports__;
   \***************************/
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-// Main process entry point for Activity Desktop
+// Main process entry point for Wizard Tracker
 const electron_1 = __webpack_require__(/*! electron */ "electron");
 const window_1 = __webpack_require__(/*! ./window */ "./src/main/window.ts");
 const ipc_handlers_1 = __webpack_require__(/*! ./ipc/ipc-handlers */ "./src/main/ipc/ipc-handlers.ts");
