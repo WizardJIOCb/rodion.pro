@@ -66,7 +66,11 @@ export function CategoryDonut({ data, totalActiveSec }: Props) {
                 <Cell key={i} fill={getCategoryColor(entry.category)} />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              content={<CustomTooltip />}
+              wrapperStyle={{ zIndex: 10, pointerEvents: 'none' }}
+              position={{ x: 0, y: -10 }}
+            />
           </PieChart>
         </ResponsiveContainer>
         {/* Center label */}

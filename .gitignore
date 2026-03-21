@@ -6,6 +6,8 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+nul
+.ssh-pass.sh
 .dev/
 *.pid
 activity-agent/config.local.json

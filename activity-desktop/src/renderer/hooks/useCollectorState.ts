@@ -1,16 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { CollectorState } from '../../shared/types';
 
 const api = window.activityAPI;
 
-export function useCollectorState(): CollectorState | null {
+export function useCollectorState(): { state: CollectorState | null; refresh: () => void } {
   const [state, setState] = useState<CollectorState | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     api.getState().then(setState);
-    const unsub = api.onStateUpdate(setState);
-    return unsub;
   }, []);
 
-  return state;
+  useEffect(() => {
+    refresh();
+    const unsubState = api.onStateUpdate(setState);
+    // Also listen for pause changes to update UI immediately
+    const unsubPause = api.onPauseChange(() => {
+      refresh();
+    });
+    return () => {
+      unsubState();
+      unsubPause();
+    };
+  }, [refresh]);
+
+  return { state, refresh };
 }

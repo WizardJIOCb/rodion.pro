@@ -7065,7 +7065,10 @@ function createMainWindow() {
         },
     });
     mainWindow.loadURL('http://localhost:3000/main_window/index.html');
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
+    // DevTools open only when ACTIVITY_DEVTOOLS=1 is set
+    if (process.env.ACTIVITY_DEVTOOLS === '1') {
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
+    }
     mainWindow.once('ready-to-show', () => {
         mainWindow?.show();
     });
@@ -13120,10 +13123,6 @@ module.exports = /*#__PURE__*/JSON.parse('{"application/1d-interleaved-parityfec
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
-/************************************************************************/
-/******/ 	/* webpack/runtime/asset-relocator-loader */
-/******/ 	if (typeof __webpack_require__ !== 'undefined') __webpack_require__.ab = __dirname + "/native_modules/";
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};

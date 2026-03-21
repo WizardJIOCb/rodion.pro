@@ -26,7 +26,10 @@ export function createMainWindow(): BrowserWindow {
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  mainWindow.webContents.openDevTools({ mode: 'detach' });
+  // DevTools open only when ACTIVITY_DEVTOOLS=1 is set
+  if (process.env.ACTIVITY_DEVTOOLS === '1') {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  }
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();

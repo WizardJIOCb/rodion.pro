@@ -23,14 +23,20 @@ function todayStr(): string {
 }
 
 export function StatusTab() {
-  const state = useCollectorState();
+  const { state, refresh } = useCollectorState();
   const sync = useSyncStatus();
   const { aggregated } = useTimeline(todayStr());
 
   if (!state) return <div className="text-[var(--text-dim)]">Connecting...</div>;
 
-  const handlePause = (minutes: number) => api.pause(minutes);
-  const handleResume = () => api.resume();
+  const handlePause = async (minutes: number) => {
+    await api.pause(minutes);
+    refresh();
+  };
+  const handleResume = async () => {
+    await api.resume();
+    refresh();
+  };
 
   return (
     <div className="space-y-3">
