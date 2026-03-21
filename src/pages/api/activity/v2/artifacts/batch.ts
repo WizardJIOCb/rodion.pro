@@ -98,10 +98,10 @@ export const POST: APIRoute = async ({ request }) => {
     const p = latestHeartbeat.payload;
     const category = (p.category as string) || 'unknown';
     const isAfk = !!p.isAfk;
-    const keys = (p.keys as number) || 0;
-    const clicks = (p.clicks as number) || 0;
-    const scroll = (p.scroll as number) || 0;
-    const activeSec = (p.activeSec as number) || 0;
+    const keys = Math.round((p.keys as number) || 0);
+    const clicks = Math.round((p.clicks as number) || 0);
+    const scroll = Math.round((p.scroll as number) || 0);
+    const activeSec = Math.round((p.activeSec as number) || 0);
 
     const existingResult = await db.select().from(activityNow)
       .where(eq(activityNow.deviceId, deviceId)).limit(1);
