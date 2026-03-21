@@ -25,11 +25,9 @@
 
 ## Update Summary
 **Changes Made**
-- Added new ActivityNotesWidget component providing comprehensive notes management interface with real-time preview, tag support, and internationalization
-- Enhanced ActivityDashboard component with integrated notes widget and privacy controls
-- Added encryption and sanitization libraries for secure notes handling
-- Updated API endpoints for notes management with admin authentication and device verification
-- Enhanced existing dashboard components with note ingestion capabilities and privacy controls
+- Enhanced ProjectCard component styling with improved bullet point alignment for better visual presentation
+- Added mt-[3px] leading-none classes to bullet point spans for optimal vertical alignment
+- Improved visual consistency across highlight lists in project cards
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -47,7 +45,7 @@
 ## Introduction
 This document describes the UI component library used in rodion.pro. It explains the component architecture, the design system built on Tailwind CSS, and the styling approach. Interactive components covered include the command palette for navigation, the theme switcher with five color themes, the language selector for multilingual support, and social sharing components. Layout components include the main layout structure, header navigation, footer implementation, and specialized components such as the terminal hero and event cards. The guide also documents component props, customization options, responsive design patterns, accessibility features, usage examples, integration guidelines, styling customization approaches, component composition patterns, and the new hover edge glow interactive effect system.
 
-**Updated**: Added comprehensive documentation for the new ActivityNotesWidget component that provides secure notes management with encryption, real-time preview, tag support, and internationalization capabilities.
+**Updated**: Enhanced ProjectCard component with improved bullet point alignment for better visual presentation and consistency across highlight lists.
 
 ## Project Structure
 The UI components are organized under src/components and integrated via Astro layouts and pages. The design system relies on a CSS variable-based theme system controlled by a data-theme attribute and Tailwind's color variables. Global styles define theme palettes and component utilities, while Astro components encapsulate presentation and interactivity. The new hover edge glow system provides universal interactive card borders with smart edge highlighting. **Enhanced**: The activity monitoring system now includes a comprehensive notes management interface with encryption and privacy controls.
@@ -100,25 +98,25 @@ NOTES --> API
 ```
 
 **Diagram sources**
-- [Layout.astro](file://src/layouts/Layout.astro#L1-L100)
-- [Header.astro](file://src/components/Header.astro#L1-L115)
-- [Footer.astro](file://src/components/Footer.astro#L1-L95)
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L1-L207)
-- [ThemeSwitch.tsx](file://src/components/ThemeSwitch.tsx#L1-L89)
-- [LanguageSwitch.astro](file://src/components/LanguageSwitch.astro#L1-L57)
-- [TerminalHero.astro](file://src/components/TerminalHero.astro#L1-L74)
-- [EventCard.astro](file://src/components/EventCard.astro#L1-L77)
-- [ProjectCard.astro](file://src/components/ProjectCard.astro#L1-L132)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L1-L402)
-- [ActivityDashboard.tsx](file://src/components/ActivityDashboard.tsx#L536-L539)
-- [activityNotes.ts](file://src/lib/activityNotes.ts#L1-L108)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L1-L30)
+- [Layout.astro:1-100](file://src/layouts/Layout.astro#L1-L100)
+- [Header.astro:1-115](file://src/components/Header.astro#L1-L115)
+- [Footer.astro:1-95](file://src/components/Footer.astro#L1-L95)
+- [CommandPalette.tsx:1-207](file://src/components/CommandPalette.tsx#L1-L207)
+- [ThemeSwitch.tsx:1-89](file://src/components/ThemeSwitch.tsx#L1-L89)
+- [LanguageSwitch.astro:1-57](file://src/components/LanguageSwitch.astro#L1-L57)
+- [TerminalHero.astro:1-74](file://src/components/TerminalHero.astro#L1-L74)
+- [EventCard.astro:1-77](file://src/components/EventCard.astro#L1-L77)
+- [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
+- [ActivityNotesWidget.tsx:1-402](file://src/components/ActivityNotesWidget.tsx#L1-L402)
+- [ActivityDashboard.tsx:536-539](file://src/components/ActivityDashboard.tsx#L536-L539)
+- [activityNotes.ts:1-108](file://src/lib/activityNotes.ts#L1-L108)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
+- [noteSanitize.ts:1-30](file://src/lib/noteSanitize.ts#L1-L30)
 
 **Section sources**
-- [Layout.astro](file://src/layouts/Layout.astro#L1-L100)
-- [globals.css](file://src/styles/globals.css#L1-L181)
-- [tailwind.config.ts](file://tailwind.config.ts#L1-L35)
+- [Layout.astro:1-100](file://src/layouts/Layout.astro#L1-L100)
+- [globals.css:1-181](file://src/styles/globals.css#L1-L181)
+- [tailwind.config.ts:1-35](file://tailwind.config.ts#L1-L35)
 
 ## Core Components
 This section outlines the primary UI components and their responsibilities, props, and integration points.
@@ -163,7 +161,8 @@ This section outlines the primary UI components and their responsibilities, prop
 - ProjectCard
   - Purpose: Project showcase with status badges, stack tags, highlights, and external links.
   - Props: id, title, tagline, status, links, stack, highlights, lang.
-  - **Enhanced**: Now includes hover edge glow functionality for interactive card borders.
+  - **Enhanced**: Now includes hover edge glow functionality for interactive card borders and improved bullet point alignment for better visual presentation.
+  - **Updated**: Bullet points in highlight lists now use mt-[3px] leading-none classes for optimal vertical alignment with text content.
 
 - **ActivityNotesWidget** *(New)*
   - Purpose: Comprehensive notes management interface with real-time preview, tag support, and internationalization.
@@ -173,15 +172,15 @@ This section outlines the primary UI components and their responsibilities, prop
   - Integration: Embedded within ActivityDashboard with automatic refresh and error handling.
 
 **Section sources**
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L1-L207)
-- [ThemeSwitch.tsx](file://src/components/ThemeSwitch.tsx#L1-L89)
-- [LanguageSwitch.astro](file://src/components/LanguageSwitch.astro#L1-L57)
-- [Header.astro](file://src/components/Header.astro#L1-L115)
-- [Footer.astro](file://src/components/Footer.astro#L1-L95)
-- [TerminalHero.astro](file://src/components/TerminalHero.astro#L1-L74)
-- [EventCard.astro](file://src/components/EventCard.astro#L1-L77)
-- [ProjectCard.astro](file://src/components/ProjectCard.astro#L1-L132)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L1-L402)
+- [CommandPalette.tsx:1-207](file://src/components/CommandPalette.tsx#L1-L207)
+- [ThemeSwitch.tsx:1-89](file://src/components/ThemeSwitch.tsx#L1-L89)
+- [LanguageSwitch.astro:1-57](file://src/components/LanguageSwitch.astro#L1-L57)
+- [Header.astro:1-115](file://src/components/Header.astro#L1-L115)
+- [Footer.astro:1-95](file://src/components/Footer.astro#L1-L95)
+- [TerminalHero.astro:1-74](file://src/components/TerminalHero.astro#L1-L74)
+- [EventCard.astro:1-77](file://src/components/EventCard.astro#L1-L77)
+- [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
+- [ActivityNotesWidget.tsx:1-402](file://src/components/ActivityNotesWidget.tsx#L1-L402)
 
 ## Interactive Effects and Animations
 The hover edge glow system provides a sophisticated interactive border effect that responds to pointer movement with smart edge highlighting. This universal effect enhances user experience across all interactive card components.
@@ -221,13 +220,13 @@ Leave --> Reset["Reset CSS variables and remove data-edge"]
 ```
 
 **Diagram sources**
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
-- [hover-edge-glow.css](file://src/styles/hover-edge-glow.css#L1-L65)
+- [hoverEdgeGlow.ts:1-103](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
+- [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
 
 **Section sources**
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
-- [hover-edge-glow.css](file://src/styles/hover-edge-glow.css#L1-L65)
-- [Layout.astro](file://src/layouts/Layout.astro#L70-L76)
+- [hoverEdgeGlow.ts:1-103](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
+- [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
+- [Layout.astro:70-76](file://src/layouts/Layout.astro#L70-L76)
 
 ## Architecture Overview
 The UI architecture centers on:
@@ -271,14 +270,14 @@ Notes->>User : Display secure notes interface
 ```
 
 **Diagram sources**
-- [Header.astro](file://src/components/Header.astro#L101-L115)
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L73-L98)
-- [Layout.astro](file://src/layouts/Layout.astro#L86-L97)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L9-L48)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L28-L67)
-- [ActivityDashboard.tsx](file://src/components/ActivityDashboard.tsx#L536-L539)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L11-L33)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L23-L29)
+- [Header.astro:101-115](file://src/components/Header.astro#L101-L115)
+- [CommandPalette.tsx:73-98](file://src/components/CommandPalette.tsx#L73-L98)
+- [Layout.astro:86-97](file://src/layouts/Layout.astro#L86-L97)
+- [hoverEdgeGlow.ts:9-48](file://src/lib/ui/hoverEdgeGlow.ts#L9-L48)
+- [ActivityNotesWidget.tsx:28-67](file://src/components/ActivityNotesWidget.tsx#L28-L67)
+- [ActivityDashboard.tsx:536-539](file://src/components/ActivityDashboard.tsx#L536-L539)
+- [cryptoNotes.ts:11-33](file://src/lib/cryptoNotes.ts#L11-L33)
+- [noteSanitize.ts:23-29](file://src/lib/noteSanitize.ts#L23-L29)
 
 ## Detailed Component Analysis
 
@@ -318,11 +317,11 @@ Close --> Idle
 ```
 
 **Diagram sources**
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L73-L98)
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L49-L60)
+- [CommandPalette.tsx:73-98](file://src/components/CommandPalette.tsx#L73-L98)
+- [CommandPalette.tsx:49-60](file://src/components/CommandPalette.tsx#L49-L60)
 
 **Section sources**
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L1-L207)
+- [CommandPalette.tsx:1-207](file://src/components/CommandPalette.tsx#L1-L207)
 
 ### ThemeSwitch
 - Props: None
@@ -349,11 +348,11 @@ ThemeSwitch --> Themes : "uses"
 ```
 
 **Diagram sources**
-- [ThemeSwitch.tsx](file://src/components/ThemeSwitch.tsx#L1-L89)
+- [ThemeSwitch.tsx:1-89](file://src/components/ThemeSwitch.tsx#L1-L89)
 
 **Section sources**
-- [ThemeSwitch.tsx](file://src/components/ThemeSwitch.tsx#L1-L89)
-- [globals.css](file://src/styles/globals.css#L7-L86)
+- [ThemeSwitch.tsx:1-89](file://src/components/ThemeSwitch.tsx#L1-L89)
+- [globals.css:7-86](file://src/styles/globals.css#L7-L86)
 
 ### LanguageSwitch
 - Props: None (Astro component)
@@ -378,12 +377,12 @@ Drop->>User : Navigate to alternate
 ```
 
 **Diagram sources**
-- [LanguageSwitch.astro](file://src/components/LanguageSwitch.astro#L44-L56)
-- [i18n/index.ts](file://src/i18n/index.ts#L206-L220)
+- [LanguageSwitch.astro:44-56](file://src/components/LanguageSwitch.astro#L44-L56)
+- [i18n/index.ts:206-220](file://src/i18n/index.ts#L206-L220)
 
 **Section sources**
-- [LanguageSwitch.astro](file://src/components/LanguageSwitch.astro#L1-L57)
-- [i18n/index.ts](file://src/i18n/index.ts#L1-L221)
+- [LanguageSwitch.astro:1-57](file://src/components/LanguageSwitch.astro#L1-L57)
+- [i18n/index.ts:1-221](file://src/i18n/index.ts#L1-L221)
 
 ### Header
 - Responsibilities
@@ -394,7 +393,7 @@ Drop->>User : Navigate to alternate
   - **Updated**: Command trigger button now displays Alt+K shortcut for better cross-platform compatibility.
 
 **Section sources**
-- [Header.astro](file://src/components/Header.astro#L1-L115)
+- [Header.astro:1-115](file://src/components/Header.astro#L1-L115)
 
 ### Footer
 - Responsibilities
@@ -403,7 +402,7 @@ Drop->>User : Navigate to alternate
   - Renders GitHub and Telegram icons with appropriate targets and ARIA labels.
 
 **Section sources**
-- [Footer.astro](file://src/components/Footer.astro#L1-L95)
+- [Footer.astro:1-95](file://src/components/Footer.astro#L1-L95)
 
 ### TerminalHero
 - Purpose
@@ -412,8 +411,8 @@ Drop->>User : Navigate to alternate
   - Uses component utilities (.terminal-window, .terminal-header, etc.) and a simple fade-in animation.
 
 **Section sources**
-- [TerminalHero.astro](file://src/components/TerminalHero.astro#L1-L74)
-- [globals.css](file://src/styles/globals.css#L109-L132)
+- [TerminalHero.astro:1-74](file://src/components/TerminalHero.astro#L1-L74)
+- [globals.css:109-132](file://src/styles/globals.css#L109-L132)
 
 ### EventCard
 - Purpose
@@ -424,7 +423,7 @@ Drop->>User : Navigate to alternate
 - **Enhanced**: Now includes hover edge glow functionality with automatic edge detection and conic gradient animation.
 
 **Section sources**
-- [EventCard.astro](file://src/components/EventCard.astro#L1-L77)
+- [EventCard.astro:1-77](file://src/components/EventCard.astro#L1-L77)
 
 ### ProjectCard
 - Purpose
@@ -432,9 +431,11 @@ Drop->>User : Navigate to alternate
 - Props
   - id, title, tagline, status, links, stack, highlights, lang
 - **Enhanced**: Now includes hover edge glow functionality with customizable color variants and smart edge highlighting.
+- **Updated**: Improved bullet point alignment in highlight lists using mt-[3px] leading-none classes for optimal vertical positioning.
+- **Enhanced**: Bullet points now feature better visual alignment with text content, ensuring consistent spacing and typography across different screen sizes and languages.
 
 **Section sources**
-- [ProjectCard.astro](file://src/components/ProjectCard.astro#L1-L132)
+- [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 
 ### ActivityNotesWidget *(New)*
 - Purpose
@@ -486,12 +487,12 @@ DeleteNote --> LoadNotes
 ```
 
 **Diagram sources**
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L28-L67)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L94-L114)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L69-L92)
+- [ActivityNotesWidget.tsx:28-67](file://src/components/ActivityNotesWidget.tsx#L28-L67)
+- [ActivityNotesWidget.tsx:94-114](file://src/components/ActivityNotesWidget.tsx#L94-L114)
+- [ActivityNotesWidget.tsx:69-92](file://src/components/ActivityNotesWidget.tsx#L69-L92)
 
 **Section sources**
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L1-L402)
+- [ActivityNotesWidget.tsx:1-402](file://src/components/ActivityNotesWidget.tsx#L1-L402)
 
 ### ActivityDashboard *(Enhanced)*
 - Purpose
@@ -505,8 +506,8 @@ DeleteNote --> LoadNotes
   - Category-based filtering and expansion.
 
 **Section sources**
-- [ActivityDashboard.tsx](file://src/components/ActivityDashboard.tsx#L536-L539)
-- [ActivityDashboard.tsx](file://src/components/ActivityDashboard.tsx#L541-L547)
+- [ActivityDashboard.tsx:536-539](file://src/components/ActivityDashboard.tsx#L536-L539)
+- [ActivityDashboard.tsx:541-547](file://src/components/ActivityDashboard.tsx#L541-L547)
 
 ## Dependency Analysis
 The design system and components depend on:
@@ -535,26 +536,26 @@ NotesWidget --> NotesAPI
 ```
 
 **Diagram sources**
-- [tailwind.config.ts](file://tailwind.config.ts#L1-L35)
-- [globals.css](file://src/styles/globals.css#L1-L181)
-- [i18n/index.ts](file://src/i18n/index.ts#L1-L221)
-- [Layout.astro](file://src/layouts/Layout.astro#L1-L100)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
-- [hover-edge-glow.css](file://src/styles/hover-edge-glow.css#L1-L65)
-- [activityNotes.ts](file://src/lib/activityNotes.ts#L1-L108)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L1-L30)
+- [tailwind.config.ts:1-35](file://tailwind.config.ts#L1-L35)
+- [globals.css:1-181](file://src/styles/globals.css#L1-L181)
+- [i18n/index.ts:1-221](file://src/i18n/index.ts#L1-L221)
+- [Layout.astro:1-100](file://src/layouts/Layout.astro#L1-L100)
+- [hoverEdgeGlow.ts:1-103](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
+- [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
+- [activityNotes.ts:1-108](file://src/lib/activityNotes.ts#L1-L108)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
+- [noteSanitize.ts:1-30](file://src/lib/noteSanitize.ts#L1-L30)
 
 **Section sources**
-- [tailwind.config.ts](file://tailwind.config.ts#L1-L35)
-- [globals.css](file://src/styles/globals.css#L1-L181)
-- [i18n/index.ts](file://src/i18n/index.ts#L1-L221)
-- [Layout.astro](file://src/layouts/Layout.astro#L1-L100)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
-- [hover-edge-glow.css](file://src/styles/hover-edge-glow.css#L1-L65)
-- [activityNotes.ts](file://src/lib/activityNotes.ts#L1-L108)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L1-L30)
+- [tailwind.config.ts:1-35](file://tailwind.config.ts#L1-L35)
+- [globals.css:1-181](file://src/styles/globals.css#L1-L181)
+- [i18n/index.ts:1-221](file://src/i18n/index.ts#L1-L221)
+- [Layout.astro:1-100](file://src/layouts/Layout.astro#L1-L100)
+- [hoverEdgeGlow.ts:1-103](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
+- [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
+- [activityNotes.ts:1-108](file://src/lib/activityNotes.ts#L1-L108)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
+- [noteSanitize.ts:1-30](file://src/lib/noteSanitize.ts#L1-L30)
 
 ## Performance Considerations
 - Theme initialization occurs inlined in the HTML head to prevent flash-of-unstyled-content.
@@ -565,12 +566,13 @@ NotesWidget --> NotesAPI
 - Tailwind's JIT compiles only used utilities, minimizing bundle size.
 - **Enhanced**: ActivityNotesWidget implements efficient polling with 60-second intervals and automatic cleanup of timers.
 - **Enhanced**: Encryption operations are performed on the server side to minimize client-side computational overhead.
+- **Enhanced**: Improved bullet point alignment optimization reduces layout recalculations and improves rendering performance across different screen sizes.
 
 **Section sources**
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L4-L5)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L13-L14)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L70-L93)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L63-L67)
+- [hoverEdgeGlow.ts:4-5](file://src/lib/ui/hoverEdgeGlow.ts#L4-L5)
+- [hoverEdgeGlow.ts:13-14](file://src/lib/ui/hoverEdgeGlow.ts#L13-L14)
+- [hoverEdgeGlow.ts:70-93](file://src/lib/ui/hoverEdgeGlow.ts#L70-L93)
+- [ActivityNotesWidget.tsx:63-67](file://src/components/ActivityNotesWidget.tsx#L63-L67)
 
 ## Troubleshooting Guide
 - CommandPalette does not open
@@ -600,19 +602,24 @@ NotesWidget --> NotesAPI
   - Verify ACTIVITY_NOTES_KEY environment variable is set and 32 bytes base64 encoded.
   - Check that encryption/decryption operations are functioning correctly.
   - Ensure proper error handling for malformed encrypted content.
+- **Enhanced**: Bullet point alignment issues
+  - Verify that bullet point spans use mt-[3px] leading-none classes for proper vertical alignment.
+  - Check that highlight list items maintain consistent spacing with the improved alignment classes.
+  - Ensure the classes are applied correctly in both light and dark theme modes.
 
 **Section sources**
-- [Layout.astro](file://src/layouts/Layout.astro#L61-L76)
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L95-L104)
-- [ThemeSwitch.tsx](file://src/components/ThemeSwitch.tsx#L18-L33)
-- [LanguageSwitch.astro](file://src/components/LanguageSwitch.astro#L44-L56)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
-- [hover-edge-glow.css](file://src/styles/hover-edge-glow.css#L1-L65)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L144-L150)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L3-L9)
+- [Layout.astro:61-76](file://src/layouts/Layout.astro#L61-L76)
+- [CommandPalette.tsx:95-104](file://src/components/CommandPalette.tsx#L95-L104)
+- [ThemeSwitch.tsx:18-33](file://src/components/ThemeSwitch.tsx#L18-L33)
+- [LanguageSwitch.astro:44-56](file://src/components/LanguageSwitch.astro#L44-L56)
+- [hoverEdgeGlow.ts:1-103](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
+- [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
+- [ActivityNotesWidget.tsx:144-150](file://src/components/ActivityNotesWidget.tsx#L144-L150)
+- [cryptoNotes.ts:3-9](file://src/lib/cryptoNotes.ts#L3-L9)
+- [ProjectCard.astro:60-62](file://src/components/ProjectCard.astro#L60-L62)
 
 ## Conclusion
-The UI component library in rodion.pro combines Astro components for structure and React components for interactivity, unified by a robust Tailwind-based design system. The command palette, theme switcher, and language selector provide seamless navigation and customization, while layout components ensure consistent branding and accessibility. The new hover edge glow system adds sophisticated interactive feedback across all card components, enhancing user experience with smart edge highlighting and conic gradient animations. **Enhanced**: The addition of the ActivityNotesWidget component provides a comprehensive secure notes management solution with encryption, privacy controls, and real-time collaboration capabilities. The styling approach leverages CSS variables and component utilities for scalable theming and responsive behavior.
+The UI component library in rodion.pro combines Astro components for structure and React components for interactivity, unified by a robust Tailwind-based design system. The command palette, theme switcher, and language selector provide seamless navigation and customization, while layout components ensure consistent branding and accessibility. The new hover edge glow system adds sophisticated interactive feedback across all card components, enhancing user experience with smart edge highlighting and conic gradient animations. **Enhanced**: The addition of the ActivityNotesWidget component provides a comprehensive secure notes management solution with encryption, privacy controls, and real-time collaboration capabilities. The styling approach leverages CSS variables and component utilities for scalable theming and responsive behavior. **Updated**: Recent enhancements to the ProjectCard component improve visual consistency and alignment, ensuring better presentation of highlight lists with optimized bullet point positioning.
 
 ## Appendices
 
@@ -625,8 +632,8 @@ The UI component library in rodion.pro combines Astro components for structure a
   - Enabled via [data-theme] class targeting.
 
 **Section sources**
-- [globals.css](file://src/styles/globals.css#L7-L86)
-- [tailwind.config.ts](file://tailwind.config.ts#L5-L28)
+- [globals.css:7-86](file://src/styles/globals.css#L7-L86)
+- [tailwind.config.ts:5-28](file://tailwind.config.ts#L5-L28)
 
 ### Accessibility Features
 - Keyboard navigation and hints in CommandPalette.
@@ -635,9 +642,9 @@ The UI component library in rodion.pro combines Astro components for structure a
 - Semantic markup and SVG icons with appropriate roles.
 
 **Section sources**
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L144-L146)
-- [Header.astro](file://src/components/Header.astro#L48-L62)
-- [Footer.astro](file://src/components/Footer.astro#L64-L68)
+- [CommandPalette.tsx:144-146](file://src/components/CommandPalette.tsx#L144-L146)
+- [Header.astro:48-62](file://src/components/Header.astro#L48-L62)
+- [Footer.astro:64-68](file://src/components/Footer.astro#L64-L68)
 
 ### Responsive Patterns
 - Mobile-first with breakpoints for navigation and hero content.
@@ -645,8 +652,8 @@ The UI component library in rodion.pro combines Astro components for structure a
 - Grid-based footer layout adapting to screen size.
 
 **Section sources**
-- [Header.astro](file://src/components/Header.astro#L19-L98)
-- [Footer.astro](file://src/components/Footer.astro#L21-L83)
+- [Header.astro:19-98](file://src/components/Header.astro#L19-L98)
+- [Footer.astro:21-83](file://src/components/Footer.astro#L21-L83)
 
 ### Integration Guidelines
 - To add a new theme:
@@ -666,15 +673,20 @@ The UI component library in rodion.pro combines Astro components for structure a
   - Pass adminToken, deviceId, and lang props from parent component.
   - Ensure proper authentication flow for admin access.
   - Handle loading states and error conditions appropriately.
+- **Enhanced**: To implement improved bullet point alignment:
+  - Use mt-[3px] leading-none classes on bullet point spans within highlight lists.
+  - Ensure consistent vertical alignment across different text sizes and languages.
+  - Test alignment across various screen sizes and device orientations.
 
 **Section sources**
-- [globals.css](file://src/styles/globals.css#L7-L86)
-- [ThemeSwitch.tsx](file://src/components/ThemeSwitch.tsx#L3-L9)
-- [i18n/index.ts](file://src/i18n/index.ts#L100-L186)
-- [Layout.astro](file://src/layouts/Layout.astro#L20-L25)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
-- [hover-edge-glow.css](file://src/styles/hover-edge-glow.css#L1-L65)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L28-L9)
+- [globals.css:7-86](file://src/styles/globals.css#L7-L86)
+- [ThemeSwitch.tsx:3-9](file://src/components/ThemeSwitch.tsx#L3-L9)
+- [i18n/index.ts:100-186](file://src/i18n/index.ts#L100-L186)
+- [Layout.astro:20-25](file://src/layouts/Layout.astro#L20-L25)
+- [hoverEdgeGlow.ts:1-103](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
+- [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
+- [ActivityNotesWidget.tsx:28-9](file://src/components/ActivityNotesWidget.tsx#L28-L9)
+- [ProjectCard.astro:60-62](file://src/components/ProjectCard.astro#L60-L62)
 
 ### Hover Edge Glow Customization
 - **Default Color**: Teal (#5EEAD4) - automatic with `data-hover-glow`
@@ -685,8 +697,8 @@ The UI component library in rodion.pro combines Astro components for structure a
 - **Device Support**: Disabled on touch devices with coarse pointer support
 
 **Section sources**
-- [hover-edge-glow.css](file://src/styles/hover-edge-glow.css#L1-L65)
-- [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
+- [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
+- [hoverEdgeGlow.ts:1-103](file://src/lib/ui/hoverEdgeGlow.ts#L1-L103)
 
 ### Keyboard Shortcuts and Cross-Platform Compatibility
 - **Updated**: Primary shortcut is now Alt+K for better cross-platform compatibility
@@ -696,9 +708,9 @@ The UI component library in rodion.pro combines Astro components for structure a
 - Alternative trigger: Click the command palette button in the header
 
 **Section sources**
-- [CommandPalette.tsx](file://src/components/CommandPalette.tsx#L74-L78)
-- [Header.astro](file://src/components/Header.astro#L54-L59)
-- [Layout.astro](file://src/layouts/Layout.astro#L91-L96)
+- [CommandPalette.tsx:74-78](file://src/components/CommandPalette.tsx#L74-L78)
+- [Header.astro:54-59](file://src/components/Header.astro#L54-L59)
+- [Layout.astro:91-96](file://src/layouts/Layout.astro#L91-L96)
 
 ### Activity Notes System *(New)*
 - **Encryption**: AES-256-GCM with 32-byte base64 key
@@ -709,7 +721,17 @@ The UI component library in rodion.pro combines Astro components for structure a
 - **Rate Limits**: Device-based rate limiting for ingestion endpoints
 
 **Section sources**
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L1-L30)
-- [activityNotes.ts](file://src/lib/activityNotes.ts#L1-L108)
-- [ActivityNotesWidget.tsx](file://src/components/ActivityNotesWidget.tsx#L1-L402)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
+- [noteSanitize.ts:1-30](file://src/lib/noteSanitize.ts#L1-L30)
+- [activityNotes.ts:1-108](file://src/lib/activityNotes.ts#L1-L108)
+- [ActivityNotesWidget.tsx:1-402](file://src/components/ActivityNotesWidget.tsx#L1-L402)
+
+### Project Card Enhancement Details
+- **Bullet Point Alignment**: Improved vertical alignment using mt-[3px] leading-none classes
+- **Visual Consistency**: Ensures bullet points align properly with text baseline
+- **Cross-Platform Compatibility**: Works consistently across different browsers and devices
+- **Typography Optimization**: Maintains proper spacing regardless of text content length or language
+- **Accessibility**: Better visual hierarchy and readability for screen readers and users with visual impairments
+
+**Section sources**
+- [ProjectCard.astro:60-62](file://src/components/ProjectCard.astro#L60-L62)

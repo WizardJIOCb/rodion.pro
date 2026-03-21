@@ -11,6 +11,7 @@
 - [resume.en.astro](file://src/pages/en/resume.astro)
 - [resume.ru.astro](file://src/pages/ru/resume.astro)
 - [resume.ts](file://src/data/resume.ts)
+- [resumeShort.ts](file://src/data/resumeShort.ts)
 - [i18n.index.ts](file://src/i18n/index.ts)
 - [Layout.astro](file://src/layouts/Layout.astro)
 - [hoverEdgeGlow.ts](file://src/lib/ui/hoverEdgeGlow.ts)
@@ -19,11 +20,10 @@
 
 ## Update Summary
 **Changes Made**
-- Added two new projects: Crimson Wars (survival game concept with soft cyberpunk aesthetics) and Reader.Market (content reading and publishing platform)
-- Enhanced project showcase capabilities with new entries demonstrating both modern static site generation approaches and traditional server-rendered applications
-- Updated project data structure with comprehensive localization and enhanced technology stacks
-- Expanded featured project selection to include the new entries
-- Enhanced resume integration to reference Reader.Market as a professional achievement
+- Consolidated Reader.Market project entry by removing duplicate from portfolio showcase
+- Updated project data structure to maintain single Reader.Market entry with comprehensive feature set
+- Enhanced project showcase capabilities with streamlined portfolio presentation
+- Maintained professional resume integration with Reader.Market as a single professional achievement
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -39,24 +39,25 @@
 11. [Appendices](#appendices)
 
 ## Introduction
-This document explains the enhanced portfolio project showcase system used to present a curated set of projects with comprehensive multilingual support. The system has been significantly enhanced with new project entries (Crimson Wars and Reader.Market), expanded technology stacks, and deeper integration with the enhanced resume presentation system. The portfolio showcase now supports diverse project categories including web applications, content platforms, and experimental projects, while maintaining seamless integration with the professional resume presentation.
+This document explains the portfolio project showcase system used to present a curated set of projects with comprehensive multilingual support. The system has been streamlined to maintain a single, consolidated Reader.Market project entry while preserving all enhanced capabilities including comprehensive localization, advanced technology stacks, and deep integration with the professional resume presentation system.
 
-**Updated** Added two comprehensive projects with diverse technology stacks and feature sets, plus professional resume integration
+**Updated** Consolidated portfolio showcase by removing duplicate Reader.Market project entry, maintaining comprehensive project diversity and professional integration
 
 ## Project Structure
-The enhanced project showcase is composed of:
-- **Static project data** with comprehensive localized fields and metadata, now including Crimson Wars and Reader.Market with advanced technology stacks
+The consolidated project showcase is composed of:
+- **Static project data** with comprehensive localized fields and metadata, featuring a single Reader.Market entry with advanced technology stacks
 - **Astro pages per locale** that fetch and render the project list with integrated resume references
 - **Reusable project card component** that renders localized content, links, and enhanced visual effects
 - **Enhanced internationalization utilities** with comprehensive translation keys for both projects and resume contexts
-- **Integrated resume system** that references portfolio projects in professional experience sections
+- **Integrated resume system** that references Reader.Market as a single professional achievement
 - **Advanced visual enhancements** via hover edge glow effects and responsive design patterns
 
 ```mermaid
 graph TB
-subgraph "Enhanced Data Layer"
-P["projects.ts<br/>Enhanced Project[] + helpers<br/>+2 New Projects<br/>Expanded Tech Stacks"]
-R["resume.ts<br/>Professional Experience<br/>Portfolio Integration"]
+subgraph "Consolidated Data Layer"
+P["projects.ts<br/>Single Reader.Market Entry<br/>Enhanced Project[] + helpers"]
+R["resume.ts<br/>Professional Experience<br/>Single Reader.Market Reference"]
+RS["resumeShort.ts<br/>Compact Resume<br/>Single Reader.Market Entry"]
 end
 subgraph "Enhanced UI Layer"
 PC["ProjectCard.astro<br/>Enhanced Card Component"]
@@ -83,6 +84,8 @@ P --> IDX_EN
 P --> IDX_RU
 R --> RES_EN
 R --> RES_RU
+RS --> RES_EN
+RS --> RES_RU
 PRJ_EN --> PC
 PRJ_RU --> PC
 IDX_EN --> PC
@@ -106,8 +109,9 @@ HEC --> PC
 ```
 
 **Diagram sources**
-- [projects.ts:1-184](file://src/data/projects.ts#L1-L184)
+- [projects.ts:1-153](file://src/data/projects.ts#L1-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 - [projects.en.astro:1-24](file://src/pages/en/projects.astro#L1-L24)
 - [projects.ru.astro:1-24](file://src/pages/ru/projects.astro#L1-L24)
@@ -121,8 +125,9 @@ HEC --> PC
 - [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
 
 **Section sources**
-- [projects.ts:1-184](file://src/data/projects.ts#L1-L184)
+- [projects.ts:1-153](file://src/data/projects.ts#L1-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 - [projects.en.astro:1-24](file://src/pages/en/projects.astro#L1-L24)
 - [projects.ru.astro:1-24](file://src/pages/ru/projects.astro#L1-L24)
@@ -136,11 +141,11 @@ HEC --> PC
 - [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
 
 ## Core Components
-- **Enhanced Project data model and helpers**:
+- **Consolidated Project data model and helpers**:
   - Status types: active, paused, archived
   - Fields: id, title (localized), tagline (localized), status, links (site/github/demo), stack (technologies), highlights (localized), featured flag
   - Helper functions: getProjectsByLang(lang), getFeaturedProjects(lang)
-  - **Updated**: Now includes Crimson Wars (Astro, React, TypeScript, Tailwind, PostgreSQL, Drizzle) and Reader.Market (TypeScript, Node.js, React, PostgreSQL, Docker) with comprehensive feature sets
+  - **Updated**: Single Reader.Market entry with comprehensive feature set including AI-powered book reading platform
 - **Enhanced Project card component**:
   - Renders title, tagline, status badge, tech stack tags, highlights list, and optional links
   - Localized labels for status and link texts
@@ -155,8 +160,9 @@ HEC --> PC
   - Alternate locales for SEO with enhanced project references
 
 **Section sources**
-- [projects.ts:1-184](file://src/data/projects.ts#L1-L184)
+- [projects.ts:1-153](file://src/data/projects.ts#L1-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 - [projects.en.astro:1-24](file://src/pages/en/projects.astro#L1-L24)
 - [projects.ru.astro:1-24](file://src/pages/ru/projects.astro#L1-L24)
@@ -167,8 +173,8 @@ HEC --> PC
 - [i18n.index.ts:1-283](file://src/i18n/index.ts#L1-L283)
 
 ## Architecture Overview
-The enhanced system maintains clear separation of concerns with deeper integration:
-- **Enhanced Data**: Static TypeScript modules define project models, helper functions, and resume integration, now with expanded portfolio and professional context
+The consolidated system maintains clear separation of concerns with enhanced integration:
+- **Consolidated Data**: Static TypeScript modules define project models, helper functions, and resume integration with single Reader.Market entry
 - **Enhanced Presentation**: Astro pages select localized data, render lists, and integrate with resume sections
 - **Enhanced Componentization**: A single ProjectCard.astro component encapsulates rendering, styling, and advanced visual effects
 - **Enhanced Localization**: i18n utilities supply comprehensive translations for both project showcases and professional contexts
@@ -181,48 +187,50 @@ participant P_EN as "projects.en.astro"
 participant P_RU as "projects.ru.astro"
 participant D as "projects.ts"
 participant R as "resume.ts"
+participant RS as "resumeShort.ts"
 participant C as "ProjectCard.astro"
 participant I as "i18n/index.ts"
 U->>P_EN : Open /en/projects
 P_EN->>I : getLangFromUrl(), useTranslations()
 P_EN->>D : getProjectsByLang("en")
-D-->>P_EN : Enhanced Project[] (localized)
+D-->>P_EN : Consolidated Project[] (localized)
 P_EN->>C : Render ProjectCard for each project
 U->>P_RU : Open /ru/projects
 P_RU->>I : getLangFromUrl(), useTranslations()
 P_RU->>D : getProjectsByLang("ru")
-D-->>P_RU : Enhanced Project[] (localized)
+D-->>P_RU : Consolidated Project[] (localized)
 P_RU->>C : Render ProjectCard for each project
 U->>RES_EN : Open /en/resume
 RES_EN->>I : getLangFromUrl(), useTranslations()
 RES_EN->>R : resumeSections, resumeHeader
-R-->>RES_EN : Professional context with portfolio links
+R-->>RES_EN : Professional context with single Reader.Market reference
 RES_EN->>C : Render project references as cards
 ```
 
 **Diagram sources**
 - [projects.en.astro:1-24](file://src/pages/en/projects.astro#L1-L24)
 - [projects.ru.astro:1-24](file://src/pages/ru/projects.astro#L1-L24)
-- [projects.ts:172-184](file://src/data/projects.ts#L172-L184)
+- [projects.ts:141-153](file://src/data/projects.ts#L141-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 - [i18n.index.ts:253-266](file://src/i18n/index.ts#L253-L266)
 - [resume.en.astro:1-160](file://src/pages/en/resume.astro#L1-L160)
 
 ## Detailed Component Analysis
 
-### Enhanced Project Data Model
-The project data structure now supports an expanded portfolio with:
+### Consolidated Project Data Model
+The project data structure now supports a streamlined portfolio with:
 - **Multilingual fields**: title, tagline, highlights for Russian and English
 - **Status**: active, paused, archived
 - **Links**: website, GitHub, demo
 - **Technologies**: expanded stack including PostgreSQL, Docker, Redis, and advanced frameworks
 - **Featured flag**: highlighting for prominent display
-- **Enhanced projects**: Crimson Wars (survival game concept) and Reader.Market (content platform) with comprehensive feature sets
-- **Professional integration**: Resume system references these projects in experience sections
+- **Consolidated projects**: Single Reader.Market entry as an AI-powered book reading platform with comprehensive feature sets
+- **Professional integration**: Resume system references Reader.Market as a single professional achievement
 - Helper functions to derive localized arrays and featured subsets
 
-**Updated** Added two comprehensive projects with diverse technology stacks and feature sets, plus professional resume integration
+**Updated** Removed duplicate Reader.Market project entry, maintaining comprehensive project diversity and professional integration
 
 ```mermaid
 classDiagram
@@ -247,10 +255,11 @@ class ProjectStatus {
 "paused"
 "archived"
 }
-class EnhancedProjects {
+class ConsolidatedProjects {
 <<static>>
 "crimson-wars" : "Survival game concept"
-"reader-market" : "Content platform"
+"rodion-pro" : "Personal website"
+"reader-market" : "AI-powered book platform"
 "cyka-lol" : "Blog/streaming"
 }
 class ResumeIntegration {
@@ -260,18 +269,20 @@ class ResumeIntegration {
 }
 Project --> Links : "has"
 Project --> ProjectStatus : "uses"
-EnhancedProjects --> Project : "includes"
+ConsolidatedProjects --> Project : "includes"
 ResumeIntegration --> Project : "references"
 ```
 
 **Diagram sources**
 - [projects.ts:3-16](file://src/data/projects.ts#L3-L16)
-- [projects.ts:18-170](file://src/data/projects.ts#L18-L170)
+- [projects.ts:18-139](file://src/data/projects.ts#L18-L139)
 - [resume.ts:191-217](file://src/data/resume.ts#L191-L217)
+- [resumeShort.ts:97-100](file://src/data/resumeShort.ts#L97-L100)
 
 **Section sources**
-- [projects.ts:1-184](file://src/data/projects.ts#L1-L184)
+- [projects.ts:1-153](file://src/data/projects.ts#L1-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 
 ### Enhanced Project Card Component
 The ProjectCard.astro component now features:
@@ -304,29 +315,29 @@ Glow --> End(["Done"])
 Featured projects are selected through:
 - Getting the localized project list via getProjectsByLang(lang)
 - Filtering items where featured is true
-- **Updated**: Now includes Crimson Wars and Reader.Market in the featured showcase
-- **Enhanced**: Professional context integration showing these projects in resume experience sections
+- **Updated**: Now includes consolidated Reader.Market entry in the featured showcase
+- **Enhanced**: Professional context integration showing Reader.Market as a single professional achievement
 
-**Updated** Enhanced featured project selection with expanded portfolio diversity and professional integration
+**Updated** Enhanced featured project selection with consolidated portfolio diversity and professional integration
 
 ```mermaid
 flowchart TD
 A["getProjectsByLang(lang)"] --> B["Map projects to localized fields"]
 B --> C["Filter where featured == true"]
-C --> D["Return enhanced featured projects"]
+C --> D["Return consolidated featured projects"]
 D --> E["Crimson Wars<br/>(Survival Game Concept)"]
-D --> F["Reader.Market<br/>(Content Platform)"]
+D --> F["Reader.Market<br/>(AI Book Platform)"]
 D --> G["rodion.pro<br/>(Personal Website)"]
 E --> H["Professional Experience<br/>in Resume"]
 F --> H
 ```
 
 **Diagram sources**
-- [projects.ts:181-184](file://src/data/projects.ts#L181-L184)
+- [projects.ts:150-153](file://src/data/projects.ts#L150-L153)
 - [resume.ts:191-217](file://src/data/resume.ts#L191-L217)
 
 **Section sources**
-- [projects.ts:181-184](file://src/data/projects.ts#L181-L184)
+- [projects.ts:150-153](file://src/data/projects.ts#L150-L153)
 - [index.en.astro:75-79](file://src/pages/en/index.astro#L75-L79)
 - [index.ru.astro:77-81](file://src/pages/ru/index.astro#L77-L81)
 - [resume.ts:191-217](file://src/data/resume.ts#L191-L217)
@@ -361,6 +372,7 @@ participant RES as "resume.*.astro"
 participant I as "i18n/index.ts"
 participant D as "projects.ts"
 participant RSD as "resume.ts"
+participant RS as "resumeShort.ts"
 participant C as "ProjectCard.astro"
 R->>L : Request HTML
 L->>I : getAlternateLocales()
@@ -368,12 +380,12 @@ L-->>R : HTML with SEO tags
 R->>P : Request /en/projects or /ru/projects
 P->>I : getLangFromUrl(), useTranslations()
 P->>D : getProjectsByLang(lang)
-D-->>P : Enhanced Project[] (localized)
+D-->>P : Consolidated Project[] (localized)
 P->>C : Render cards with props
 R->>RES : Request /en/resume or /ru/resume
 RES->>I : getLangFromUrl(), useTranslations()
 RES->>RSD : resumeSections, resumeHeader
-RSD-->>RES : Professional context with portfolio links
+RSD-->>RES : Professional context with single Reader.Market reference
 RES->>C : Render project references as cards
 ```
 
@@ -384,8 +396,9 @@ RES->>C : Render project references as cards
 - [resume.en.astro:6-9](file://src/pages/en/resume.astro#L6-L9)
 - [resume.ru.astro:6-9](file://src/pages/ru/resume.astro#L6-L9)
 - [i18n.index.ts:253-266](file://src/i18n/index.ts#L253-L266)
-- [projects.ts:172-184](file://src/data/projects.ts#L172-L184)
+- [projects.ts:141-153](file://src/data/projects.ts#L141-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 
 **Section sources**
@@ -395,8 +408,9 @@ RES->>C : Render project references as cards
 - [resume.en.astro:1-160](file://src/pages/en/resume.astro#L1-L160)
 - [resume.ru.astro:1-160](file://src/pages/ru/resume.astro#L1-L160)
 - [i18n.index.ts:1-283](file://src/i18n/index.ts#L1-L283)
-- [projects.ts:172-184](file://src/data/projects.ts#L172-L184)
+- [projects.ts:141-153](file://src/data/projects.ts#L141-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 
 ### Enhanced Responsive Design Considerations
@@ -459,7 +473,7 @@ Attach --> Leave["pointerleave: reset<br/>intensity smoothly"]
 - [Layout.astro:70-76](file://src/layouts/Layout.astro#L70-L76)
 
 ## Integration with Resume System
-The enhanced portfolio system now integrates deeply with the professional resume presentation:
+The consolidated portfolio system now integrates deeply with the professional resume presentation:
 
 ### Professional Project Context
 - **Resume Integration**: Portfolio projects are referenced in resume experience sections
@@ -489,12 +503,14 @@ PP --> P
 ```
 
 **Diagram sources**
-- [projects.ts:51-170](file://src/data/projects.ts#L51-L170)
+- [projects.ts:51-139](file://src/data/projects.ts#L51-L139)
 - [resume.ts:43-217](file://src/data/resume.ts#L43-L217)
+- [resumeShort.ts:97-100](file://src/data/resumeShort.ts#L97-L100)
 
 **Section sources**
-- [projects.ts:51-170](file://src/data/projects.ts#L51-L170)
+- [projects.ts:51-139](file://src/data/projects.ts#L51-L139)
 - [resume.ts:43-217](file://src/data/resume.ts#L43-L217)
+- [resumeShort.ts:97-100](file://src/data/resumeShort.ts#L97-L100)
 - [resume.en.astro:1-160](file://src/pages/en/resume.astro#L1-L160)
 - [resume.ru.astro:1-160](file://src/pages/ru/resume.astro#L1-L160)
 
@@ -513,12 +529,14 @@ PP --> P
 
 ```mermaid
 graph LR
-D["projects.ts<br/>Enhanced with 2 new projects<br/>+Professional Integration"] --> EN["projects.en.astro"]
+D["projects.ts<br/>Consolidated with single Reader.Market<br/>+Professional Integration"] --> EN["projects.en.astro"]
 D --> RU["projects.ru.astro"]
 D --> IDX_EN["index.en.astro"]
 D --> IDX_RU["index.ru.astro"]
-R["resume.ts<br/>Professional Experience<br/>Project References"] --> RES_EN["resume.en.astro"]
+R["resume.ts<br/>Professional Experience<br/>Single Reader.Market Reference"] --> RES_EN["resume.en.astro"]
 R --> RES_RU["resume.ru.astro"]
+RS["resumeShort.ts<br/>Compact Resume<br/>Single Reader.Market Entry"] --> RES_EN
+RS --> RES_RU
 I["i18n/index.ts<br/>Comprehensive Translations"] --> EN
 I --> RU
 I --> IDX_EN
@@ -540,8 +558,9 @@ L --> RES_RU
 ```
 
 **Diagram sources**
-- [projects.ts:1-184](file://src/data/projects.ts#L1-L184)
+- [projects.ts:1-153](file://src/data/projects.ts#L1-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [projects.en.astro:1-24](file://src/pages/en/projects.astro#L1-L24)
 - [projects.ru.astro:1-24](file://src/pages/ru/projects.astro#L1-L24)
 - [index.en.astro:1-152](file://src/pages/en/index.astro#L1-L152)
@@ -553,8 +572,9 @@ L --> RES_RU
 - [Layout.astro:1-114](file://src/layouts/Layout.astro#L1-L114)
 
 **Section sources**
-- [projects.ts:1-184](file://src/data/projects.ts#L1-L184)
+- [projects.ts:1-153](file://src/data/projects.ts#L1-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [projects.en.astro:1-24](file://src/pages/en/projects.astro#L1-L24)
 - [projects.ru.astro:1-24](file://src/pages/ru/projects.astro#L1-L24)
 - [index.en.astro:1-152](file://src/pages/en/index.astro#L1-L152)
@@ -607,8 +627,9 @@ L --> RES_RU
   - **Enhanced**: Check that project descriptions align with professional context
 
 **Section sources**
-- [projects.ts:1-184](file://src/data/projects.ts#L1-L184)
+- [projects.ts:1-153](file://src/data/projects.ts#L1-L153)
 - [resume.ts:1-217](file://src/data/resume.ts#L1-L217)
+- [resumeShort.ts:1-177](file://src/data/resumeShort.ts#L1-L177)
 - [ProjectCard.astro:1-132](file://src/components/ProjectCard.astro#L1-L132)
 - [projects.en.astro:1-24](file://src/pages/en/projects.astro#L1-L24)
 - [projects.ru.astro:1-24](file://src/pages/ru/projects.astro#L1-L24)
@@ -620,7 +641,7 @@ L --> RES_RU
 - [hover-edge-glow.css:1-65](file://src/styles/hover-edge-glow.css#L1-L65)
 
 ## Conclusion
-The enhanced portfolio project showcase system leverages a clean separation between static data, reusable components, and locale-aware pages, now with deep integration to the professional resume presentation system. The system has been significantly enhanced with new project entries (Crimson Wars and Reader.Market), expanded technology stacks, comprehensive multilingual capabilities, and professional context integration. The enhanced architecture maintains extensibility, localization, and visual engagement while providing comprehensive professional validation through integrated resume sections. Adding new projects, adjusting statuses, and customizing cards remains straightforward while preserving the enhanced professional context.
+The consolidated portfolio project showcase system leverages a clean separation between static data, reusable components, and locale-aware pages, now with streamlined integration to the professional resume presentation system. The system has been enhanced by consolidating the Reader.Market project entry, removing duplicates while preserving comprehensive multilingual capabilities, advanced technology stacks, and professional context integration. The enhanced architecture maintains extensibility, localization, and visual engagement while providing comprehensive professional validation through integrated resume sections. Adding new projects, adjusting statuses, and customizing cards remains straightforward while preserving the enhanced professional context.
 
 ## Appendices
 
@@ -631,7 +652,7 @@ The enhanced portfolio project showcase system leverages a clean separation betw
   - **Enhanced**: Update resume.ts to include professional context and references
   - **Enhanced**: Add appropriate translation keys in i18n/index.ts
 - **Reference**:
-  - [projects.ts:18-170](file://src/data/projects.ts#L18-L170)
+  - [projects.ts:18-139](file://src/data/projects.ts#L18-L139)
   - [resume.ts:191-217](file://src/data/resume.ts#L191-L217)
   - [i18n.index.ts:73-82](file://src/i18n/index.ts#L73-L82)
 
@@ -655,12 +676,15 @@ The enhanced portfolio project showcase system leverages a clean separation betw
 
 ### Enhanced Project Data Formatting Examples
 - **Enhanced Existing Entries** demonstrate structure and localization patterns:
-  - [projects.ts:18-170](file://src/data/projects.ts#L18-L170)
-- **Enhanced New projects showcase** includes:
+  - [projects.ts:18-139](file://src/data/projects.ts#L18-L139)
+- **Enhanced Consolidated projects showcase** includes:
   - Crimson Wars: Survival game concept with Astro, React, TypeScript, Tailwind, PostgreSQL, Drizzle
-  - Reader.Market: Content platform with TypeScript, Node.js, React, PostgreSQL, Docker
+  - Reader.Market: AI-powered book reading platform with TypeScript, Node.js, React, PostgreSQL, Docker
+  - rodion.pro: Personal website with Astro, React, TypeScript, Tailwind, PostgreSQL, Drizzle
+  - Cyka.LOL: Blog/streaming platform with TypeScript, Node.js, React, PostgreSQL, Redis
 - **Enhanced Professional Integration** examples:
   - [resume.ts:191-217](file://src/data/resume.ts#L191-L217)
+  - [resumeShort.ts:97-100](file://src/data/resumeShort.ts#L97-L100)
 
 ### Enhanced Example: Component Usage Patterns
 - **Enhanced Projects listing page**:
@@ -682,9 +706,9 @@ The enhanced portfolio project showcase system leverages a clean separation betw
   - **Enhanced**: Resume sections use optimized layouts for professional content density
 
 ### Enhanced Portfolio Showcase Features
-- **Enhanced Expanded project categories**:
+- **Enhanced Streamlined project categories**:
   - Web applications with modern tech stacks (Astro, React, TypeScript, Node.js, PostgreSQL, Docker)
-  - Content platforms with database infrastructure (PostgreSQL, Docker)
+  - AI-powered content platforms with database infrastructure (PostgreSQL, Docker)
   - Blog/streaming platforms with multimedia support (Redis caching)
   - Professional development projects with AI integrations
 - **Enhanced Improved project diversity**:
@@ -701,8 +725,9 @@ The enhanced portfolio project showcase system leverages a clean separation betw
 - **Enhanced Career Impact**: Integrated showcase strengthens professional presentation
 
 **Section sources**
-- [projects.ts:51-170](file://src/data/projects.ts#L51-L170)
+- [projects.ts:51-139](file://src/data/projects.ts#L51-L139)
 - [resume.ts:191-217](file://src/data/resume.ts#L191-L217)
+- [resumeShort.ts:97-100](file://src/data/resumeShort.ts#L97-L100)
 - [index.en.astro:75-79](file://src/pages/en/index.astro#L75-L79)
 - [index.ru.astro:77-81](file://src/pages/ru/index.astro#L77-L81)
 - [resume.en.astro:70-145](file://src/pages/en/resume.astro#L70-L145)

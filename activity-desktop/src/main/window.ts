@@ -26,6 +26,8 @@ export function createMainWindow(): BrowserWindow {
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
+  mainWindow.webContents.openDevTools({ mode: 'detach' });
+
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
   });

@@ -1,7 +1,7 @@
 // System tray manager for the Electron app
 // Uses Electron's native Tray API instead of systray2
 
-import { Tray, Menu, nativeImage, type BrowserWindow, type NativeImage } from 'electron';
+import { Tray, Menu, nativeImage, app, type BrowserWindow, type NativeImage } from 'electron';
 
 let tray: Tray | null = null;
 
@@ -61,28 +61,33 @@ export function createTray(mainWindow: BrowserWindow): Tray {
     {
       label: 'Show Window',
       click: () => {
-        mainWindow.show();
-        mainWindow.focus();
+        if (!mainWindow.isDestroyed()) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
       },
     },
     {
       label: 'Pause (15 min)',
       click: () => {
-        mainWindow.webContents.send('activity:pause:tray', 15);
+        if (!mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('activity:pause:tray', 15);
+        }
       },
     },
     {
       label: 'Pause (1 hour)',
       click: () => {
-        mainWindow.webContents.send('activity:pause:tray', 60);
+        if (!mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('activity:pause:tray', 60);
+        }
       },
     },
     { type: 'separator' },
     {
       label: 'Quit',
       click: () => {
-        (mainWindow as BrowserWindow & { forceQuit?: boolean }).forceQuit = true;
-        mainWindow.close();
+        app.quit();
       },
     },
   ]);
@@ -90,8 +95,10 @@ export function createTray(mainWindow: BrowserWindow): Tray {
   tray.setContextMenu(contextMenu);
 
   tray.on('click', () => {
-    mainWindow.show();
-    mainWindow.focus();
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
   });
 
   return tray;

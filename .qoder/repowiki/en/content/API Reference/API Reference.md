@@ -23,6 +23,11 @@
 - [index.ts](file://src/pages/api/activity/v1/notes/index.ts)
 - [id.ts](file://src/pages/api/activity/v1/notes/[id].ts)
 - [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts)
+- [index.ts](file://src/pages/api/activity/v2/projects/index.ts)
+- [index.ts](file://src/pages/api/activity/v2/rules/index.ts)
+- [batch.ts](file://src/pages/api/activity/v2/artifacts/batch.ts)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
 - [activity.ts](file://src/lib/activity.ts)
 - [activity-db.ts](file://src/lib/activity-db.ts)
 - [index.ts](file://src/db/schema/index.ts)
@@ -31,16 +36,17 @@
 - [auth.ts](file://src/lib/auth.ts)
 - [cryptoNotes.ts](file://src/lib/cryptoNotes.ts)
 - [noteSanitize.ts](file://src/lib/noteSanitize.ts)
+- [contracts.ts](file://shared/activity/contracts.ts)
+- [0004_activity_v2.sql](file://drizzle/0004_activity_v2.sql)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added comprehensive activity notes management API with three new endpoints for note retrieval, individual note access, and note submission
-- Enhanced existing activity monitoring APIs with encrypted note ingestion capabilities
-- Integrated secure note storage with AES-256-GCM encryption and automatic redaction
-- Added administrative access control for note management operations
-- Implemented preview generation and suspicious content detection for note safety
-- Extended activity monitoring with encrypted quick notes alongside telemetry data
+- Added comprehensive documentation for new v2 API endpoints including projects management, rules engine, artifact batching, markers, and timeline queries
+- Documented administrative access controls for project and rule management
+- Added device authentication requirements for artifact batching and timeline queries
+- Included comprehensive error handling and validation rules for all new endpoints
+- Documented database schema changes and new table structures for activity v2
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -57,10 +63,10 @@
 ## Introduction
 This document describes the public APIs exposed by rodion.pro. It covers authentication via Google OAuth, session management, user context retrieval, comment threads with CRUD and moderation actions, reaction toggling with emoji-based interactions, GitHub webhook processing, the event feed, and comprehensive activity monitoring with real-time streaming. For each endpoint, we specify HTTP method, URL pattern, request/response schemas, authentication requirements, and error handling. Practical examples, parameter descriptions, integration guidelines, rate limiting, security considerations, and versioning information are included.
 
-**Updated** Enhanced with comprehensive activity monitoring endpoints including data ingestion, real-time streaming, historical statistics, privacy-safe public views, and secure activity notes management with encrypted storage and administrative controls.
+**Updated** Enhanced with comprehensive activity monitoring endpoints including data ingestion, real-time streaming, historical statistics, privacy-safe public views, secure activity notes management, and new v2 API endpoints for projects management, rules engine, artifact batching, markers, and timeline queries with administrative access controls and device authentication.
 
 ## Project Structure
-Public API routes are located under src/pages/api. Authentication routes are grouped under auth, comments under comments, reactions under reactions, webhooks under webhooks, activity monitoring under activity/v1, and feed and events under top-level paths. Session and user context are managed via Astro API routes and shared utilities with enhanced database connectivity validation.
+Public API routes are located under src/pages/api. Authentication routes are grouped under auth, comments under comments, reactions under reactions, webhooks under webhooks, activity monitoring under activity/v1 and activity/v2, and feed and events under top-level paths. Session and user context are managed via Astro API routes and shared utilities with enhanced database connectivity validation.
 
 ```mermaid
 graph TB
@@ -86,7 +92,7 @@ E1["GET /api/feed"]
 W1["POST /api/webhooks/github"]
 D1["POST /api/events/deploy"]
 end
-subgraph "Activity Monitoring"
+subgraph "Activity Monitoring v1"
 ACT1["POST /api/activity/v1/ingest"]
 ACT2["GET /api/activity/v1/now"]
 ACT3["GET /api/activity/v1/stats"]
@@ -97,6 +103,15 @@ subgraph "Activity Notes Management"
 AN1["GET /api/activity/v1/notes"]
 AN2["GET /api/activity/v1/notes/[id]"]
 AN3["POST /api/activity/v1/notes/ingest"]
+end
+subgraph "Activity Monitoring v2"
+V2P1["GET /api/activity/v2/projects"]
+V2P2["PUT /api/activity/v2/projects"]
+V2R1["GET /api/activity/v2/rules"]
+V2R2["PUT /api/activity/v2/rules"]
+V2A1["POST /api/activity/v2/artifacts/batch"]
+V2M1["POST /api/activity/v2/markers"]
+V2T1["GET /api/activity/v2/timeline"]
 end
 A1 --> A2
 A2 --> A3
@@ -114,53 +129,67 @@ ACT3 --> ACT4
 ACT5 --> ACT4
 AN1 --> AN2
 AN2 --> AN3
+V2P1 --> V2P2
+V2R1 --> V2R2
+V2A1 --> V2M1
+V2M1 --> V2T1
 ```
 
 **Diagram sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
-- [me.ts](file://src/pages/api/auth/me.ts#L1-L30)
-- [logout.ts](file://src/pages/api/auth/logout.ts#L1-L27)
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
-- [flag.ts](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
-- [hide.ts](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
-- [unhide.ts](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
-- [index.ts](file://src/pages/api/reactions/index.ts#L1-L82)
-- [toggle.ts](file://src/pages/api/reactions/toggle.ts#L1-L85)
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
-- [feed.ts](file://src/pages/api/feed.ts#L1-L55)
-- [deploy.ts](file://src/pages/api/events/deploy.ts#L1-L61)
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [now.ts](file://src/pages/api/activity/v1/now.ts#L1-L106)
-- [stats.ts](file://src/pages/api/activity/v1/stats.ts#L1-L273)
-- [stream.ts](file://src/pages/api/activity/v1/stream.ts#L1-L129)
-- [public.ts](file://src/pages/api/activity/v1/public.ts#L1-L65)
-- [index.ts](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
-- [id.ts](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [me.ts:1-30](file://src/pages/api/auth/me.ts#L1-L30)
+- [logout.ts:1-27](file://src/pages/api/auth/logout.ts#L1-L27)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [flag.ts:1-69](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
+- [hide.ts:1-50](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
+- [unhide.ts:1-50](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
+- [index.ts:1-82](file://src/pages/api/reactions/index.ts#L1-L82)
+- [toggle.ts:1-85](file://src/pages/api/reactions/toggle.ts#L1-L85)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
 
 **Section sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
-- [me.ts](file://src/pages/api/auth/me.ts#L1-L30)
-- [logout.ts](file://src/pages/api/auth/logout.ts#L1-L27)
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
-- [flag.ts](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
-- [hide.ts](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
-- [unhide.ts](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
-- [index.ts](file://src/pages/api/reactions/index.ts#L1-L82)
-- [toggle.ts](file://src/pages/api/reactions/toggle.ts#L1-L85)
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
-- [feed.ts](file://src/pages/api/feed.ts#L1-L55)
-- [deploy.ts](file://src/pages/api/events/deploy.ts#L1-L61)
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [now.ts](file://src/pages/api/activity/v1/now.ts#L1-L106)
-- [stats.ts](file://src/pages/api/activity/v1/stats.ts#L1-L273)
-- [stream.ts](file://src/pages/api/activity/v1/stream.ts#L1-L129)
-- [public.ts](file://src/pages/api/activity/v1/public.ts#L1-L65)
-- [index.ts](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
-- [id.ts](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [me.ts:1-30](file://src/pages/api/auth/me.ts#L1-L30)
+- [logout.ts:1-27](file://src/pages/api/auth/logout.ts#L1-L27)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [flag.ts:1-69](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
+- [hide.ts:1-50](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
+- [unhide.ts:1-50](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
+- [index.ts:1-82](file://src/pages/api/reactions/index.ts#L1-L82)
+- [toggle.ts:1-85](file://src/pages/api/reactions/toggle.ts#L1-L85)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
 
 ## Core Components
 - Authentication API: Google OAuth initiation and callback, session creation, user context retrieval, logout with enhanced database connectivity checks.
@@ -171,36 +200,38 @@ AN2 --> AN3
 - Deploy Events API: Securely accept deployment events via bearer token with comprehensive validation.
 - Activity Monitoring API: Comprehensive activity tracking with device registration, data ingestion, real-time streaming, historical statistics, and privacy-safe public views.
 - Activity Notes Management API: Secure encrypted note storage with administrative controls, preview generation, and suspicious content detection.
-
-**Updated** Added comprehensive activity notes management API with encrypted storage, administrative controls, and integration with existing activity monitoring infrastructure.
+- **Updated** Activity v2 API: Administrative project management, rules engine, artifact batching with deduplication, markers for timeline events, and timeline queries with device authentication and comprehensive access controls.
 
 **Section sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
-- [me.ts](file://src/pages/api/auth/me.ts#L1-L30)
-- [logout.ts](file://src/pages/api/auth/logout.ts#L1-L27)
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
-- [flag.ts](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
-- [hide.ts](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
-- [unhide.ts](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
-- [index.ts](file://src/pages/api/reactions/index.ts#L1-L82)
-- [toggle.ts](file://src/pages/api/reactions/toggle.ts#L1-L85)
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
-- [feed.ts](file://src/pages/api/feed.ts#L1-L55)
-- [deploy.ts](file://src/pages/api/events/deploy.ts#L1-L61)
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [now.ts](file://src/pages/api/activity/v1/now.ts#L1-L106)
-- [stats.ts](file://src/pages/api/activity/v1/stats.ts#L1-L273)
-- [stream.ts](file://src/pages/api/activity/v1/stream.ts#L1-L129)
-- [public.ts](file://src/pages/api/activity/v1/public.ts#L1-L65)
-- [index.ts](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
-- [id.ts](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [me.ts:1-30](file://src/pages/api/auth/me.ts#L1-L30)
+- [logout.ts:1-27](file://src/pages/api/auth/logout.ts#L1-L27)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [flag.ts:1-69](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
+- [hide.ts:1-50](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
+- [unhide.ts:1-50](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
+- [index.ts:1-82](file://src/pages/api/reactions/index.ts#L1-L82)
+- [toggle.ts:1-85](file://src/pages/api/reactions/toggle.ts#L1-L85)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
 
 ## Architecture Overview
-The API follows a straightforward request-response model with Astro API routes. Authentication relies on cookies and server-managed sessions with enhanced database connectivity validation. Data persistence uses Drizzle ORM against a relational database with comprehensive error handling. Webhooks are verified via HMAC-SHA256 and stored as normalized events with robust validation. Activity monitoring uses a separate database connection with dedicated tables for device management, minute-level aggregation, and real-time streaming via Server-Sent Events. Activity notes are stored separately with encrypted content and administrative access controls.
-
-**Updated** Enhanced with activity notes architecture featuring encrypted storage, administrative controls, and integration with existing activity monitoring infrastructure.
+The API follows a straightforward request-response model with Astro API routes. Authentication relies on cookies and server-managed sessions with enhanced database connectivity validation. Data persistence uses Drizzle ORM against a relational database with comprehensive error handling. Webhooks are verified via HMAC-SHA256 and stored as normalized events with robust validation. Activity monitoring uses a separate database connection with dedicated tables for device management, minute-level aggregation, and real-time streaming via Server-Sent Events. Activity notes are stored separately with encrypted content and administrative access controls. **Updated** The v2 API introduces administrative endpoints for project and rule management, device authentication for artifact operations, and comprehensive timeline querying capabilities.
 
 ```mermaid
 sequenceDiagram
@@ -218,8 +249,8 @@ AuthAPI-->>Client : "Set session cookie and redirect"
 ```
 
 **Diagram sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
 
 ## Detailed Component Analysis
 
@@ -274,12 +305,12 @@ Security and Best Practices:
 - **Updated** Enhanced with comprehensive database connectivity validation and error handling.
 
 **Section sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
-- [me.ts](file://src/pages/api/auth/me.ts#L1-L30)
-- [logout.ts](file://src/pages/api/auth/logout.ts#L1-L27)
-- [session.ts](file://src/lib/session.ts#L1-L58)
-- [auth.ts](file://src/lib/auth.ts#L1-L101)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [me.ts:1-30](file://src/pages/api/auth/me.ts#L1-L30)
+- [logout.ts:1-27](file://src/pages/api/auth/logout.ts#L1-L27)
+- [session.ts:1-58](file://src/lib/session.ts#L1-L58)
+- [auth.ts:1-101](file://src/lib/auth.ts#L1-L101)
 
 #### OAuth Flow Sequence
 ```mermaid
@@ -300,8 +331,8 @@ AuthAPI-->>Client : "302 Redirect to returnTo"
 ```
 
 **Diagram sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
 
 ### Comment API
 
@@ -378,10 +409,10 @@ Integration Guidelines:
 - **Updated** Enhanced with comprehensive validation and error handling across all endpoints.
 
 **Section sources**
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
-- [flag.ts](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
-- [hide.ts](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
-- [unhide.ts](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [flag.ts:1-69](file://src/pages/api/comments/[id]/flag.ts#L1-L69)
+- [hide.ts:1-50](file://src/pages/api/comments/[id]/hide.ts#L1-L50)
+- [unhide.ts:1-50](file://src/pages/api/comments/[id]/unhide.ts#L1-L50)
 
 #### Comment Retrieval Flow
 ```mermaid
@@ -397,7 +428,7 @@ Tree --> Ok["200 OK with comments"]
 ```
 
 **Diagram sources**
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
 
 ### Reaction API
 
@@ -436,8 +467,8 @@ Real-time Updates:
 - **Updated** Enhanced with improved validation and error handling.
 
 **Section sources**
-- [index.ts](file://src/pages/api/reactions/index.ts#L1-L82)
-- [toggle.ts](file://src/pages/api/reactions/toggle.ts#L1-L85)
+- [index.ts:1-82](file://src/pages/api/reactions/index.ts#L1-L82)
+- [toggle.ts:1-85](file://src/pages/api/reactions/toggle.ts#L1-L85)
 
 #### Reaction Toggle Sequence
 ```mermaid
@@ -457,7 +488,7 @@ end
 ```
 
 **Diagram sources**
-- [toggle.ts](file://src/pages/api/reactions/toggle.ts#L1-L85)
+- [toggle.ts:1-85](file://src/pages/api/reactions/toggle.ts#L1-L85)
 
 ### Webhook Processing API
 
@@ -492,7 +523,7 @@ Security Considerations:
 - **Updated** Enhanced with improved security measures and validation.
 
 **Section sources**
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
 
 #### GitHub Webhook Processing Flow
 ```mermaid
@@ -518,7 +549,7 @@ Release --> |No| Ok200
 ```
 
 **Diagram sources**
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
 
 ### Event Feed API
 
@@ -545,7 +576,7 @@ Integration Guidelines:
 - **Updated** Enhanced with comprehensive validation and error handling.
 
 **Section sources**
-- [feed.ts](file://src/pages/api/feed.ts#L1-L55)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
 
 ### Administrative Endpoints
 
@@ -578,7 +609,7 @@ Security Considerations:
 - **Updated** Enhanced with comprehensive validation and security measures.
 
 **Section sources**
-- [deploy.ts](file://src/pages/api/events/deploy.ts#L1-L61)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
 
 ### Activity Monitoring API
 
@@ -1029,52 +1060,211 @@ Purpose: Delete individual note for administrative access.
 - 500: Internal server error
 
 **Section sources**
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [now.ts](file://src/pages/api/activity/v1/now.ts#L1-L106)
-- [stats.ts](file://src/pages/api/activity/v1/stats.ts#L1-L273)
-- [stream.ts](file://src/pages/api/activity/v1/stream.ts#L1-L129)
-- [public.ts](file://src/pages/api/activity/v1/public.ts#L1-L65)
-- [index.ts](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
-- [id.ts](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
-- [activity.ts](file://src/lib/activity.ts#L1-L154)
-- [activity-db.ts](file://src/lib/activity-db.ts#L1-L49)
-- [index.ts](file://src/db/schema/index.ts#L152-L177)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L1-L30)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [activity.ts:1-154](file://src/lib/activity.ts#L1-L154)
+- [activity-db.ts:1-49](file://src/lib/activity-db.ts#L1-L49)
+- [index.ts:152-177](file://src/db/schema/index.ts#L152-L177)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
+- [noteSanitize.ts:1-30](file://src/lib/noteSanitize.ts#L1-L30)
+
+### Activity v2 API
+
+Base Path: /api/activity/v2
+
+**Overview**: Next-generation activity monitoring API providing administrative project management, intelligent rules engine, efficient artifact batching, timeline markers, and comprehensive timeline queries. Built on the same activity database with enhanced schema and authentication requirements.
+
+#### Projects Management API
+
+**Endpoint**: GET /api/activity/v2/projects
+- Purpose: Retrieve all projects with optional filtering by active status
+- Authentication: Admin token required (ACTIVITY_ADMIN_TOKEN)
+- Query Parameters:
+  - activeOnly: Optional boolean. If true, returns only active projects
+- Response Schema (JSON): `{ projects: ActivityProject[] }`
+- Response Codes: 200, 401, 503
+
+**Endpoint**: PUT /api/activity/v2/projects
+- Purpose: Create or update a project
+- Authentication: Admin token required (ACTIVITY_ADMIN_TOKEN)
+- Request Body (JSON):
+  ```json
+  {
+    "id": 1,
+    "slug": "rodion-pro",
+    "name": "rodion.pro",
+    "repoPathPattern": "/Users/.*",
+    "repoRemotePattern": "github\\.com/.*",
+    "domainPattern": "rodion\\.pro",
+    "branchPattern": "main|master",
+    "isActive": true,
+    "color": "#007bff"
+  }
+  ```
+- Response Schema (JSON): `{ project: ActivityProject }`
+- Response Codes: 200, 201, 400, 401, 404, 503
+
+#### Rules Engine API
+
+**Endpoint**: GET /api/activity/v2/rules
+- Purpose: Retrieve all rules with optional filtering by enabled status
+- Authentication: Admin token required (ACTIVITY_ADMIN_TOKEN)
+- Query Parameters:
+  - enabledOnly: Optional boolean. If true, returns only enabled rules
+- Response Schema (JSON): `{ rules: ActivityRule[] }`
+- Response Codes: 200, 401, 503
+
+**Endpoint**: PUT /api/activity/v2/rules
+- Purpose: Create or update a rule
+- Authentication: Admin token required (ACTIVITY_ADMIN_TOKEN)
+- Request Body (JSON):
+  ```json
+  {
+    "id": 1,
+    "priority": 1,
+    "isEnabled": true,
+    "sourceType": "app",
+    "matchKind": "startsWith",
+    "matchValue": "VS Code",
+    "resultProjectSlug": "rodion-pro",
+    "resultCategory": "development",
+    "resultActivityType": "active",
+    "confidence": 90
+  }
+  ```
+- Response Schema (JSON): `{ rule: ActivityRule }`
+- Response Codes: 200, 201, 400, 401, 404, 503
+
+#### Artifact Batching API
+
+**Endpoint**: POST /api/activity/v2/artifacts/batch
+- Purpose: Batch insert multiple artifacts with deduplication
+- Authentication: Device authentication required (x-device-id + x-device-key)
+- Request Body (JSON):
+  ```json
+  {
+    "deviceId": "pc-main",
+    "artifacts": [
+      {
+        "occurredAt": "2024-01-15T10:30:00Z",
+        "artifactType": "commit",
+        "projectSlug": "rodion-pro",
+        "sourceApp": "GitHub Desktop",
+        "title": "feat: add new API endpoints",
+        "payload": { "sha": "abc123" },
+        "privacyLevel": "private",
+        "fingerprint": "abc123def456"
+      }
+    ]
+  }
+  ```
+- Response Schema (JSON): `{ ok: true, inserted: 1, skipped: 0 }`
+- Response Codes: 200, 400, 401, 503
+- **Updated** Added comprehensive validation, deduplication via fingerprint, and batch size limits
+
+#### Markers API
+
+**Endpoint**: POST /api/activity/v2/markers
+- Purpose: Create timeline markers for specific events or milestones
+- Authentication: Device authentication required (x-device-id + x-device-key)
+- Request Body (JSON):
+  ```json
+  {
+    "markerType": "milestone",
+    "projectSlug": "rodion-pro",
+    "note": "Completed major feature release",
+    "occurredAt": "2024-01-15T10:30:00Z"
+  }
+  ```
+- Response Schema (JSON): `{ ok: true, markerId: "uuid" }`
+- Response Codes: 200, 400, 401, 503
+
+#### Timeline Queries API
+
+**Endpoint**: GET /api/activity/v2/timeline
+- Purpose: Query activity timeline with filtering and pagination
+- Authentication: Device authentication required (x-device-id + x-device-key)
+- Query Parameters:
+  - from: Required. Start timestamp (ISO 8601)
+  - to: Required. End timestamp (ISO 8601)
+  - projectSlug: Optional. Filter by project
+  - includeSessions: Optional. Include activity sessions (boolean)
+  - includeArtifacts: Optional. Include artifacts (boolean)
+  - includeMarkers: Optional. Include markers (boolean)
+  - limit: Optional. Maximum items per page (default: 100)
+- Response Schema (JSON):
+  ```json
+  {
+    "date": "2024-01-15",
+    "sessions": [/* ActivitySession[] */],
+    "artifacts": [/* ActivityArtifact[] */]
+  }
+  ```
+- Response Codes: 200, 400, 401, 503
+
+**Section sources**
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
+- [contracts.ts:49-143](file://shared/activity/contracts.ts#L49-L143)
+- [0004_activity_v2.sql:1-121](file://drizzle/0004_activity_v2.sql#L1-L121)
 
 #### Activity Monitoring Architecture
 ```mermaid
 flowchart TD
 Device["Monitoring Agent"] --> Ingest["POST /api/activity/v1/ingest"]
 Device --> NotesIngest["POST /api/activity/v1/notes/ingest"]
+Device --> ArtifactsBatch["POST /api/activity/v2/artifacts/batch"]
+Device --> Markers["POST /api/activity/v2/markers"]
 Ingest --> Auth["Device Authentication"]
 NotesIngest --> Auth
+ArtifactsBatch --> Auth
+Markers --> Auth
 Auth --> DB["Activity Database"]
 DB --> Agg["Minute Aggregation"]
 DB --> Now["Current State"]
 DB --> Notes["Encrypted Notes"]
+DB --> Projects["Project Management"]
+DB --> Rules["Rules Engine"]
+DB --> Artifacts["Artifact Storage"]
+DB --> Timeline["Timeline Queries"]
 Agg --> Stats["Historical Queries"]
 Now --> Stream["SSE Broadcasting"]
 Notes --> AdminAccess["Admin API Access"]
+Projects --> AdminAccess
+Rules --> AdminAccess
+Artifacts --> Timeline
+Timeline --> Clients["Connected Clients"]
 Stats --> Public["Public API"]
-Stream --> Clients["Connected Clients"]
+Stream --> Clients
 Public --> Anonymous["Anonymous Viewers"]
 AdminAccess --> Decrypt["AES-256-GCM Decryption"]
 ```
 
 **Diagram sources**
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
-- [now.ts](file://src/pages/api/activity/v1/now.ts#L1-L106)
-- [stats.ts](file://src/pages/api/activity/v1/stats.ts#L1-L273)
-- [stream.ts](file://src/pages/api/activity/v1/stream.ts#L1-L129)
-- [public.ts](file://src/pages/api/activity/v1/public.ts#L1-L65)
-- [index.ts](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
-- [id.ts](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
-- [activity.ts](file://src/lib/activity.ts#L1-L154)
-- [activity-db.ts](file://src/lib/activity-db.ts#L1-L49)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [activity.ts:1-154](file://src/lib/activity.ts#L1-L154)
+- [activity-db.ts:1-49](file://src/lib/activity-db.ts#L1-L49)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
 
 ## Dependency Analysis
 - Authentication depends on:
@@ -1106,8 +1296,12 @@ AdminAccess --> Decrypt["AES-256-GCM Decryption"]
   - Note sanitization utilities for redaction and suspicious content detection.
   - Administrative access control via ACTIVITY_ADMIN_TOKEN.
   - Database schema for encrypted note storage with preview and metadata fields.
-
-**Updated** Added comprehensive activity notes management dependencies including encrypted storage, administrative controls, and integration with existing activity monitoring infrastructure.
+- **Updated** Activity v2 API depends on:
+  - Administrative access control via ACTIVITY_ADMIN_TOKEN for project and rule management.
+  - Device authentication for artifact operations and timeline queries.
+  - Enhanced database schema with new tables for projects, rules, artifacts, sessions, and summaries.
+  - Cryptographic fingerprinting for artifact deduplication.
+  - Comprehensive validation and error handling across all endpoints.
 
 ```mermaid
 graph LR
@@ -1125,43 +1319,57 @@ Notes["Notes Routes"] --> ActivityDB
 Notes --> AES["AES-256-GCM Encryption"]
 Notes --> Sanitize["Content Sanitization"]
 Notes --> AdminAuth["Admin Token Verification"]
+V2["Activity v2 Routes"] --> ActivityDB
+V2 --> AdminAuth
+V2 --> DeviceAuth
+V2 --> Fingerprint["SHA-256 Fingerprinting"]
 ```
 
 **Diagram sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
-- [index.ts](file://src/pages/api/reactions/index.ts#L1-L82)
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
-- [feed.ts](file://src/pages/api/feed.ts#L1-L55)
-- [deploy.ts](file://src/pages/api/events/deploy.ts#L1-L61)
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
-- [activity-db.ts](file://src/lib/activity-db.ts#L1-L49)
-- [activity.ts](file://src/lib/activity.ts#L1-L154)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L1-L30)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [index.ts:1-82](file://src/pages/api/reactions/index.ts#L1-L82)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [activity-db.ts:1-49](file://src/lib/activity-db.ts#L1-L49)
+- [activity.ts:1-154](file://src/lib/activity.ts#L1-L154)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
+- [noteSanitize.ts:1-30](file://src/lib/noteSanitize.ts#L1-L30)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
 
 **Section sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
-- [index.ts](file://src/pages/api/reactions/index.ts#L1-L82)
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
-- [feed.ts](file://src/pages/api/feed.ts#L1-L55)
-- [deploy.ts](file://src/pages/api/events/deploy.ts#L1-L61)
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [now.ts](file://src/pages/api/activity/v1/now.ts#L1-L106)
-- [stats.ts](file://src/pages/api/activity/v1/stats.ts#L1-L273)
-- [stream.ts](file://src/pages/api/activity/v1/stream.ts#L1-L129)
-- [public.ts](file://src/pages/api/activity/v1/public.ts#L1-L65)
-- [index.ts](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
-- [id.ts](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
-- [activity-db.ts](file://src/lib/activity-db.ts#L1-L49)
-- [activity.ts](file://src/lib/activity.ts#L1-L154)
-- [cryptoNotes.ts](file://src/lib/cryptoNotes.ts#L1-L45)
-- [noteSanitize.ts](file://src/lib/noteSanitize.ts#L1-L30)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [index.ts:1-82](file://src/pages/api/reactions/index.ts#L1-L82)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
+- [activity-db.ts:1-49](file://src/lib/activity-db.ts#L1-L49)
+- [activity.ts:1-154](file://src/lib/activity.ts#L1-L154)
+- [cryptoNotes.ts:1-45](file://src/lib/cryptoNotes.ts#L1-L45)
+- [noteSanitize.ts:1-30](file://src/lib/noteSanitize.ts#L1-L30)
 
 ## Performance Considerations
 - Comments retrieval:
@@ -1187,8 +1395,12 @@ Notes --> AdminAuth["Admin Token Verification"]
   - Note sanitization runs regex patterns; optimize for common content types
   - Database queries use UUID indexing; ensure proper indexing on activityNotes table
   - Preview generation is CPU-intensive for large texts; consider caching frequently accessed previews
-
-**Updated** Added performance considerations for activity notes management including encryption overhead, sanitization costs, and database optimization strategies.
+- **Updated** Activity v2 API:
+  - Artifact batching supports up to 100 artifacts per request with deduplication via SHA-256 fingerprints
+  - Timeline queries use efficient database indexes on device_id and occurred_at fields
+  - Project and rule management endpoints use optimized queries with appropriate filtering
+  - Rules engine applies priority-based sorting for efficient rule evaluation
+  - Consider adding indexes on activity_artifacts(device_id, occurred_at) and activity_artifacts(fingerprint) for large datasets
 
 ## Troubleshooting Guide
 - Authentication
@@ -1233,30 +1445,39 @@ Notes --> AdminAuth["Admin Token Verification"]
   - Administrative access denied returns 401; verify ACTIVITY_ADMIN_TOKEN.
   - Individual note retrieval requires admin access; ensure proper authentication.
   - Database connectivity issues return 503; check ACTIVITY_DATABASE_URL environment variable.
-
-**Updated** Added comprehensive troubleshooting guidance for activity notes management endpoints including encryption configuration, device authentication, note submission, and administrative access controls.
+- **Updated** Activity v2 API:
+  - Administrative endpoints return 401 if ACTIVITY_ADMIN_TOKEN is missing or invalid.
+  - Device authentication failures return 401 for artifact batching and timeline queries.
+  - Batch operations with more than 100 artifacts return 400 with size limit error.
+  - Artifact deduplication prevents duplicate entries via fingerprint conflicts.
+  - Timeline queries with invalid date ranges return 400; ensure ISO 8601 format timestamps.
+  - Project and rule management requires slug and name fields; returns 400 if missing.
+  - Database connectivity issues return 503; check ACTIVITY_DATABASE_URL environment variable.
 
 **Section sources**
-- [start.ts](file://src/pages/api/auth/google/start.ts#L1-L15)
-- [callback.ts](file://src/pages/api/auth/google/callback.ts#L1-L120)
-- [index.ts](file://src/pages/api/comments/index.ts#L1-L240)
-- [toggle.ts](file://src/pages/api/reactions/toggle.ts#L1-L85)
-- [github.ts](file://src/pages/api/webhooks/github.ts#L1-L142)
-- [feed.ts](file://src/pages/api/feed.ts#L1-L55)
-- [deploy.ts](file://src/pages/api/events/deploy.ts#L1-L61)
-- [ingest.ts](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
-- [now.ts](file://src/pages/api/activity/v1/now.ts#L1-L106)
-- [stats.ts](file://src/pages/api/activity/v1/stats.ts#L1-L273)
-- [stream.ts](file://src/pages/api/activity/v1/stream.ts#L1-L129)
-- [public.ts](file://src/pages/api/activity/v1/public.ts#L1-L65)
-- [index.ts](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
-- [id.ts](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
-- [ingest.ts](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [toggle.ts:1-85](file://src/pages/api/reactions/toggle.ts#L1-L85)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
 
 ## Conclusion
-The rodion.pro API provides a cohesive set of endpoints for authentication, comments, reactions, event feeds, integrations, and comprehensive activity monitoring with enhanced reliability and security. Authentication leverages Google OAuth with robust session management and comprehensive database connectivity validation. Comments support threaded discussions with moderation hooks and strict validation. Reactions enable expressive interactions with emoji-based feedback and comprehensive error handling. Webhooks integrate GitHub events securely with enhanced signature verification and validation. The feed exposes normalized events for consumption with robust database connectivity checks. Deploy endpoints allow CI/CD pipelines to report deployments with strict validation. The new activity monitoring system provides real-time telemetry ingestion, historical analytics, privacy-safe public views, and real-time streaming capabilities with device-based authentication and comprehensive access controls. The newly added activity notes management system extends this capability with secure encrypted note storage, administrative controls, preview generation, and suspicious content detection. Adhering to the documented schemas, authentication requirements, comprehensive validation, and security practices ensures reliable integration with improved error handling, database connectivity validation, advanced monitoring capabilities, and secure note management.
-
-**Updated** Enhanced with comprehensive activity monitoring API providing real-time telemetry, historical analytics, privacy controls, streaming capabilities, and secure activity notes management with encrypted storage and administrative controls.
+The rodion.pro API provides a cohesive set of endpoints for authentication, comments, reactions, event feeds, integrations, and comprehensive activity monitoring with enhanced reliability and security. Authentication leverages Google OAuth with robust session management and comprehensive database connectivity validation. Comments support threaded discussions with moderation hooks and strict validation. Reactions enable expressive interactions with emoji-based feedback and comprehensive error handling. Webhooks integrate GitHub events securely with enhanced signature verification and validation. The feed exposes normalized events for consumption with robust database connectivity checks. Deploy endpoints allow CI/CD pipelines to report deployments with strict validation. The new activity monitoring system provides real-time telemetry ingestion, historical analytics, privacy-safe public views, and real-time streaming capabilities with device-based authentication and comprehensive access controls. The newly added activity notes management system extends this capability with secure encrypted note storage, administrative controls, preview generation, and suspicious content detection. **Updated** The new v2 API introduces powerful administrative capabilities including project management, intelligent rules engine, efficient artifact batching with deduplication, timeline markers, and comprehensive timeline queries with device authentication and access controls. These enhancements provide a complete activity monitoring solution with both operational and analytical capabilities, supporting both developer productivity and business insights through automated project categorization, artifact tracking, and timeline visualization.
 
 ## Appendices
 
@@ -1267,11 +1488,13 @@ The rodion.pro API provides a cohesive set of endpoints for authentication, comm
 - Database Connectivity: All endpoints now include database availability checks with graceful fallbacks.
 - Activity Monitoring: Device authentication via x-device-id and x-device-key headers; admin access via ACTIVITY_ADMIN_TOKEN or logged-in admin sessions.
 - Activity Notes: Administrative access via ACTIVITY_ADMIN_TOKEN; device authentication for note submission; encryption key configuration required.
+- **Updated** Activity v2 API: Administrative access via ACTIVITY_ADMIN_TOKEN for project and rule management; device authentication for artifact operations and timeline queries.
 
 ### Versioning Information
 - No explicit API versioning headers or URLs are used. Treat endpoints as stable within this repository version.
 - Activity monitoring endpoints use v1 versioning to indicate stability and future compatibility.
 - Activity notes endpoints use v1 versioning to align with activity monitoring API versioning.
+- **Updated** Activity v2 API endpoints use v2 versioning to indicate new administrative and analytical capabilities.
 
 ### Practical Examples
 
@@ -1322,6 +1545,25 @@ The rodion.pro API provides a cohesive set of endpoints for authentication, comm
 - Activity Notes - Delete Note:
   - DELETE https://yoursite.com/api/activity/v1/notes/[note-id]
   - Headers: Authorization: Bearer YOUR_ADMIN_TOKEN
+- **Updated** Activity v2 API - Manage Projects:
+  - GET https://yoursite.com/api/activity/v2/projects?activeOnly=true
+  - Headers: Authorization: Bearer YOUR_ADMIN_TOKEN
+  - Body: Project definition with slug, name, patterns, and settings
+- Activity v2 API - Manage Rules:
+  - PUT https://yoursite.com/api/activity/v2/rules
+  - Headers: Authorization: Bearer YOUR_ADMIN_TOKEN
+  - Body: Rule definition with priority, sourceType, matchKind, matchValue, and results
+- Activity v2 API - Batch Artifacts:
+  - POST https://yoursite.com/api/activity/v2/artifacts/batch
+  - Headers: x-device-id: pc-main, x-device-key: YOUR_DEVICE_KEY
+  - Body: Array of artifacts with deduplication via fingerprint
+- Activity v2 API - Create Marker:
+  - POST https://yoursite.com/api/activity/v2/markers
+  - Headers: x-device-id: pc-main, x-device-key: YOUR_DEVICE_KEY
+  - Body: Marker definition with type, project, note, and timestamp
+- Activity v2 API - Query Timeline:
+  - GET https://yoursite.com/api/activity/v2/timeline?from=2024-01-01T00:00:00Z&to=2024-01-01T01:00:00Z&includeSessions=true
+  - Headers: x-device-id: pc-main, x-device-key: YOUR_DEVICE_KEY
 
 ### Enhanced Error Handling Examples
 - Database Not Configured: Returns 503 with detailed error message
@@ -1339,5 +1581,33 @@ The rodion.pro API provides a cohesive set of endpoints for authentication, comm
   - Note Too Long: 413 with size limit exceeded
   - Suspicious Content Detected: 400 with content validation error
   - Administrative Access Required: 401 with permission error
+- **Updated** Activity v2 API Specific:
+  - Administrative Access Required: 401 with permission error for project/rule management
+  - Device Authentication Failure: 401 with invalid device credentials for artifact operations
+  - Batch Size Exceeded: 400 with size limit error (max 100 artifacts)
+  - Artifact Deduplication: 200 with inserted/skipped counts via fingerprint conflicts
+  - Timeline Query Validation: 400 with date range or parameter validation errors
+  - Project/Rule Validation: 400 with missing required fields (slug/name for projects, sourceType/matchKind/matchValue for rules)
+  - Database Connectivity Issues: 503 with activity database connection errors
 
-**Updated** Enhanced with comprehensive error handling and proper HTTP status code responses across all API endpoints, including new activity monitoring and activity notes error scenarios.
+**Section sources**
+- [start.ts:1-15](file://src/pages/api/auth/google/start.ts#L1-L15)
+- [callback.ts:1-120](file://src/pages/api/auth/google/callback.ts#L1-L120)
+- [index.ts:1-240](file://src/pages/api/comments/index.ts#L1-L240)
+- [toggle.ts:1-85](file://src/pages/api/reactions/toggle.ts#L1-L85)
+- [github.ts:1-142](file://src/pages/api/webhooks/github.ts#L1-L142)
+- [feed.ts:1-55](file://src/pages/api/feed.ts#L1-L55)
+- [deploy.ts:1-61](file://src/pages/api/events/deploy.ts#L1-L61)
+- [ingest.ts:1-188](file://src/pages/api/activity/v1/ingest.ts#L1-L188)
+- [now.ts:1-106](file://src/pages/api/activity/v1/now.ts#L1-L106)
+- [stats.ts:1-273](file://src/pages/api/activity/v1/stats.ts#L1-L273)
+- [stream.ts:1-129](file://src/pages/api/activity/v1/stream.ts#L1-L129)
+- [public.ts:1-65](file://src/pages/api/activity/v1/public.ts#L1-L65)
+- [index.ts:1-87](file://src/pages/api/activity/v1/notes/index.ts#L1-L87)
+- [id.ts:1-126](file://src/pages/api/activity/v1/notes/[id].ts#L1-L126)
+- [ingest.ts:1-109](file://src/pages/api/activity/v1/notes/ingest.ts#L1-L109)
+- [index.ts:1-74](file://src/pages/api/activity/v2/projects/index.ts#L1-L74)
+- [index.ts:1-76](file://src/pages/api/activity/v2/rules/index.ts#L1-L76)
+- [batch.ts:1-82](file://src/pages/api/activity/v2/artifacts/batch.ts#L1-L82)
+- [markers.ts](file://src/pages/api/activity/v2/markers.ts)
+- [timeline.ts](file://src/pages/api/activity/v2/timeline.ts)
