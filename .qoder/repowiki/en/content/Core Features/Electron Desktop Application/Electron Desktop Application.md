@@ -26,18 +26,22 @@
 - [DaySummaryCard.tsx](file://activity-desktop/src/renderer/components/charts/DaySummaryCard.tsx)
 - [MiniTimeSeriesChart.tsx](file://activity-desktop/src/renderer/components/charts/MiniTimeSeriesChart.tsx)
 - [useTimeline.ts](file://activity-desktop/src/renderer/hooks/useTimeline.ts)
+- [useTimelineRange.ts](file://activity-desktop/src/renderer/hooks/useTimelineRange.ts)
 - [aggregateTimeline.ts](file://activity-desktop/src/renderer/utils/aggregateTimeline.ts)
+- [StatusTab.tsx](file://activity-desktop/src/renderer/tabs/StatusTab.tsx)
+- [TimelineTab.tsx](file://activity-desktop/src/renderer/tabs/TimelineTab.tsx)
 - [styles.css](file://activity-desktop/src/renderer/styles.css)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Enhanced CategoryDonut chart with improved tooltip styling using CSS variables for theme consistency
-- Implemented better z-index management for tooltip positioning with wrapperStyle configuration
-- Added pointer event control to prevent tooltip interference with chart interactions
-- Improved TopAppsList component with consistent tooltip styling and z-index management
-- Enhanced CSS styling with recharts-tooltip-wrapper class for better tooltip handling
-- Refined user interaction experience with improved pointer event control across visualization components
+- Added new useTimelineRange hook for comprehensive timeline data management with automatic refresh and period summaries
+- Enhanced TopAppsList component with interactive sorting controls and donut chart visualization
+- Improved CategoryDonut and MiniTimeSeriesChart components with enhanced tooltip styling using CSS variables and better z-index management
+- Enhanced aggregateTimeline utility with comprehensive aggregation functions for multiple visualization formats
+- Significantly improved StatusTab and TimelineTab with new visualization components and enhanced user interaction capabilities
+- Added new ActivityBar24h and DaySummaryCard components for 24-hour activity visualization
+- Enhanced CSS styling with improved tooltip handling and z-index management across all visualization components
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -87,6 +91,8 @@ R_App["React App<br/>Multi-Tab Interface"]
 R_UI["Tab Components<br/>Real-time Updates"]
 R_Hooks["Custom Hooks<br/>State Management"]
 R_Visualization["Visualization Components<br/>Live Pulse & Charts"]
+R_EnhancedHooks["Enhanced Hooks<br/>useTimelineRange & useTimeline"]
+R_EnhancedComponents["Enhanced Components<br/>Interactive Charts & Lists"]
 R_Styles["Enhanced Styles<br/>Tooltip & Z-index Management"]
 end
 subgraph "Native Integration"
@@ -117,7 +123,9 @@ MP_Privacy --> R_App
 R_App --> R_UI
 R_App --> R_Hooks
 R_App --> R_Visualization
-R_Visualization --> R_Styles
+R_Visualization --> R_EnhancedHooks
+R_Visualization --> R_EnhancedComponents
+R_EnhancedComponents --> R_Styles
 B_Forge --> B_Webpack
 B_Forge --> B_Makers
 ```
@@ -156,7 +164,7 @@ The application consists of several interconnected core components that work tog
 - **Real-time State Updates**: Subscribes to collector and sync state changes for immediate UI updates
 - **Configuration Management**: Handles setup screen and configuration validation
 - **Component Architecture**: Modular tab components with specialized functionality
-- **Visualization Components**: Live pulse indicators, time displays, and interactive charts for real-time monitoring with enhanced tooltip management
+- **Enhanced Visualization Components**: Live pulse indicators, time displays, and interactive charts for real-time monitoring with enhanced tooltip management and interactive sorting capabilities
 
 **Storage and Persistence**
 - **SQLite Database**: Local storage with WAL mode, foreign key constraints, and proper indexing
@@ -622,8 +630,8 @@ MARKERS ||--o{ SYNC_STATE : "referenced by"
 The React-based user interface provides a comprehensive dashboard with intuitive navigation and real-time data visualization:
 
 **Multi-Tab Architecture**
-- **Status Tab**: Real-time activity metrics and current state
-- **Timeline Tab**: Historical activity visualization and analysis
+- **Status Tab**: Real-time activity metrics and current state with enhanced visualization components
+- **Timeline Tab**: Historical activity visualization and analysis with 24-hour overview
 - **Markers Tab**: Activity markers and user notes management
 - **Privacy Tab**: Privacy configuration and filtering controls
 - **Settings Tab**: Application configuration and device setup
@@ -648,7 +656,7 @@ The React-based user interface provides a comprehensive dashboard with intuitive
 
 **Visual Design**
 - **Theme Integration**: Consistent styling with dark/light theme support
-- **Chart Integration**: Recharts-based visualizations for activity data with enhanced tooltip management
+- **Enhanced Chart Integration**: Recharts-based visualizations for activity data with enhanced tooltip management and interactive sorting
 - **Accessibility**: Keyboard navigation and screen reader support
 - **Performance**: Optimized rendering for smooth user experience
 
@@ -666,10 +674,12 @@ class SetupScreen {
 class StatusTab {
 +renderLivePulse()
 +renderTodayTotals()
++renderEnhancedCharts()
 }
 class TimelineTab {
 +renderTimeSeries()
 +renderDaySummary()
++render24hOverview()
 }
 class MarkersTab {
 +renderMarkersList()
@@ -712,16 +722,17 @@ The application now features comprehensive real-time visualization components th
 - **Automation**: Automatic 1-second refresh interval with cleanup on component unmount
 - **Styling**: Color-coded text indicating fresh (dim) vs stale (warning) data states
 
-**TopAppsList Component**
-- **Purpose**: Displays ranked applications by activity duration with visual progress bars
-- **Features**: Percentage-based progress visualization, category coloring, and duration formatting
-- **Functionality**: Dynamic ranking with configurable maximum items and responsive design
+**Enhanced TopAppsList Component**
+- **Purpose**: Displays ranked applications by activity duration with interactive sorting and visual progress bars
+- **Features**: Pill-style sorting controls (Time, Keys, Clicks, Scroll), percentage-based progress visualization, category coloring, duration formatting, and donut chart visualization
+- **Functionality**: Dynamic ranking with configurable maximum items, responsive design, and interactive expansion for window titles
 - **Performance**: Efficient rendering with memoized calculations and optimized DOM updates
-- **Enhanced Tooltip Management**: Improved z-index control and pointer event handling for better user interaction
+- **Enhanced Tooltip Management**: Improved z-index control with wrapperStyle={{ zIndex: 10 }} and pointerEvents: 'none' for better user interaction
+- **Interactive Sorting**: Users can click sorting pills to change the ranking criteria in real-time
 
 **CategoryDonut Chart**
 - **Purpose**: Pie chart visualization of activity distribution across categories with enhanced tooltip styling
-- **Features**: Interactive tooltips with CSS variable theming, responsive container, category-based coloring, and percentage display
+- **Features**: Interactive tooltips with CSS variable theming, responsive container, category-based coloring, percentage display, and dual mode (donut/bars)
 - **Design**: Central total duration display with legend and gradient styling
 - **Enhanced Tooltip Styling**: Custom tooltip component using CSS variables (--bg-card, --border, --text, --text-dim) for consistent theming
 - **Improved User Interaction**: Better z-index management with wrapperStyle={{ zIndex: 10, pointerEvents: 'none' }} for tooltip positioning without interfering with chart interactions
@@ -737,17 +748,25 @@ The application now features comprehensive real-time visualization components th
 - **Tooltip Wrapper Class**: Added .recharts-tooltip-wrapper with outline: none !important for better tooltip handling
 - **Pointer Event Control**: Consistent pointer-events-none usage across tooltip overlays to prevent interaction interference
 - **Z-index Management**: Standardized z-index: 10 for tooltip wrappers to ensure proper layering
+- **Chart Fade Transitions**: Smooth opacity transitions when switching chart metrics
 
 **Section sources**
 - [LivePulse.tsx:1-25](file://activity-desktop/src/renderer/components/LivePulse.tsx#L1-L25)
 - [TimeSinceUpdate.tsx:1-41](file://activity-desktop/src/renderer/components/TimeSinceUpdate.tsx#L1-L41)
-- [TopAppsList.tsx:1-232](file://activity-desktop/src/renderer/components/TopAppsList.tsx#L1-L232)
-- [CategoryDonut.tsx:1-118](file://activity-desktop/src/renderer/components/charts/CategoryDonut.tsx#L1-L118)
+- [TopAppsList.tsx:1-233](file://activity-desktop/src/renderer/components/TopAppsList.tsx#L1-L233)
+- [CategoryDonut.tsx:1-119](file://activity-desktop/src/renderer/components/charts/CategoryDonut.tsx#L1-L119)
 - [DaySummaryCard.tsx:1-37](file://activity-desktop/src/renderer/components/charts/DaySummaryCard.tsx#L1-L37)
-- [styles.css:61-63](file://activity-desktop/src/renderer/styles.css#L61-L63)
+- [styles.css:61-68](file://activity-desktop/src/renderer/styles.css#L61-L68)
 
 ## Enhanced Timeline Analytics
 The timeline aggregation system has been significantly enhanced with new visualization components and improved data processing capabilities:
+
+**New useTimelineRange Hook**
+- **Purpose**: Comprehensive timeline data management with automatic refresh capabilities and period summaries
+- **Features**: Automatic 10-second refresh for current day, sync update subscriptions, loading states, and period summary computation (today/week/month/allTime)
+- **Functionality**: Date-based fetching, aggregated data computation, and real-time updates with category filtering
+- **Performance**: Efficient caching, debounced updates, and cleanup of event listeners
+- **Period Summaries**: Computes daily, weekly, monthly, and all-time summaries with automatic 60-second refresh
 
 **ActivityBar24h Component**
 - **Purpose**: Horizontal timeline showing 24-hour activity with categorical color coding
@@ -760,9 +779,10 @@ The timeline aggregation system has been significantly enhanced with new visuali
 - **Features**: Gradient fills, custom tooltips, responsive container, and time-based X-axis
 - **Integration**: Recharts-based with linear gradients and interactive tooltips
 - **Performance**: Optimized rendering for real-time updates and smooth animations
+- **Enhanced Tooltip Styling**: Custom tooltip component using CSS variables for consistent theming
 
 **Enhanced useTimeline Hook**
-- **Purpose**: Comprehensive timeline data management with automatic refresh capabilities
+- **Purpose**: Timeline data management for specific dates with automatic refresh capabilities
 - **Features**: Automatic 10-second refresh for current day, sync update subscriptions, and loading states
 - **Functionality**: Date-based fetching, aggregated data computation, and real-time updates
 - **Performance**: Efficient caching, debounced updates, and cleanup of event listeners
@@ -770,15 +790,32 @@ The timeline aggregation system has been significantly enhanced with new visuali
 **Advanced Aggregation Utilities**
 - **Time Series Points**: 15-minute interval grouping with comprehensive metrics
 - **Top Applications**: Ranking by activity duration with category association
-- **Category Analysis**: Percentage calculation and sorting by activity contribution
+- **Top Titles**: Window title analysis with category association
+- **Top Categories**: Percentage calculation and sorting by activity contribution
 - **Activity Segments**: 5-minute granularity with continuous segment merging
 - **Total Metrics**: Aggregated counters for active time, AFK time, and interaction counts
 
+**Enhanced StatusTab Integration**
+- **Time Range Selection**: 1h, 4h, today, 7d, 30d selection with automatic interval adjustment
+- **Metric Pills**: Active, AFK, Keys, Clicks, Scroll selection with color-coded indicators
+- **Category Filter Chips**: All, Coding, Browser, Entertainment, Comms, System, Unknown filtering
+- **Period Summaries**: Expandable accordion showing Today, This Week, This Month, All Time metrics
+- **Interactive Charts**: Real-time chart updates with category filtering and metric switching
+
+**Enhanced TimelineTab Integration**
+- **Date Picker**: Calendar-based date selection with live indicator for current day
+- **24h Activity Bar**: Visual representation of activity throughout the day
+- **Day Summary Card**: Grid-based summary of activity metrics
+- **Timeline Entries**: Grouped activity entries with category dots and duration bars
+
 **Section sources**
+- [useTimelineRange.ts:1-115](file://activity-desktop/src/renderer/hooks/useTimelineRange.ts#L1-L115)
 - [ActivityBar24h.tsx:1-75](file://activity-desktop/src/renderer/components/charts/ActivityBar24h.tsx#L1-L75)
-- [MiniTimeSeriesChart.tsx:1-78](file://activity-desktop/src/renderer/components/charts/MiniTimeSeriesChart.tsx#L1-L78)
+- [MiniTimeSeriesChart.tsx:1-125](file://activity-desktop/src/renderer/components/charts/MiniTimeSeriesChart.tsx#L1-L125)
 - [useTimeline.ts:1-55](file://activity-desktop/src/renderer/hooks/useTimeline.ts#L1-L55)
-- [aggregateTimeline.ts:1-210](file://activity-desktop/src/renderer/utils/aggregateTimeline.ts#L1-L210)
+- [aggregateTimeline.ts:1-336](file://activity-desktop/src/renderer/utils/aggregateTimeline.ts#L1-L336)
+- [StatusTab.tsx:1-383](file://activity-desktop/src/renderer/tabs/StatusTab.tsx#L1-L383)
+- [TimelineTab.tsx:1-157](file://activity-desktop/src/renderer/tabs/TimelineTab.tsx#L1-L157)
 
 ## Native Integration and System Features
 The application leverages native Windows capabilities for comprehensive system integration:
@@ -907,6 +944,8 @@ The application is optimized for efficient resource usage while maintaining resp
 - **Component Memoization**: React.memo for expensive visualization components
 - **Real-time Updates**: Debounced updates for frequently changing data
 - **Enhanced Tooltip Performance**: Improved z-index and pointer event management reduces tooltip rendering conflicts
+- **Interactive Sorting**: Efficient sorting algorithms with memoization for TopAppsList component
+- **Category Filtering**: Client-side filtering eliminates unnecessary IPC calls
 
 ## Troubleshooting Guide
 Comprehensive troubleshooting guidance for common issues and their solutions:
@@ -939,8 +978,10 @@ Comprehensive troubleshooting guidance for common issues and their solutions:
 - **Chart Rendering Failures**: Verify recharts installation and data format compatibility
 - **Live Pulse Animation Problems**: Check CSS animation support and theme variable availability
 - **Time Display Updates**: Ensure proper date parsing and interval cleanup
-- **Aggregation Performance**: Monitor useTimeline hook efficiency and data volume limits
+- **Aggregation Performance**: Monitor useTimelineRange hook efficiency and data volume limits
 - **Tooltip Positioning Issues**: Verify z-index management and pointer event control in chart components
+- **Interactive Sorting Problems**: Check TopAppsList sorting logic and memoization
+- **Category Filter Issues**: Verify useTimelineRange category filtering implementation
 - **Theme Consistency Problems**: Check CSS variable usage in custom tooltip components
 
 **System Integration Problems**
@@ -955,6 +996,11 @@ Comprehensive troubleshooting guidance for common issues and their solutions:
 - **Theme Variable Inconsistencies**: Ensure CSS variables are properly defined for tooltip styling
 - **Responsive Tooltip Positioning**: Verify tooltip positioning and responsive container usage
 
+**New Hook Issues**
+- **useTimelineRange Problems**: Check automatic refresh intervals and period summary computation
+- **useTimeline Issues**: Verify date-based fetching and 10-second refresh for current day
+- **Data Aggregation Errors**: Check aggregateTimeline function implementation and data formatting
+
 **Section sources**
 - [index.ts:68-95](file://activity-desktop/src/main/index.ts#L68-L95)
 - [orchestrator.ts:189-203](file://activity-desktop/src/main/collectors/orchestrator.ts#L189-L203)
@@ -966,29 +1012,35 @@ The comprehensive Electron desktop application represents a mature, production-r
 
 **Recent Enhancements**
 The application has been significantly enhanced with comprehensive real-time visualization capabilities and improved user interaction:
-- **Live Pulse System**: Visual indicators for immediate status feedback
-- **Enhanced Timeline Analytics**: 24-hour activity bars, category donuts, and time series charts
-- **Improved Data Aggregation**: Sophisticated timeline processing with multiple visualization formats
-- **Real-time Updates**: Automatic refresh mechanisms for current day data
-- **Enhanced Tooltip Management**: Improved CategoryDonut chart tooltip styling with CSS variables, better z-index management, and pointer event control
-- **Performance Optimizations**: Efficient rendering and memory management for visualization components
-- **User Experience Improvements**: Better tooltip positioning and interaction handling across all chart components
+- **New useTimelineRange Hook**: Comprehensive timeline data management with automatic refresh and period summaries
+- **Enhanced TopAppsList**: Interactive sorting controls with pill-style interface and donut chart visualization
+- **Improved CategoryDonut**: Enhanced tooltip styling using CSS variables with better z-index management
+- **Enhanced MiniTimeSeriesChart**: Better tooltip styling and z-index management for improved user experience
+- **Advanced Timeline Analytics**: 24-hour activity bars, comprehensive aggregation utilities, and enhanced visualization components
+- **Enhanced StatusTab**: New visualization components including interactive charts, category filtering, and period summaries
+- **Enhanced TimelineTab**: 24-hour overview with activity bar visualization and grouped timeline entries
+- **Performance Optimizations**: Efficient rendering, memory management, and improved tooltip handling across all visualization components
+- **User Experience Improvements**: Better tooltip positioning, interactive sorting, and responsive design across all components
 
 **Key Improvements**
 The recent enhancements focus on improving user interaction and visual consistency:
-- **CategoryDonut Tooltip Enhancement**: Custom tooltip styling using CSS variables for consistent theming across light/dark modes
-- **Z-index Management**: Standardized wrapperStyle configuration with z-index: 10 for proper tooltip layering
-- **Pointer Event Control**: pointerEvents: 'none' on tooltip overlays to prevent interference with chart interactions
-- **Consistent Styling**: Unified approach to tooltip styling across TopAppsList and CategoryDonut components
-- **CSS Integration**: Enhanced styles.css with recharts-tooltip-wrapper class for better tooltip handling
+- **Interactive Sorting**: TopAppsList now features pill-style sorting controls for Time, Keys, Clicks, and Scroll metrics
+- **Donut Chart Visualization**: Enhanced TopAppsList includes a donut chart showing top applications with percentage breakdown
+- **Enhanced Tooltip Styling**: CategoryDonut and MiniTimeSeriesChart components feature custom tooltips using CSS variables for consistent theming
+- **Z-index Management**: Improved tooltip positioning with wrapperStyle configuration and pointer event control
+- **Category Filtering**: Real-time category filtering in StatusTab with client-side aggregation eliminating unnecessary IPC calls
+- **Period Summaries**: Automatic computation and display of Today, This Week, This Month, and All Time summaries
+- **24-hour Activity Visualization**: New ActivityBar24h component provides comprehensive day-long activity overview
+- **Enhanced CSS Integration**: Unified approach to tooltip styling using .recharts-tooltip-wrapper class and consistent z-index management
 
 Key strengths of the implementation include:
 - **Security-First Design**: Comprehensive privacy filtering and secure IPC communication
 - **Performance Optimization**: Efficient collection, storage, and synchronization mechanisms
-- **User Experience**: Intuitive multi-tab interface with real-time updates and visual feedback
+- **User Experience**: Intuitive multi-tab interface with real-time updates and enhanced visual feedback
 - **System Integration**: Native Windows capabilities with proper system integration
 - **Maintainability**: Clean architecture with proper separation of concerns
 - **Visualization Excellence**: Comprehensive real-time data visualization with enhanced user interaction capabilities
 - **Theme Consistency**: Unified styling approach using CSS variables for consistent appearance across components
+- **Interactive Features**: Rich user interaction capabilities including sorting, filtering, and real-time updates
 
 The application successfully transforms from a basic concept to a full-featured Windows desktop application, providing users with powerful activity tracking capabilities while maintaining strict privacy controls and system performance standards. The comprehensive documentation and troubleshooting guidance ensure both developer and user success with this sophisticated Electron application.

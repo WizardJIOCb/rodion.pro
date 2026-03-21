@@ -101,10 +101,10 @@ export const projects: Project[] = [
         'Comments and reviews system',
         'Personalized recommendations',
         'Reading statistics',
-      ],
+      ],      
     },
     featured: true,
-  },
+  }/*,
   {
     id: 'cyka-lol',
     title: {
@@ -135,7 +135,8 @@ export const projects: Project[] = [
       ],
     },
     featured: true,
-  },
+  }*/,
+  
 ];
 
 export function getProjectsByLang(lang: 'ru' | 'en') {
