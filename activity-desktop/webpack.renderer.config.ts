@@ -1,10 +1,20 @@
 import type { Configuration } from 'webpack';
-import { rules } from './webpack.rules';
 
+// Renderer-specific rules — exclude asset-relocator-loader and node-loader
+// which inject __dirname references incompatible with nodeIntegration:false
 export const rendererConfig: Configuration = {
   module: {
     rules: [
-      ...rules,
+      {
+        test: /\.tsx?$/,
+        exclude: /(node_modules|\.webpack)/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+          },
+        },
+      },
       {
         test: /\.css$/,
         use: [

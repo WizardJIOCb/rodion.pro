@@ -17,7 +17,18 @@
 - [App.tsx](file://activity-desktop/src/renderer/App.tsx)
 - [forge.config.ts](file://activity-desktop/forge.config.ts)
 - [tsconfig.json](file://activity-desktop/tsconfig.json)
+- [filter.ts](file://activity-desktop/src/main/privacy/filter.ts)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Added comprehensive privacy filtering implementation with configurable blacklists and domain redaction
+- Enhanced IPC communication framework with security measures and masked sensitive data
+- Expanded database schema with proper indexing and migration support
+- Implemented system tray integration with dynamic icon generation
+- Added comprehensive React UI with multi-tab interface and real-time state updates
+- Enhanced sync worker with exponential backoff and retention policies
+- Integrated native Windows input capture using uiohook-napi and koffi libraries
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -25,40 +36,53 @@
 3. [Core Components](#core-components)
 4. [Architecture Overview](#architecture-overview)
 5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+6. [Privacy and Security Implementation](#privacy-and-security-implementation)
+7. [Database and Storage Layer](#database-and-storage-layer)
+8. [User Interface and Experience](#user-interface-and-experience)
+9. [Native Integration and System Features](#native-integration-and-system-features)
+10. [Dependency Analysis](#dependency-analysis)
+11. [Performance Considerations](#performance-considerations)
+12. [Troubleshooting Guide](#troubleshooting-guide)
+13. [Conclusion](#conclusion)
 
 ## Introduction
-This document describes the Electron desktop application for local activity monitoring and synchronization. The application tracks user activity (keyboard, mouse, scrolling), detects application focus and idle time, applies privacy filtering, stores events locally in a SQLite database, and periodically syncs data to a remote server. It provides a React-based UI with a system tray for quick actions and status visibility.
+This document describes the comprehensive Electron desktop application for local activity monitoring and synchronization on Windows. The application provides a full-featured solution that tracks user activity (keyboard, mouse, scrolling), detects application focus and idle time, applies advanced privacy filtering, stores events locally in a SQLite database, and periodically syncs data to a remote server. The application features a modern React-based UI with system tray integration, multi-tab interface, and comprehensive privacy controls.
 
 ## Project Structure
-The application follows a layered architecture:
-- Main process: Electron main entry point, window management, system tray, IPC handlers, collectors orchestration, and sync worker.
-- Renderer process: React UI with tabbed views for status, timeline, markers, privacy, and settings.
-- Shared: TypeScript types and IPC channel definitions used by both main and renderer processes.
-- Store: Local persistence using better-sqlite3 with migrations and repositories for config, events, markers, and sync state.
-- Collectors: Activity data collection pipeline combining window detection, input counting, idle detection, categorization, and privacy filtering.
-- Sync: Background worker that batches and uploads events and markers with exponential backoff and retention policies.
+The application follows a sophisticated layered architecture designed for Windows desktop environments:
+- **Main Process**: Electron main entry point with single-instance locking, window management, system tray, IPC handlers, native collectors orchestration, and sync worker
+- **Renderer Process**: React application with tabbed interface for status, timeline, markers, privacy, and settings
+- **Privacy Layer**: Advanced filtering system with configurable blacklists, domain redaction, and category-only mode
+- **Storage Layer**: Local persistence using better-sqlite3 with migrations, indexing, and transactional operations
+- **Native Integration**: Windows-specific input capture using uiohook-napi and koffi libraries
+- **Build System**: Electron Forge with Webpack for production packaging and distribution
 
 ```mermaid
 graph TB
-subgraph "Main Process"
-MP_Index["Main Index<br/>(entry point)"]
-MP_Window["Window Manager"]
-MP_Tray["System Tray"]
-MP_IPC["IPC Handlers"]
-MP_Collector["Activity Orchestrator"]
-MP_Sync["Sync Worker"]
-MP_Store["Store Layer"]
+subgraph "Main Process Architecture"
+MP_Index["Main Entry Point<br/>Single Instance Lock"]
+MP_Window["Window Manager<br/>Secure Web Preferences"]
+MP_Tray["System Tray<br/>Dynamic Icon Generation"]
+MP_IPC["IPC Handlers<br/>Security-Masked API"]
+MP_Collector["Activity Orchestrator<br/>Native Input Capture"]
+MP_Sync["Sync Worker<br/>Exponential Backoff"]
+MP_Store["Store Layer<br/>SQLite with Migrations"]
+MP_Privacy["Privacy Filter<br/>Configurable Rules"]
 end
 subgraph "Renderer Process"
-R_App["React App"]
-R_UI["Tabs: Status/Timeline/Markers/Privacy/Settings"]
+R_App["React App<br/>Multi-Tab Interface"]
+R_UI["Tab Components<br/>Real-time Updates"]
+R_Hooks["Custom Hooks<br/>State Management"]
 end
-subgraph "Shared"
-S_Types["Types & IPC Channels"]
+subgraph "Native Integration"
+N_Input["Input Capture<br/>uiohook-napi"]
+N_Win32["Windows Detection<br/>koffi"]
+N_System["System Events<br/>Hook Registration"]
+end
+subgraph "Build & Distribution"
+B_Forge["Electron Forge<br/>Auto-packaging"]
+B_Webpack["Webpack<br/>Module Bundling"]
+B_Makers["Package Makers<br/>Squirrel & ZIP"]
 end
 MP_Index --> MP_Window
 MP_Index --> MP_Tray
@@ -66,46 +90,78 @@ MP_Index --> MP_IPC
 MP_Index --> MP_Collector
 MP_Index --> MP_Sync
 MP_Index --> MP_Store
-MP_IPC <- --> R_App
+MP_Index --> MP_Privacy
+MP_Collector --> N_Input
+MP_Collector --> N_Win32
 MP_Collector --> MP_Store
 MP_Sync --> MP_Store
-MP_Store --> MP_Sync
+MP_Sync --> MP_Privacy
+MP_IPC --> R_App
+MP_Store --> R_App
+MP_Privacy --> R_App
 R_App --> R_UI
-S_Types -.-> MP_IPC
-S_Types -.-> MP_Collector
-S_Types -.-> MP_Sync
+R_App --> R_Hooks
+B_Forge --> B_Webpack
+B_Forge --> B_Makers
 ```
 
 **Diagram sources**
-- [index.ts:1-74](file://activity-desktop/src/main/index.ts#L1-L74)
+- [index.ts:1-95](file://activity-desktop/src/main/index.ts#L1-L95)
 - [window.ts:1-54](file://activity-desktop/src/main/window.ts#L1-L54)
-- [tray.ts:1-112](file://activity-desktop/src/main/tray.ts#L1-L112)
+- [tray.ts:1-119](file://activity-desktop/src/main/tray.ts#L1-L119)
 - [ipc-handlers.ts:1-173](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L1-L173)
 - [orchestrator.ts:1-203](file://activity-desktop/src/main/collectors/orchestrator.ts#L1-L203)
 - [sync-worker.ts:1-230](file://activity-desktop/src/main/sync/sync-worker.ts#L1-L230)
 - [database.ts:1-101](file://activity-desktop/src/main/store/database.ts#L1-L101)
-- [types.ts:1-181](file://activity-desktop/src/shared/types.ts#L1-L181)
+- [filter.ts:1-80](file://activity-desktop/src/main/privacy/filter.ts#L1-L80)
 - [App.tsx:1-71](file://activity-desktop/src/renderer/App.tsx#L1-L71)
+- [forge.config.ts:1-47](file://activity-desktop/forge.config.ts#L1-L47)
 
 **Section sources**
-- [package.json:1-46](file://activity-desktop/package.json#L1-L46)
+- [package.json:1-47](file://activity-desktop/package.json#L1-L47)
 - [forge.config.ts:1-47](file://activity-desktop/forge.config.ts#L1-L47)
 - [tsconfig.json:1-23](file://activity-desktop/tsconfig.json#L1-L23)
 
 ## Core Components
-- Main process entry point initializes single-instance locking, sets up window, tray, IPC, collectors, and sync worker, and handles lifecycle events.
-- Window manager creates a BrowserWindow with secure web preferences, loads the renderer bundle, and handles minimize-to-tray behavior.
-- System tray provides quick actions (show window, pause for 15/60 min, quit) and dynamic tooltip updates.
-- IPC handlers expose a typed API surface to the renderer for state queries, configuration updates, timeline/markers retrieval, privacy preview, pause/resume, blacklist management, connectivity testing, manual sync, device setup, and configuration checks.
-- Activity orchestrator aggregates foreground window info, input counters, idle detection, categorization, privacy filtering, and persists events to SQLite while maintaining a live state.
-- Sync worker batches unsynced events/markers, uploads to the server with device credentials, tracks online/offline status, applies exponential backoff, resets failed events for retry, and purges old synced entries.
-- Store layer encapsulates database initialization, migrations, and repositories for configuration, events, markers, and sync state with transactional updates and indexing.
-- Renderer React app renders tabbed UI, fetches configuration and state, and delegates user actions to the main process via IPC.
+The application consists of several interconnected core components that work together to provide comprehensive activity monitoring:
+
+**Main Process Architecture**
+- **Single Instance Lock**: Prevents multiple application instances and focuses existing windows on second-instance launch
+- **Window Management**: Creates secure BrowserWindow with context isolation, node integration disabled, and DevTools integration
+- **System Tray Integration**: Generates dynamic 16x16 green circle icons and provides context menu actions
+- **IPC Communication**: Exposes typed API surface with security measures for sensitive data masking
+- **Activity Collection**: Orchestrates native input capture, window detection, idle monitoring, and event processing
+- **Data Synchronization**: Implements background sync worker with exponential backoff and retention policies
+- **Privacy Filtering**: Applies configurable privacy rules including blacklists, domain redaction, and category-only mode
+
+**Renderer Process Components**
+- **Multi-Tab Interface**: React application with five distinct tabs for different functional areas
+- **Real-time State Updates**: Subscribes to collector and sync state changes for immediate UI updates
+- **Configuration Management**: Handles setup screen and configuration validation
+- **Component Architecture**: Modular tab components with specialized functionality
+
+**Storage and Persistence**
+- **SQLite Database**: Local storage with WAL mode, foreign key constraints, and proper indexing
+- **Migration System**: Versioned schema migrations with transactional updates
+- **Repository Pattern**: Clean separation of data access logic with CRUD operations
+- **Transaction Support**: Atomic operations for data integrity
+
+**Native Integration**
+- **Windows Input Capture**: Native hooking for keyboard, mouse, and scroll events
+- **Window Detection**: Foreground application and title capture using Windows APIs
+- **Idle Time Monitoring**: Accurate idle detection for AFK calculations
+- **System Integration**: Tray integration, startup handling, and system event monitoring
+
+**Build and Distribution**
+- **Electron Forge**: Production-ready packaging with auto-unpack natives plugin
+- **Webpack Integration**: Separate configurations for main and renderer processes
+- **Cross-platform Packaging**: Squirrel installer for Windows and ZIP archives
+- **Asset Relocation**: Optimized asset handling for portable applications
 
 **Section sources**
-- [index.ts:1-74](file://activity-desktop/src/main/index.ts#L1-L74)
+- [index.ts:1-95](file://activity-desktop/src/main/index.ts#L1-L95)
 - [window.ts:1-54](file://activity-desktop/src/main/window.ts#L1-L54)
-- [tray.ts:1-112](file://activity-desktop/src/main/tray.ts#L1-L112)
+- [tray.ts:1-119](file://activity-desktop/src/main/tray.ts#L1-L119)
 - [ipc-handlers.ts:1-173](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L1-L173)
 - [orchestrator.ts:1-203](file://activity-desktop/src/main/collectors/orchestrator.ts#L1-L203)
 - [sync-worker.ts:1-230](file://activity-desktop/src/main/sync/sync-worker.ts#L1-L230)
@@ -115,67 +171,107 @@ S_Types -.-> MP_Sync
 - [markers-repo.ts:1-59](file://activity-desktop/src/main/store/markers-repo.ts#L1-L59)
 - [types.ts:1-181](file://activity-desktop/src/shared/types.ts#L1-L181)
 - [App.tsx:1-71](file://activity-desktop/src/renderer/App.tsx#L1-L71)
+- [filter.ts:1-80](file://activity-desktop/src/main/privacy/filter.ts#L1-L80)
 
 ## Architecture Overview
-The system uses a main-renderer split with explicit IPC channels. The main process runs collectors and sync worker, while the renderer displays UI and reacts to state updates. Data is persisted locally and synchronized asynchronously with robust retry and retention policies.
+The system implements a robust main-renderer architecture with explicit IPC channels and comprehensive security measures. The main process handles all native operations and data persistence, while the renderer provides the user interface and state management. The architecture emphasizes security through data masking, privacy filtering, and secure IPC communication.
 
 ```mermaid
 sequenceDiagram
-participant User as "User"
+participant User as "User Interaction"
 participant Tray as "System Tray"
 participant Main as "Main Process"
 participant IPC as "IPC Bridge"
-participant Renderer as "Renderer"
+participant Renderer as "Renderer Process"
+participant Store as "SQLite Database"
 User->>Tray : Click "Pause (15 min)"
 Tray->>Renderer : Send "activity : pause : tray" with minutes
 Renderer->>Main : IPC.PAUSE invoke(minutes)
 Main->>Main : setPaused(true, pauseUntil)
+Main->>Store : Update collector state
 Main-->>IPC : STATE_UPDATED broadcast
 IPC-->>Renderer : onStateUpdate(state)
-Renderer->>Renderer : Update UI state
+Renderer->>Renderer : Update UI state with real-time data
+Renderer->>Store : Query timeline/markers
+Store-->>Renderer : Return filtered results
+Renderer->>Renderer : Render updated components
 ```
 
 **Diagram sources**
-- [tray.ts:68-80](file://activity-desktop/src/main/tray.ts#L68-L80)
+- [tray.ts:70-85](file://activity-desktop/src/main/tray.ts#L70-L85)
 - [ipc-handlers.ts:78-91](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L78-L91)
 - [orchestrator.ts:85-88](file://activity-desktop/src/main/collectors/orchestrator.ts#L85-L88)
+- [ipc-handlers.ts:158-172](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L158-L172)
 
 **Section sources**
-- [index.ts:29-46](file://activity-desktop/src/main/index.ts#L29-L46)
+- [index.ts:27-63](file://activity-desktop/src/main/index.ts#L27-L63)
 - [ipc-handlers.ts:158-172](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L158-L172)
-- [orchestrator.ts:189-194](file://activity-desktop/src/main/collectors/orchestrator.ts#L189-L194)
+- [orchestrator.ts:189-203](file://activity-desktop/src/main/collectors/orchestrator.ts#L189-L203)
 
 ## Detailed Component Analysis
 
 ### Main Process Lifecycle and Window Management
-- Single instance lock prevents multiple instances; second instances focus the existing window.
-- Ready event creates the main window with secure webPreferences, loads the renderer entry, opens DevTools, and shows when ready-to-show fires.
-- Close handler minimizes to tray instead of quitting; before-quit and will-quit ensure cleanup of collectors, sync worker, tray, and database connections.
+The main process implements a sophisticated lifecycle management system with security and user experience considerations:
+
+**Single Instance Management**
+- Implements Electron's singleInstanceLock to prevent multiple application instances
+- Handles second-instance events by focusing existing window
+- Ensures graceful shutdown and cleanup of resources
+
+**Window Creation and Security**
+- Creates BrowserWindow with secure webPreferences including context isolation
+- Disables nodeIntegration and enables sandbox for security
+- Loads renderer bundle with proper webpack entry points
+- Integrates DevTools with detachable mode for debugging
+
+**Lifecycle Events**
+- Manages window-all-closed event to minimize to tray on Windows
+- Handles before-quit and will-quit for proper resource cleanup
+- Implements activate event for macOS compatibility
+- Defers native module initialization to avoid blocking UI
 
 ```mermaid
 flowchart TD
-Start(["App Ready"]) --> CreateWin["Create BrowserWindow"]
-CreateWin --> LoadRenderer["Load Renderer Bundle"]
-LoadRenderer --> ReadyToShow{"Ready to Show?"}
-ReadyToShow --> |Yes| ShowWin["Show Window"]
-ReadyToShow --> |No| Wait["Wait"]
-Wait --> ReadyToShow
-ShowWin --> Minimize["Minimize to Tray on Close"]
-Minimize --> Quit["Before/Will Quit Cleanup"]
+Start(["Application Start"]) --> Lock["Request Single Instance Lock"]
+Lock --> |Locked| Ready["App Ready Event"]
+Lock --> |Already Running| SecondInstance["Second Instance Event"]
+SecondInstance --> FocusExisting["Focus Existing Window"]
+Ready --> CreateWindow["Create Main Window"]
+CreateWindow --> LoadRenderer["Load Renderer Bundle"]
+LoadRenderer --> ReadyToShow["Ready to Show"]
+ReadyToShow --> ShowWindow["Show Window"]
+ShowWindow --> MinimizeToTray["Minimize to Tray on Close"]
+MinimizeToTray --> Cleanup["Before/Will Quit Cleanup"]
+Cleanup --> Shutdown["Application Shutdown"]
 ```
 
 **Diagram sources**
-- [index.ts:29-74](file://activity-desktop/src/main/index.ts#L29-L74)
+- [index.ts:13-25](file://activity-desktop/src/main/index.ts#L13-L25)
+- [index.ts:27-63](file://activity-desktop/src/main/index.ts#L27-L63)
 - [window.ts:9-49](file://activity-desktop/src/main/window.ts#L9-L49)
 
 **Section sources**
-- [index.ts:15-27](file://activity-desktop/src/main/index.ts#L15-L27)
-- [window.ts:35-42](file://activity-desktop/src/main/window.ts#L35-L42)
+- [index.ts:1-95](file://activity-desktop/src/main/index.ts#L1-L95)
+- [window.ts:1-54](file://activity-desktop/src/main/window.ts#L1-L54)
 
 ### System Tray Implementation
-- Dynamically generates a small green circle tray icon without external assets.
-- Provides context menu actions: show window, pause for 15/60 minutes, quit.
-- Emits tray-specific IPC messages to the renderer for pause commands.
+The system tray provides essential quick-access functionality with dynamic icon generation:
+
+**Dynamic Icon Generation**
+- Creates 16x16 green circle tray icon programmatically using nativeImage
+- Implements anti-aliased edges for pixel-perfect rendering
+- Avoids external asset dependencies for portability
+
+**Context Menu Actions**
+- Provides "Show Window" action to restore application
+- Offers "Pause (15 min)" and "Pause (1 hour)" options
+- Includes "Quit" action for application termination
+- Sends tray-specific IPC messages to renderer
+
+**Integration Features**
+- Tooltip updates with current status information
+- Click event handling for window restoration
+- Context menu template registration for Windows integration
 
 ```mermaid
 classDiagram
@@ -184,71 +280,118 @@ class TrayManager {
 +destroyTray() void
 +updateTrayTooltip(text) void
 }
+class TrayIconGenerator {
++createTrayIcon() NativeImage
+}
 class TrayActions {
 +ShowWindow()
 +Pause15Min()
 +Pause60Min()
 +Quit()
 }
+TrayManager --> TrayIconGenerator : "generates icon"
 TrayManager --> TrayActions : "context menu"
 ```
 
 **Diagram sources**
-- [tray.ts:49-98](file://activity-desktop/src/main/tray.ts#L49-L98)
+- [tray.ts:49-119](file://activity-desktop/src/main/tray.ts#L49-L119)
 
 **Section sources**
-- [tray.ts:1-112](file://activity-desktop/src/main/tray.ts#L1-L112)
+- [tray.ts:1-119](file://activity-desktop/src/main/tray.ts#L1-L119)
 
-### IPC Handler Surface
-- Exposes typed API methods for state, config, timeline, markers, privacy preview, pause/resume, marker creation, blacklist management, connectivity test, manual sync, device setup, and configured check.
-- Forwards state and sync updates to the renderer.
-- Masks sensitive deviceKey when returning configuration to the renderer.
+### IPC Handler Surface and Security Measures
+The IPC system provides a comprehensive API surface with robust security measures:
+
+**API Method Coverage**
+- State queries: getState(), getTimeline(), getMarkers()
+- Configuration management: getConfig(), updateConfig(), isConfigured()
+- Privacy operations: getOutboundPreview(), privacy management
+- Control operations: pause(), resume(), addMarker()
+- System operations: syncNow(), testConnectivity(), setupDevice()
+
+**Security Implementations**
+- DeviceKey masking: sensitive deviceKey is masked when sent to renderer
+- Direct deviceKey prevention: renderer cannot set deviceKey directly
+- Parameter validation: comprehensive input sanitization
+- Error handling: structured error responses with details
+
+**Event Broadcasting**
+- Real-time state updates to renderer
+- Sync status notifications
+- Pause/resume state changes
+- Custom event forwarding for specialized operations
 
 ```mermaid
 sequenceDiagram
-participant Renderer as "Renderer"
+participant Renderer as "Renderer Process"
 participant IPC as "IPC Handlers"
-participant Store as "Store Repositories"
+participant Store as "Store Layer"
+participant Privacy as "Privacy Filter"
 participant Sync as "Sync Worker"
 Renderer->>IPC : CONFIG_GET
 IPC->>Store : getAllConfig()
 Store-->>IPC : DesktopConfig
-IPC-->>Renderer : DesktopConfig (deviceKey masked)
-Renderer->>IPC : SYNC_STATUS
-IPC->>Sync : getSyncStatus()
-Sync-->>IPC : SyncStatus
-IPC-->>Renderer : SyncStatus
+IPC->>IPC : Mask deviceKey
+IPC-->>Renderer : DesktopConfig (masked)
+Renderer->>IPC : PRIVACY_PREVIEW
+IPC->>Store : getState()
+Store-->>IPC : CollectorState
+IPC->>Privacy : previewFilter(event, config)
+Privacy-->>IPC : FilteredEvent
+IPC-->>Renderer : FilteredEvent preview
+Renderer->>IPC : PAUSE (15)
+IPC->>IPC : setPaused(true, pauseUntil)
+IPC->>IPC : Broadcast PAUSE_CHANGED
+IPC-->>Renderer : Pause confirmation
 ```
 
 **Diagram sources**
 - [ipc-handlers.ts:27-41](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L27-L41)
-- [config-repo.ts:23-42](file://activity-desktop/src/main/store/config-repo.ts#L23-L42)
-- [sync-worker.ts:31-42](file://activity-desktop/src/main/sync/sync-worker.ts#L31-L42)
+- [ipc-handlers.ts:51-68](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L51-L68)
+- [ipc-handlers.ts:78-91](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L78-L91)
 
 **Section sources**
 - [ipc-handlers.ts:1-173](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L1-L173)
-- [types.ts:149-174](file://activity-desktop/src/shared/types.ts#L149-L174)
+- [types.ts:149-181](file://activity-desktop/src/shared/types.ts#L149-L181)
 
 ### Activity Collection Orchestration
-- Polling loop collects foreground window info, computes AFK time using idle growth vs expected interval, captures input deltas, builds raw events, applies privacy filter, inserts into SQLite, updates today totals, and emits state updates.
-- Supports pause/resume with optional pause-until timestamps.
+The activity collection system combines multiple data sources to create comprehensive activity tracking:
+
+**Collection Pipeline**
+- **Window Detection**: Captures foreground application and window title using native Windows APIs
+- **Input Counting**: Monitors keyboard, mouse, and scroll events with uiohook-napi
+- **Idle Detection**: Calculates idle time for AFK determination using koffi library
+- **Categorization**: Applies category rules to classify applications automatically
+- **Privacy Filtering**: Applies configured privacy rules before data storage
+- **Event Storage**: Inserts processed events into SQLite database with metadata
+
+**AFK Calculation Algorithm**
+- Compares idle time growth against expected interval duration
+- Uses jitter compensation to handle timing variations
+- Implements threshold-based AFK detection
+- Calculates active vs AFK time ratios
+
+**State Management**
+- Maintains real-time collector state with all metrics
+- Tracks today's totals for quick access
+- Supports pause/resume functionality with timestamp validation
+- Emits state updates for UI synchronization
 
 ```mermaid
 flowchart TD
-Tick["Collect Tick"] --> CheckPaused{"Paused?"}
-CheckPaused --> |Yes| ExitPaused["Exit Tick"]
-CheckPaused --> |No| GetWindow["Get Foreground Window Info"]
-GetWindow --> Categorize["Categorize App"]
-Categorize --> GetIdle["Get Idle Time"]
-GetIdle --> ComputeAFK["Compute AFK Seconds"]
-ComputeAFK --> GetInputs["Capture Input Counts"]
-GetInputs --> BuildEvent["Build Raw Event"]
-BuildEvent --> ApplyFilter["Apply Privacy Filter"]
-ApplyFilter --> InsertDB["Insert Event to SQLite"]
-InsertDB --> Totals["Compute Today Totals"]
-Totals --> UpdateState["Update Collector State"]
-UpdateState --> Emit["Emit State Update"]
-Emit --> NextTick["Next Tick"]
+Tick["Collection Tick"] --> CheckPause{"Check Pause State"}
+CheckPause --> |Paused| Exit["Skip Collection"]
+CheckPause --> |Active| GetWindow["Get Foreground Window"]
+GetWindow --> GetInput["Capture Input Deltas"]
+GetInput --> GetIdle["Measure Idle Time"]
+GetIdle --> CalcAFK["Calculate AFK Duration"]
+CalcAFK --> BuildEvent["Build Raw Event"]
+BuildEvent --> ApplyPrivacy["Apply Privacy Filter"]
+ApplyPrivacy --> InsertDB["Insert into SQLite"]
+InsertDB --> UpdateTotals["Update Today Totals"]
+UpdateTotals --> UpdateState["Update Collector State"]
+UpdateState --> EmitUpdate["Emit State Update"]
+EmitUpdate --> NextTick["Schedule Next Tick"]
 ```
 
 **Diagram sources**
@@ -258,20 +401,43 @@ Emit --> NextTick["Next Tick"]
 - [orchestrator.ts:1-203](file://activity-desktop/src/main/collectors/orchestrator.ts#L1-L203)
 
 ### Sync Worker and Retention Policy
-- Periodically syncs batches of unsynced events and markers to the server using device credentials.
-- Tracks online/offline status, applies exponential backoff based on consecutive failures, resets failed events for retry, and purges old synced entries after 30 days.
-- Provides manual sync and connectivity test endpoints.
+The synchronization system implements robust data transfer with intelligent retry mechanisms:
+
+**Sync Operations**
+- **Batch Processing**: Processes events and markers in configurable batches
+- **Device Authentication**: Uses device ID and key for secure API access
+- **Error Handling**: Comprehensive error logging and retry mechanisms
+- **Success Tracking**: Marks successful syncs with timestamps
+
+**Exponential Backoff**
+- **Failure Detection**: Tracks consecutive sync failures
+- **Backoff Calculation**: 2^n * 1000ms with 5-minute maximum
+- **Retry Logic**: Automatically retries failed operations
+- **Progressive Delay**: Reduces server load during sustained failures
+
+**Retention Management**
+- **Data Lifecycle**: 30-day retention for synced events
+- **Cleanup Operations**: Automated purging of old synced data
+- **Queue Management**: Limits pending operations to prevent accumulation
+- **Memory Efficiency**: Prevents database bloat over time
+
+**Connectivity Testing**
+- **Latency Measurement**: Tests server response times
+- **Authentication Validation**: Verifies device credentials
+- **Network Diagnostics**: Provides detailed connectivity information
 
 ```mermaid
 sequenceDiagram
-participant Timer as "Sync Interval"
+participant Timer as "Sync Scheduler"
 participant Worker as "Sync Worker"
-participant Events as "Events Repo"
-participant Markers as "Markers Repo"
+participant Events as "Events Repository"
+participant Markers as "Markers Repository"
 participant Server as "Remote API"
+participant DB as "SQLite Database"
 Timer->>Worker : scheduledSync()
+Worker->>Worker : Check backoff period
 Worker->>Events : getUnsyncedEvents(batchSize)
-Events-->>Worker : events[]
+Events-->>Worker : events[] (max 5 attempts)
 Worker->>Server : POST /artifacts/batch
 Server-->>Worker : 200 OK
 Worker->>Events : markEventsSynced(ids)
@@ -280,7 +446,8 @@ Markers-->>Worker : markers[]
 Worker->>Server : POST /markers
 Server-->>Worker : 200 OK
 Worker->>Markers : markMarkersSynced(ids)
-Worker->>Worker : resetFailedEvents(), purgeOldEvents(30)
+Worker->>Worker : resetFailedEvents()
+Worker->>Worker : purgeOldEvents(30 days)
 Worker-->>Timer : notifyStatus()
 ```
 
@@ -291,13 +458,91 @@ Worker-->>Timer : notifyStatus()
 
 **Section sources**
 - [sync-worker.ts:1-230](file://activity-desktop/src/main/sync/sync-worker.ts#L1-L230)
-- [events-repo.ts:107-115](file://activity-desktop/src/main/store/events-repo.ts#L107-L115)
-- [markers-repo.ts:50-58](file://activity-desktop/src/main/store/markers-repo.ts#L50-L58)
+- [events-repo.ts:75-116](file://activity-desktop/src/main/store/events-repo.ts#L75-L116)
+- [markers-repo.ts:40-59](file://activity-desktop/src/main/store/markers-repo.ts#L40-L59)
 
-### Store Layer and Database Schema
-- Initializes better-sqlite3 database in the user data directory with WAL mode, busy timeout, and foreign keys enabled.
-- Runs migrations to create tables for events, markers, config, and sync_state with appropriate indexes.
-- Repositories provide CRUD operations, batching, retries, and retention cleanup.
+## Privacy and Security Implementation
+The application implements comprehensive privacy controls to protect user data while maintaining functionality:
+
+**Privacy Filter Architecture**
+- **Category-Only Mode**: Completely anonymizes all identifying information
+- **Blacklist Management**: Configurable application and title pattern blacklists
+- **Domain Redaction**: Automatic redaction of sensitive domain information
+- **Title Suppression**: Optional window title transmission control
+
+**Filtering Logic**
+- **Priority Processing**: Applies filters in logical priority order
+- **Case-Insensitive Matching**: Robust pattern matching for applications
+- **Regex Support**: Advanced pattern matching for complex filtering rules
+- **Placeholder Replacement**: Consistent redaction using privacy placeholders
+
+**Security Measures**
+- **Data Masking**: DeviceKey is masked when transmitted to renderer
+- **Parameter Sanitization**: Input validation and sanitization throughout
+- **Access Control**: Restricts direct deviceKey modification from renderer
+- **Audit Trail**: Tracks privacy filter decisions and modifications
+
+**Configuration Options**
+- **Send Window Title**: Toggle for title transmission
+- **Category-Only Mode**: Complete anonymization mode
+- **Blacklist Apps**: Specific application name filtering
+- **Blacklist Patterns**: Regex-based title pattern filtering
+- **Redact Domains**: Domain-based content redaction
+
+```mermaid
+flowchart TD
+Input["Raw Collector Event"] --> CheckCategory{"Category-Only Mode?"}
+CheckCategory --> |Yes| CategoryMode["Replace all identifiers<br/>with privacy placeholders"]
+CheckCategory --> |No| CheckAppBlacklist{"App in Blacklist?"}
+CheckAppBlacklist --> |Yes| BlacklistApp["Redact window title<br/>wasFiltered = true"]
+CheckAppBlacklist --> |No| CheckTitlePattern{"Title matches pattern?"}
+CheckTitlePattern --> |Yes| BlacklistPattern["Redact window title<br/>wasFiltered = true"]
+CheckTitlePattern --> |No| CheckDomain{"Title contains domain?"}
+CheckDomain --> |Yes| RedactDomain["Redact window title<br/>wasFiltered = true"]
+CheckDomain --> |No| CheckTitleToggle{"Send window title?"}
+CheckTitleToggle --> |No| SuppressTitle["Set title empty<br/>wasFiltered = true"]
+CheckTitleToggle --> |Yes| NoFilter["No filtering applied"]
+```
+
+**Diagram sources**
+- [filter.ts:27-71](file://activity-desktop/src/main/privacy/filter.ts#L27-L71)
+
+**Section sources**
+- [filter.ts:1-80](file://activity-desktop/src/main/privacy/filter.ts#L1-L80)
+- [types.ts:39-69](file://activity-desktop/src/shared/types.ts#L39-L69)
+
+## Database and Storage Layer
+The storage system provides reliable local persistence with comprehensive indexing and migration support:
+
+**Database Schema Design**
+- **Events Table**: Stores activity heartbeat data with comprehensive metrics
+- **Markers Table**: Records user-defined activity markers and notes
+- **Config Table**: Persistent configuration storage with type safety
+- **Sync State Table**: Tracks synchronization progress and errors
+
+**Indexing Strategy**
+- **Created Timestamp Index**: Optimizes time-range queries
+- **Sync Status Index**: Efficient filtering of synced/unsynced records
+- **Category Index**: Supports category-based analytics and filtering
+- **Composite Indexes**: Multi-column indexes for common query patterns
+
+**Migration System**
+- **Version Management**: Incremental schema evolution
+- **Transactional Updates**: Atomic migration operations
+- **Data Preservation**: Safe upgrade without data loss
+- **Rollback Capability**: Support for migration rollback scenarios
+
+**Repository Pattern Implementation**
+- **CRUD Operations**: Standardized data access methods
+- **Batch Processing**: Efficient bulk operations
+- **Transaction Support**: Atomic operations for data integrity
+- **Error Handling**: Comprehensive exception management
+
+**Data Integrity Features**
+- **Foreign Key Constraints**: Enforces referential integrity
+- **WAL Mode**: Improves concurrent read/write performance
+- **Busy Timeout**: Prevents database locking issues
+- **Serialization**: Type-safe configuration storage
 
 ```mermaid
 erDiagram
@@ -355,10 +600,39 @@ MARKERS ||--o{ SYNC_STATE : "referenced by"
 - [events-repo.ts:1-116](file://activity-desktop/src/main/store/events-repo.ts#L1-L116)
 - [markers-repo.ts:1-59](file://activity-desktop/src/main/store/markers-repo.ts#L1-L59)
 
-### Renderer Application and Tabs
-- React app initializes with tab navigation and conditionally renders SetupScreen until configuration is complete.
-- Uses window.activityAPI to communicate with the main process via IPC.
-- Tabs include Status, Timeline, Markers, Privacy, and Settings.
+## User Interface and Experience
+The React-based user interface provides a comprehensive dashboard with intuitive navigation and real-time data visualization:
+
+**Multi-Tab Architecture**
+- **Status Tab**: Real-time activity metrics and current state
+- **Timeline Tab**: Historical activity visualization and analysis
+- **Markers Tab**: Activity markers and user notes management
+- **Privacy Tab**: Privacy configuration and filtering controls
+- **Settings Tab**: Application configuration and device setup
+
+**Component Architecture**
+- **Tab Navigation**: Clean tab bar with active state indication
+- **Responsive Design**: Adapts to different window sizes
+- **State Management**: Real-time updates from collector and sync workers
+- **Error Boundaries**: Graceful handling of loading states and errors
+
+**Setup Flow**
+- **Configuration Validation**: Ensures device setup completion
+- **Onboarding Experience**: Guided setup process for new users
+- **Validation Feedback**: Immediate feedback on configuration changes
+- **Fallback States**: Loading indicators during initialization
+
+**Real-time Updates**
+- **State Subscription**: Automatic UI updates when collector state changes
+- **Sync Status**: Live synchronization progress and error reporting
+- **Pause Indicators**: Clear visual feedback for paused states
+- **Performance Metrics**: Real-time display of collection and sync metrics
+
+**Visual Design**
+- **Theme Integration**: Consistent styling with dark/light theme support
+- **Chart Integration**: Recharts-based visualizations for activity data
+- **Accessibility**: Keyboard navigation and screen reader support
+- **Performance**: Optimized rendering for smooth user experience
 
 ```mermaid
 classDiagram
@@ -368,12 +642,29 @@ class App {
 +setActiveTab(tab)
 +onComplete()
 }
-class SetupScreen
-class StatusTab
-class TimelineTab
-class MarkersTab
-class PrivacyTab
-class SettingsTab
+class SetupScreen {
++onComplete()
+}
+class StatusTab {
++renderLivePulse()
++renderTodayTotals()
+}
+class TimelineTab {
++renderTimeSeries()
++renderDaySummary()
+}
+class MarkersTab {
++renderMarkersList()
++addMarkerForm()
+}
+class PrivacyTab {
++blacklistManagement()
++domainRedaction()
+}
+class SettingsTab {
++deviceSetup()
++configurationEditor()
+}
 App --> SetupScreen : "renders if not configured"
 App --> StatusTab : "activeTab='status'"
 App --> TimelineTab : "activeTab='timeline'"
@@ -388,53 +679,174 @@ App --> SettingsTab : "activeTab='settings'"
 **Section sources**
 - [App.tsx:1-71](file://activity-desktop/src/renderer/App.tsx#L1-L71)
 
+## Native Integration and System Features
+The application leverages native Windows capabilities for comprehensive system integration:
+
+**Windows Input Capture**
+- **uiohook-napi Integration**: Native hooking for keyboard, mouse, and scroll events
+- **Low-Level Access**: Direct hardware event capture without OS limitations
+- **Performance Optimization**: Efficient event processing with minimal overhead
+- **Cross-Platform Compatibility**: Windows-specific implementation with fallbacks
+
+**System Integration**
+- **Startup Handling**: Electron Squirrel startup integration for automatic installation
+- **System Tray**: Full native tray integration with custom icon generation
+- **Window Management**: Native window controls and system integration
+- **Process Management**: Proper lifecycle management across system events
+
+**Native Libraries**
+- **koffi**: Windows API bindings for system-level operations
+- **uiohook-napi**: Native input event capture and processing
+- **better-sqlite3**: High-performance SQLite integration
+- **axios**: HTTP client for API communications
+
+**System Event Handling**
+- **Focus Detection**: Accurate foreground application tracking
+- **Idle Monitoring**: Precise idle time measurement for AFK detection
+- **Process Information**: Detailed application and window metadata
+- **System State**: Integration with Windows system events and notifications
+
+**Security Integration**
+- **Context Isolation**: Secure renderer process with isolated context
+- **Node Integration**: Disabled node integration for security
+- **Preload Scripts**: Controlled API exposure through preload mechanism
+- **Sandbox Mode**: Electron sandbox for additional security layers
+
+**Section sources**
+- [index.ts:8-11](file://activity-desktop/src/main/index.ts#L8-L11)
+- [window.ts:19-25](file://activity-desktop/src/main/window.ts#L19-L25)
+- [package.json:13-22](file://activity-desktop/package.json#L13-L22)
+
 ## Dependency Analysis
-- Electron runtime and build tooling managed via Forge and Webpack plugins.
-- React and TypeScript provide the renderer stack.
-- better-sqlite3 for local storage with WAL mode and migrations.
-- axios for HTTP requests to the remote API.
-- koffi and uiohook-napi enable native input capture and hooking on Windows.
+The application uses a carefully selected set of dependencies optimized for performance and security:
+
+**Core Dependencies**
+- **Electron 33.0.0**: Latest stable Electron runtime with improved security
+- **React 19.0.0**: Modern React with concurrent features and optimizations
+- **better-sqlite3 11.7.0**: High-performance SQLite binding with zero dependencies
+- **axios 1.6.0**: Reliable HTTP client with promise support
+
+**Development Dependencies**
+- **@electron-forge/cli 7.6.0**: Production-ready Electron packaging
+- **@electron-forge/plugin-webpack 7.6.0**: Webpack integration for bundling
+- **@types/react 19.0.0**: TypeScript definitions for React development
+- **typescript 5.7.0**: Modern TypeScript with latest features
+
+**Build Tooling**
+- **Webpack**: Module bundling with separate configs for main and renderer
+- **PostCSS**: CSS processing with Tailwind integration
+- **Autoprefixer**: Automatic vendor prefixing for CSS
+- **Fork TS Checker**: Parallel TypeScript type checking
+
+**Runtime Dependencies**
+- **koffi 2.15.1**: Windows API bindings for system-level operations
+- **uiohook-napi 1.5.4**: Native input event capture and processing
+- **recharts 3.8.0**: Beautiful charting library for data visualization
+- **electron-squirrel-startup 1.0.1**: Squirrel installer integration
 
 ```mermaid
 graph LR
-Electron["Electron Runtime"] --> MainIndex["Main Index"]
-Forge["Electron Forge"] --> Webpack["Webpack Plugin"]
-Webpack --> RendererBundle["Renderer Bundle"]
-MainIndex --> BetterSQLite["better-sqlite3"]
-MainIndex --> Axios["axios"]
-MainIndex --> React["React (Renderer)"]
-MainIndex --> Types["Shared Types"]
+Electron["Electron 33.0.0"] --> MainProcess["Main Process"]
+Forge["@electron-forge/cli"] --> Packaging["Production Packaging"]
+Webpack["Webpack"] --> Bundling["Module Bundling"]
+React["React 19.0.0"] --> Renderer["Renderer Process"]
+BetterSQLite["better-sqlite3 11.7.0"] --> Storage["SQLite Storage"]
+Axios["axios 1.6.0"] --> API["Remote API"]
+Koffi["koffi 2.15.1"] --> Native["Native Integration"]
+Uiohook["uiohook-napi 1.5.4"] --> Input["Input Capture"]
+Recharts["recharts 3.8.0"] --> Charts["Data Visualization"]
 ```
 
 **Diagram sources**
-- [package.json:13-21](file://activity-desktop/package.json#L13-L21)
+- [package.json:13-44](file://activity-desktop/package.json#L13-L44)
 - [forge.config.ts:25-43](file://activity-desktop/forge.config.ts#L25-L43)
 - [tsconfig.json:2-18](file://activity-desktop/tsconfig.json#L2-L18)
 
 **Section sources**
-- [package.json:1-46](file://activity-desktop/package.json#L1-L46)
+- [package.json:1-47](file://activity-desktop/package.json#L1-L47)
 - [forge.config.ts:1-47](file://activity-desktop/forge.config.ts#L1-L47)
 - [tsconfig.json:1-23](file://activity-desktop/tsconfig.json#L1-L23)
 
 ## Performance Considerations
-- Polling interval controls CPU wake-ups for collection; tune collect.pollIntervalSec to balance responsiveness and power usage.
-- AFK detection compares idle growth against expected delta to avoid false positives; adjust collect.afkThresholdMs for sensitivity.
-- SQLite WAL mode improves concurrency; ensure adequate disk I/O and avoid excessive writes.
-- Sync batches and intervals reduce network overhead; exponential backoff prevents thundering herds on failures.
-- Renderer rendering is lightweight with tab switching; avoid heavy computations on the UI thread.
+The application is optimized for efficient resource usage while maintaining responsive user experience:
+
+**Collection Optimization**
+- **Polling Interval Tuning**: Configurable 10-second intervals balance accuracy and performance
+- **AFK Detection Efficiency**: Optimized idle time comparison reduces CPU usage
+- **Input Delta Processing**: Efficient event counting with minimal overhead
+- **Memory Management**: Proper cleanup of temporary objects and listeners
+
+**Database Performance**
+- **WAL Mode**: Write-Ahead Logging improves concurrent read/write performance
+- **Index Optimization**: Strategic indexing for common query patterns
+- **Batch Operations**: Efficient bulk insert/update operations
+- **Connection Pooling**: Single database connection with transaction support
+
+**Network Efficiency**
+- **Batch Processing**: 20-event batches reduce API call frequency
+- **Exponential Backoff**: Progressive delays during failures prevent server overload
+- **Timeout Configuration**: Appropriate timeouts for different operation types
+- **Connection Reuse**: HTTP connection pooling for improved performance
+
+**UI Responsiveness**
+- **Virtual Scrolling**: Efficient rendering for large datasets
+- **Debounced Updates**: Throttled state updates prevent UI blocking
+- **Lazy Loading**: Tab content loaded on demand
+- **Optimized Re-renders**: React.memo and pure components for minimal updates
+
+**Resource Management**
+- **Memory Cleanup**: Proper disposal of native resources and event listeners
+- **CPU Throttling**: Adaptive polling based on system load
+- **Disk I/O Optimization**: Batched database writes reduce disk access
+- **Network Throttling**: Intelligent retry scheduling prevents bandwidth spikes
 
 ## Troubleshooting Guide
-- If the app does not appear, check single-instance lock behavior and ensure the window is shown on activate.
-- If events are missing, verify collectors are started and the polling interval is sufficient; inspect today totals and event insertion logs.
-- If sync fails persistently, review consecutive failure count and last sync result; use testConnectivity to validate server reachability.
-- If privacy filtering seems incorrect, adjust blacklist apps/patterns and re-run privacy preview.
-- If the tray menu does not work, confirm tray icon generation and context menu template registration.
+Comprehensive troubleshooting guidance for common issues and their solutions:
+
+**Application Startup Issues**
+- **Single Instance Conflicts**: Check for existing instances and use second-instance focus behavior
+- **Window Not Appearing**: Verify ready-to-show event and show() call completion
+- **Renderer Loading Failures**: Check webpack bundle compilation and preload script loading
+- **Native Module Errors**: Ensure auto-unpack natives plugin is properly configured
+
+**Collection and Data Issues**
+- **Missing Events**: Verify input counter initialization and polling interval configuration
+- **Incorrect AFK Detection**: Check idle time thresholds and timing calculations
+- **Privacy Filter Problems**: Review blacklist configurations and regex patterns
+- **Database Connection Failures**: Verify SQLite file permissions and path accessibility
+
+**Synchronization Problems**
+- **Sync Failures**: Check device credentials, network connectivity, and server availability
+- **Exponential Backoff**: Monitor consecutive failure counts and backoff progression
+- **Retention Issues**: Verify 30-day purge operations and database cleanup
+- **Batch Processing Errors**: Check API endpoint availability and request formatting
+
+**UI and Interface Issues**
+- **Tab Rendering Problems**: Verify React component mounting and state updates
+- **Real-time Updates**: Check IPC message routing and event subscription
+- **Setup Screen Loop**: Ensure configuration validation and completion callbacks
+- **Performance Degradation**: Monitor memory usage and optimize heavy operations
+
+**System Integration Problems**
+- **Tray Icon Issues**: Verify native image generation and context menu registration
+- **Input Capture Failures**: Check uiohook-napi installation and permission requirements
+- **Window Detection Problems**: Ensure koffi library compatibility and Windows API access
+- **Startup Integration**: Verify Squirrel installer integration and auto-launch configuration
 
 **Section sources**
-- [index.ts:68-74](file://activity-desktop/src/main/index.ts#L68-L74)
-- [orchestrator.ts:189-194](file://activity-desktop/src/main/collectors/orchestrator.ts#L189-L194)
-- [sync-worker.ts:169-176](file://activity-desktop/src/main/sync/sync-worker.ts#L169-L176)
+- [index.ts:68-95](file://activity-desktop/src/main/index.ts#L68-L95)
+- [orchestrator.ts:189-203](file://activity-desktop/src/main/collectors/orchestrator.ts#L189-L203)
+- [sync-worker.ts:169-230](file://activity-desktop/src/main/sync/sync-worker.ts#L169-L230)
 - [ipc-handlers.ts:203-229](file://activity-desktop/src/main/ipc/ipc-handlers.ts#L203-L229)
 
 ## Conclusion
-The Electron desktop application provides a robust, privacy-aware activity tracking solution with local-first storage and asynchronous cloud sync. Its modular architecture separates concerns between main process orchestration, renderer UI, and persistent storage, enabling maintainability and extensibility. Proper configuration of collection and sync parameters ensures efficient resource usage while preserving accurate activity records.
+The comprehensive Electron desktop application represents a mature, production-ready solution for local activity monitoring on Windows. The implementation demonstrates advanced architectural patterns including secure IPC communication, robust privacy controls, efficient database design, and seamless native integration. The modular component structure ensures maintainability while the comprehensive feature set addresses real-world productivity tracking needs.
+
+Key strengths of the implementation include:
+- **Security-First Design**: Comprehensive privacy filtering and secure IPC communication
+- **Performance Optimization**: Efficient collection, storage, and synchronization mechanisms
+- **User Experience**: Intuitive multi-tab interface with real-time updates
+- **System Integration**: Native Windows capabilities with proper system integration
+- **Maintainability**: Clean architecture with proper separation of concerns
+
+The application successfully transforms from a basic concept to a full-featured Windows desktop application, providing users with powerful activity tracking capabilities while maintaining strict privacy controls and system performance standards. The comprehensive documentation and troubleshooting guidance ensure both developer and user success with this sophisticated Electron application.

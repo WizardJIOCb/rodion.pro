@@ -1,40 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import type { LocalTimelineEntry } from '../../shared/types';
-
-const api = window.activityAPI;
+import React, { useState } from 'react';
+import { useTimeline } from '../hooks/useTimeline';
+import { ActivityBar24h } from '../components/charts/ActivityBar24h';
+import { DaySummaryCard } from '../components/charts/DaySummaryCard';
+import { getCategoryColor } from '../utils/categoryColors';
+import { LivePulse } from '../components/LivePulse';
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  coding: '#4fc3f7',
-  browser: '#ff9800',
-  comms: '#ab47bc',
-  meetings: '#ef5350',
-  productivity: '#66bb6a',
-  office: '#5c6bc0',
-  design: '#ec407a',
-  media: '#26a69a',
-  games: '#d4e157',
-  devops: '#8d6e63',
-  system: '#78909c',
-  utilities: '#bdbdbd',
-  unknown: '#616161',
-};
+function todayStr(): string {
+  const iso = new Date().toISOString();
+  return iso.slice(0, 10);
+}
 
 export function TimelineTab() {
-  const [entries, setEntries] = useState<LocalTimelineEntry[]>([]);
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-
-  useEffect(() => {
-    const from = `${date}T00:00:00.000Z`;
-    const to = `${date}T23:59:59.999Z`;
-    api.getTimeline(from, to).then(setEntries);
-  }, [date]);
+  const [date, setDate] = useState(todayStr);
+  const { entries, aggregated, loading, lastRefresh } = useTimeline(date);
+  const isToday = date === todayStr();
 
   // Group consecutive entries by app+category
-  const grouped: Array<{ app: string; category: string; start: string; end: string; count: number; totalActiveSec: number }> = [];
+  const grouped: Array<{
+    app: string;
+    category: string;
+    start: string;
+    end: string;
+    count: number;
+    totalActiveSec: number;
+  }> = [];
+
   for (const entry of entries) {
     const last = grouped[grouped.length - 1];
     if (last && last.app === entry.app && last.category === entry.category) {
@@ -53,9 +47,11 @@ export function TimelineTab() {
     }
   }
 
+  const longestGroup = Math.max(...grouped.map(g => g.totalActiveSec), 1);
+
   return (
     <div className="space-y-3">
-      {/* Date picker */}
+      {/* Date picker + live indicator */}
       <div className="flex items-center gap-2">
         <input
           type="date"
@@ -63,32 +59,96 @@ export function TimelineTab() {
           onChange={e => setDate(e.target.value)}
           className="bg-[var(--bg-card)] border border-[var(--border)] rounded px-3 py-1.5 text-sm text-[var(--text)]"
         />
-        <span className="text-xs text-[var(--text-dim)]">{entries.length} events</span>
+        <span className="text-xs text-[var(--text-dim)]">
+          {loading ? 'Loading...' : `${entries.length} events`}
+        </span>
+        {isToday && !loading && (
+          <span className="flex items-center gap-1 ml-auto text-[10px] text-[var(--success)]">
+            <LivePulse active size={5} />
+            LIVE
+          </span>
+        )}
       </div>
 
+      {/* Day summary */}
+      {aggregated && (
+        <div className="bg-[var(--bg-card)] rounded-lg p-3 border border-[var(--border)]">
+          <DaySummaryCard totals={aggregated.totals} />
+        </div>
+      )}
+
+      {/* 24h activity bar */}
+      {aggregated && aggregated.activityBar.length > 0 && (
+        <div className="bg-[var(--bg-card)] rounded-lg p-3 border border-[var(--border)]">
+          <h2 className="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2">24h Overview</h2>
+          <ActivityBar24h segments={aggregated.activityBar} />
+        </div>
+      )}
+
       {/* Timeline entries */}
-      <div className="space-y-1">
+      <div>
         {grouped.length === 0 ? (
-          <div className="text-sm text-[var(--text-dim)] py-8 text-center">No activity recorded</div>
+          <div className="text-sm text-[var(--text-dim)] py-8 text-center">
+            {loading ? 'Loading activity...' : 'No activity recorded'}
+          </div>
         ) : (
-          grouped.map((g, i) => (
-            <div key={i} className="flex items-center gap-3 bg-[var(--bg-card)] rounded px-3 py-2 border border-[var(--border)]">
-              <div
-                className="w-2 h-8 rounded-full flex-shrink-0"
-                style={{ backgroundColor: CATEGORY_COLORS[g.category] || CATEGORY_COLORS.unknown }}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{g.app}</div>
-                <div className="text-xs text-[var(--text-dim)]">{g.category}</div>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <div className="text-xs text-[var(--text-dim)]">{formatTime(g.start)}</div>
-                <div className="text-xs text-[var(--text-dim)]">
-                  {Math.round(g.totalActiveSec / 60)}m
-                </div>
-              </div>
+          <div className="relative">
+            {/* Timeline connector line */}
+            <div
+              className="absolute left-[11px] top-2 bottom-2 w-px"
+              style={{ background: 'var(--border)' }}
+            />
+
+            <div className="space-y-0.5">
+              {grouped.map((g, i) => {
+                const durPct = (g.totalActiveSec / longestGroup) * 100;
+                const showEndTime = g.start !== g.end;
+                return (
+                  <div
+                    key={i}
+                    className="flex items-stretch gap-3 bg-[var(--bg-card)] rounded px-3 py-2 border border-[var(--border)] relative"
+                  >
+                    {/* Category dot on timeline */}
+                    <div className="flex flex-col items-center justify-center flex-shrink-0" style={{ width: 8 }}>
+                      <div
+                        className="w-2 h-2 rounded-full z-10"
+                        style={{ backgroundColor: getCategoryColor(g.category) }}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium truncate">{g.app}</div>
+                        <div className="text-xs text-[var(--text-dim)] flex-shrink-0 ml-2">
+                          {formatTime(g.start)}{showEndTime ? ` - ${formatTime(g.end)}` : ''}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <div className="text-xs text-[var(--text-dim)]">{g.category}</div>
+                        <div className="text-xs text-[var(--text-dim)]">
+                          {Math.round(g.totalActiveSec / 60)}m
+                        </div>
+                      </div>
+                      {/* Mini duration bar */}
+                      <div
+                        className="mt-1 rounded-full overflow-hidden"
+                        style={{ height: 3, background: 'var(--bg)' }}
+                      >
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${durPct}%`,
+                            backgroundColor: getCategoryColor(g.category),
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))
+          </div>
         )}
       </div>
     </div>
