@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, type ReactNode } from 'react';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -30,6 +30,7 @@ interface ActivityTimelineChartProps {
   selectedCategories: string[];
   group?: '15min' | 'hour' | 'day';
   timeRange?: '1h' | '4h' | 'today' | '7d' | '30d' | 'custom';
+  rangeControls?: ReactNode;
 }
 
 interface MetricConfig {
@@ -167,6 +168,7 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
   selectedCategories,
   group = 'hour',
   timeRange = '4h',
+  rangeControls,
 }) => {
   const theme = useThemeColors();
   const [mode, setMode] = useState<ChartMode>('metrics');
@@ -292,6 +294,7 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-text">{t.timeline}</h2>
         </div>
+        {rangeControls && <div className="mb-4">{rangeControls}</div>}
 
         {/* Category filter chips — always visible */}
         <div className="flex flex-wrap gap-2 mb-4">
@@ -329,6 +332,7 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
         <h2 className="text-2xl font-bold text-text">{t.timeline}</h2>
         <div className="text-sm text-muted">{t.showing}</div>
       </div>
+      {rangeControls && <div className="mb-4">{rangeControls}</div>}
 
       {/* Mode toggle */}
       <div className="flex items-center gap-2 mb-3">
@@ -550,3 +554,4 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({
 };
 
 export default ActivityTimelineChart;
+

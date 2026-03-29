@@ -553,61 +553,6 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
         <span>{t('activity.privacy')}</span>
       </div>
 
-      {/* Time Range Selector */}
-      <div className="flex flex-wrap items-center gap-2">
-        {(['1h', '4h', 'today', '7d', '30d', 'custom'] as TimeRange[]).map(range => (
-          <button
-            key={range}
-            onClick={() => setTimeRange(range)}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 border cursor-pointer"
-            style={{
-              backgroundColor: timeRange === range ? 'var(--accent)' : 'transparent',
-              borderColor: timeRange === range ? 'var(--accent)' : 'var(--border)',
-              color: timeRange === range ? 'var(--bg)' : 'var(--muted)',
-            }}
-          >
-            {t(`activity.range.${range}`)}
-          </button>
-        ))}
-      </div>
-
-      {/* Custom date inputs */}
-      {timeRange === 'custom' && (
-        <div className="flex flex-wrap items-end gap-3 p-3 bg-surface/50 border border-border rounded-md">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted">{t('activity.range.from')}</label>
-            <input
-              type="datetime-local"
-              value={draftFrom}
-              onChange={(e) => setDraftFrom(e.target.value)}
-              className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted">{t('activity.range.to')}</label>
-            <input
-              type="datetime-local"
-              value={draftTo}
-              onChange={(e) => setDraftTo(e.target.value)}
-              className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
-            />
-          </div>
-          <button
-            onClick={applyCustomRange}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer"
-            style={{
-              backgroundColor: 'var(--accent)',
-              color: 'var(--bg)',
-            }}
-          >
-            {t('activity.range.apply')}
-          </button>
-          {customRangeError && (
-            <span className="text-xs text-red-400">{customRangeError}</span>
-          )}
-        </div>
-      )}
-
       {/* Period Summary Accordion */}
       {nowData && (() => {
         const periods: { key: PeriodKey; labelKey: string }[] = [
@@ -710,6 +655,61 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
             selectedCategories={selectedCategories}
             group={currentGroup}
             timeRange={timeRange}
+            rangeControls={
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {(['1h', '4h', 'today', '7d', '30d', 'custom'] as TimeRange[]).map(range => (
+                    <button
+                      key={range}
+                      onClick={() => setTimeRange(range)}
+                      className="px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 border cursor-pointer"
+                      style={{
+                        backgroundColor: timeRange === range ? 'var(--accent)' : 'transparent',
+                        borderColor: timeRange === range ? 'var(--accent)' : 'var(--border)',
+                        color: timeRange === range ? 'var(--bg)' : 'var(--muted)',
+                      }}
+                    >
+                      {t(`activity.range.${range}`)}
+                    </button>
+                  ))}
+                </div>
+                {timeRange === 'custom' && (
+                  <div className="flex flex-wrap items-end gap-3 p-3 bg-surface/50 border border-border rounded-md">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-muted">{t('activity.range.from')}</label>
+                      <input
+                        type="datetime-local"
+                        value={draftFrom}
+                        onChange={(e) => setDraftFrom(e.target.value)}
+                        className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-muted">{t('activity.range.to')}</label>
+                      <input
+                        type="datetime-local"
+                        value={draftTo}
+                        onChange={(e) => setDraftTo(e.target.value)}
+                        className="px-2 py-1 rounded border border-border bg-bg text-text text-sm"
+                      />
+                    </div>
+                    <button
+                      onClick={applyCustomRange}
+                      className="px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer"
+                      style={{
+                        backgroundColor: 'var(--accent)',
+                        color: 'var(--bg)',
+                      }}
+                    >
+                      {t('activity.range.apply')}
+                    </button>
+                    {customRangeError && (
+                      <span className="text-xs text-red-400">{customRangeError}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            }
           />
         )}
         {statsData && (!statsData.series || statsData.series.length === 0) && (
