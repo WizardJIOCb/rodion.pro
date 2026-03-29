@@ -3,10 +3,17 @@ import { createHash } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import { requireDeviceAuth, jsonError, jsonOk } from '@/lib/activity-auth';
 import { requireActivityDb } from '@/lib/activity-db';
-import { activityArtifacts, activityNow, activityDevices } from '@/db/schema';
-import { broadcastSSE } from '@/lib/activity';
+import { activityArtifacts, activityNow, activityDevices, activityMinuteAgg } from '@/db/schema';
+import { broadcastSSE, splitByMinutes } from '@/lib/activity';
 
 const MAX_BATCH_SIZE = 100;
+const DEFAULT_INTERVAL_SEC = 10;
+
+function toSafeInt(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.round(n);
+}
 
 export const POST: APIRoute = async ({ request }) => {
   const authResult = await requireDeviceAuth(request);
@@ -81,6 +88,56 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (result) {
       inserted++;
+
+      // Keep v1-compatible minute aggregates for dashboard stats/charts.
+      if (artifactType === 'heartbeat') {
+        const timestamp = new Date(occurredAt);
+        const category = (payload.category as string) || 'unknown';
+        const keys = toSafeInt(payload.keys);
+        const clicks = toSafeInt(payload.clicks);
+        const scroll = toSafeInt(payload.scroll);
+        const activeSec = toSafeInt(payload.activeSec);
+        const afkSec = toSafeInt(payload.afkSec);
+        const intervalSec = Math.max(
+          1,
+          toSafeInt(payload.dtSec, activeSec + afkSec || DEFAULT_INTERVAL_SEC),
+        );
+
+        const end = timestamp;
+        const start = new Date(end.getTime() - intervalSec * 1000);
+        const slices = splitByMinutes(start, end, activeSec, afkSec, keys, clicks, scroll);
+
+        for (const slice of slices) {
+          await db.insert(activityMinuteAgg).values({
+            deviceId,
+            tsMinute: slice.tsMinute,
+            app: sourceApp || '',
+            windowTitle: title || '',
+            category,
+            activeSec: slice.activeSec,
+            afkSec: slice.afkSec,
+            keys: slice.keys,
+            clicks: slice.clicks,
+            scroll: slice.scroll,
+          }).onConflictDoUpdate({
+            target: [
+              activityMinuteAgg.deviceId,
+              activityMinuteAgg.tsMinute,
+              activityMinuteAgg.app,
+              activityMinuteAgg.windowTitle,
+              activityMinuteAgg.category,
+            ],
+            set: {
+              activeSec: sql`${activityMinuteAgg.activeSec} + excluded.active_sec`,
+              afkSec: sql`${activityMinuteAgg.afkSec} + excluded.afk_sec`,
+              keys: sql`${activityMinuteAgg.keys} + excluded.keys`,
+              clicks: sql`${activityMinuteAgg.clicks} + excluded.clicks`,
+              scroll: sql`${activityMinuteAgg.scroll} + excluded.scroll`,
+            },
+          });
+        }
+      }
+
       // Track latest heartbeat for live state update
       if (artifactType === 'heartbeat') {
         if (!latestHeartbeat || occurredAt > latestHeartbeat.occurredAt) {
