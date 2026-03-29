@@ -72,6 +72,7 @@ interface PeriodSummary {
 type PeriodKey = 'today' | 'week' | 'month' | 'allTime';
 
 type TimeRange = '1h' | '4h' | 'today' | '7d' | '30d' | 'custom';
+const RANGE_STORAGE_KEY = 'activity.range.v2';
 
 interface TimeRangeConfig {
   from: Date;
@@ -150,12 +151,12 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
   // Time range selector state
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('activity.range');
+      const saved = localStorage.getItem(RANGE_STORAGE_KEY);
       if (saved && ['1h', '4h', 'today', '7d', '30d', 'custom'].includes(saved)) {
         return saved as TimeRange;
       }
     }
-    return '4h';
+    return 'today';
   });
   const [customFrom, setCustomFrom] = useState<string>(() => {
     const now = new Date();
@@ -191,7 +192,7 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
   // Persist time range selection
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('activity.range', timeRange);
+      localStorage.setItem(RANGE_STORAGE_KEY, timeRange);
     }
   }, [timeRange]);
 
@@ -447,6 +448,9 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
         'activity.range.to': 'To',
         'activity.range.apply': 'Apply',
         'activity.noData': 'No activity data available',
+        'activity.noDataHint': 'No records for the selected period or filters. Try Today/7d or clear category filters.',
+        'activity.noDataHintTodayHasData': "Today's counters have data, but the selected chart period is empty. Switch range to Today.",
+        'activity.clearFilters': 'Clear filters',
         'activity.privacy': 'We store counters only (keys/clicks/scroll/active time). No actual text/keystrokes content is recorded.',
       },
       ru: {
@@ -489,6 +493,9 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
         'activity.range.to': 'До',
         'activity.range.apply': 'Применить',
         'activity.noData': 'Нет данных об активности',
+        'activity.noDataHint': 'Нет записей за выбранный период или фильтры. Попробуйте "Сегодня"/"7д" или сбросьте фильтры.',
+        'activity.noDataHintTodayHasData': 'Счётчики за сегодня есть, но в выбранном периоде графика данных нет. Переключитесь на "Сегодня".',
+        'activity.clearFilters': 'Сбросить фильтры',
         'activity.privacy': 'Мы храним только счётчики (клавиши/клики/прокрутка/активное время). Тексты и содержимое не записываются.',
       }
     };
@@ -705,16 +712,45 @@ const ActivityDashboard: React.FC<ActivityDashboardProps> = ({ lang = 'en', admi
             timeRange={timeRange}
           />
         )}
+        {statsData && (!statsData.series || statsData.series.length === 0) && (
+          <div className="mt-3 card p-4 flex flex-wrap items-center gap-3 text-sm text-muted">
+            <span>
+              {(nowData?.countsToday.activeSec || 0) > 0
+                ? t('activity.noDataHintTodayHasData')
+                : t('activity.noDataHint')}
+            </span>
+            {selectedCategories.length > 0 && (
+              <button
+                onClick={() => setSelectedCategories([])}
+                className="px-2.5 py-1 rounded text-xs font-medium transition-all duration-200 border cursor-pointer"
+                style={{
+                  backgroundColor: 'transparent',
+                  borderColor: 'var(--border)',
+                  color: 'var(--muted)',
+                }}
+              >
+                {t('activity.clearFilters')}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Top Apps with Pie Chart and Expandable Window Titles */}
-      {statsData && statsData.topApps && statsData.topApps.length > 0 && (
-        <ActivityTopApps
-          topApps={statsData.topApps}
-          topTitles={statsData.topTitles || []}
-          lang={lang}
-          selectedCategories={selectedCategories}
-        />
+      {statsData && (
+        statsData.topApps && statsData.topApps.length > 0 ? (
+          <ActivityTopApps
+            topApps={statsData.topApps}
+            topTitles={statsData.topTitles || []}
+            lang={lang}
+            selectedCategories={selectedCategories}
+          />
+        ) : (
+          <section>
+            <h2 className="text-2xl font-bold text-text mb-6">{t('activity.topApps')}</h2>
+            <div className="card p-6 text-center text-muted">{t('activity.noData')}</div>
+          </section>
+        )
       )}
 
       {/* Top Categories */}
