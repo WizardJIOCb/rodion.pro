@@ -91,7 +91,7 @@ export const projects: Project[] = [
     },
     status: 'active',
     links: {
-      site: 'https://crimson.rodion.pro',
+      site: 'https://crimsonwars.ru',
       github: 'https://github.com/WizardJIOCb/crimson-wars',
     },
     stack: ['Astro', 'React', 'TypeScript', 'Tailwind', 'PostgreSQL', 'Drizzle'],
