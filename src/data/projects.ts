@@ -86,8 +86,8 @@ export const projects: Project[] = [
       en: 'Crimson Wars',
     },
     tagline: {
-      ru: 'Персональный сайт в стиле soft cyberpunk',
-      en: 'Personal website with soft cyberpunk aesthetics',
+      ru: 'Сессионный кооперативный кровавый сурвайвал против зомби',
+      en: 'Session-based co-op bloody survival against zombies',
     },
     status: 'active',
     links: {
@@ -97,10 +97,12 @@ export const projects: Project[] = [
     stack: ['Astro', 'React', 'TypeScript', 'Tailwind', 'PostgreSQL', 'Drizzle'],
     highlights: {
       ru: [
-        'Survival игра'
+        'Кооперативные сессии против зомби',
+        'Кровавый survival с упором на выживание',
       ],
       en: [
-        'Survival game'
+        'Co-op sessions against zombies',
+        'Bloody survival focused on staying alive',
       ],
     },
     featured: true,
