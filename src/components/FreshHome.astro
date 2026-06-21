@@ -14,78 +14,147 @@ const resume = lang === 'ru' ? resumeShortRu : resumeShortEn;
 const featuredProjects = getFeaturedProjects(lang);
 const resumeHref = lang === 'ru' ? '/old/resume' : '/old/en/resume';
 
+const projectLab = [
+  {
+    id: 'reader-market',
+    title: 'Reader.Market',
+    status: lang === 'ru' ? 'Активный продукт' : 'Active product',
+    type: lang === 'ru' ? 'AI-платформа для книг' : 'AI book platform',
+    summary: lang === 'ru'
+      ? 'Платформа для чтения, публикации и рекомендаций вокруг книжного контента.'
+      : 'A platform for reading, publishing, and recommendations around books.',
+    href: 'https://reader.market',
+    stack: ['React', 'Node.js', 'PostgreSQL', 'AI'],
+    accent: '#0f9f8a',
+    span: true,
+  },
+  {
+    id: 'crimson-wars',
+    title: 'Crimson Wars',
+    status: lang === 'ru' ? 'Игра' : 'Game',
+    type: lang === 'ru' ? 'survival / эксперимент' : 'survival / experiment',
+    summary: lang === 'ru'
+      ? 'Игровой проект и площадка для экспериментов с механиками, контентом и веб-инфраструктурой.'
+      : 'A game project and playground for mechanics, content, and web infrastructure.',
+    href: 'https://crimson.rodion.pro',
+    stack: ['Astro', 'React', 'TypeScript'],
+    accent: '#ff705c',
+  },
+  {
+    id: 'activity-monitor',
+    title: 'Activity Monitor',
+    status: lang === 'ru' ? 'В разработке' : 'In progress',
+    type: lang === 'ru' ? 'личная аналитика' : 'personal analytics',
+    summary: lang === 'ru'
+      ? 'Трекер активности: desktop-агент, API, таймлайн, заметки и приватная аналитика работы.'
+      : 'Activity tracker with desktop agent, API, timeline, notes, and private work analytics.',
+    href: '/old/activity',
+    stack: ['Electron', 'Astro', 'PostgreSQL'],
+    accent: '#38bdf8',
+  },
+  {
+    id: 'rodion-pro',
+    title: 'rodion.pro',
+    status: lang === 'ru' ? 'Живой сайт' : 'Live site',
+    type: lang === 'ru' ? 'личный хаб' : 'personal hub',
+    summary: lang === 'ru'
+      ? 'Дом для проектов, заметок, changelog и экспериментов с интерфейсами.'
+      : 'A home for projects, notes, changelog, and interface experiments.',
+    href: 'https://rodion.pro',
+    stack: ['Astro', 'Tailwind', 'Drizzle'],
+    accent: '#f0b429',
+  },
+];
+
+const experiments = [
+  {
+    title: lang === 'ru' ? 'AI tooling' : 'AI tooling',
+    text: lang === 'ru' ? 'Пайплайны, промпты, ассистенты и ускорение delivery.' : 'Pipelines, prompts, assistants, and delivery acceleration.',
+  },
+  {
+    title: lang === 'ru' ? 'Desktop agents' : 'Desktop agents',
+    text: lang === 'ru' ? 'Локальные приложения, трекинг, синхронизация и приватные данные.' : 'Local apps, tracking, sync, and private data.',
+  },
+  {
+    title: lang === 'ru' ? 'Product systems' : 'Product systems',
+    text: lang === 'ru' ? 'MVP, backend, frontend, DevOps и доведение до production.' : 'MVP, backend, frontend, DevOps, and production launch.',
+  },
+];
+
 const copy = {
   ru: {
-    eyebrow: 'Senior Full-Stack / Tech Lead / DevOps',
-    headline: 'Родион Калимуллин',
-    lead: 'Собираю веб-системы от идеи до production: архитектура, backend, frontend, инфраструктура и AI-инструменты для быстрой доставки.',
-    ctaPrimary: 'Посмотреть резюме',
-    ctaSecondary: 'Проекты',
+    eyebrow: 'PROJECT LAB / RODION.PRO',
+    headline: 'Проекты, продукты и эксперименты',
+    headlineLines: ['Проекты,', 'продукты и', 'эксперименты'],
+    lead: 'Главная витрина того, что я запускаю: веб-продукты, игровые идеи, личная аналитика, AI-инструменты и инфраструктура вокруг них.',
+    introTitle: 'Родион Калимуллин',
+    introText: 'Senior Full-Stack / Tech Lead / DevOps. Собираю проекты от идеи до production и люблю, когда система выглядит простой снаружи, но крепко держится внутри.',
+    primaryCta: 'Смотреть проекты',
+    secondaryCta: 'Связаться',
+    resumeCta: 'Резюме',
     oldVersion: 'Старая версия',
-    stats: [
-      { value: '~20 лет', label: 'коммерческого опыта' },
-      { value: 'MVP -> prod', label: 'стартапы и бизнес-системы' },
-      { value: 'AI + DevOps', label: 'ускорение delivery' },
-    ],
-    focusTitle: 'Чем могу быть полезен',
-    focusLead: 'Люблю задачи, где нужно не только написать код, но и сделать так, чтобы система жила спокойно после релиза.',
-    focus: [
-      { title: 'Архитектура и backend', text: 'Проектирую API, микросервисы, интеграции и высоконагруженные контуры.' },
-      { title: 'Frontend без суеты', text: 'Делаю интерфейсы на React/Vue/Angular, которые удобно развивать дальше.' },
-      { title: 'DevOps и production', text: 'Настраиваю Linux, Docker, Nginx, CI/CD, мониторинг и понятные процессы деплоя.' },
-      { title: 'AI в рабочем цикле', text: 'Встраиваю LLM-инструменты в разработку, документацию, анализ и автоматизацию.' },
-    ],
-    projectsTitle: 'Избранные проекты',
-    projectsLead: 'Несколько живых направлений и продуктов.',
-    postsTitle: 'Последние записи',
-    noPosts: 'Записи блога появятся здесь.',
-    stackTitle: 'Стек',
-    contactTitle: 'Можно обсудить проект',
-    contactLead: 'Открыт к full-time, contract, remote и hybrid форматам.',
-    contactTelegram: 'Telegram',
-    contactGithub: 'GitHub',
     nav: [
-      { href: '#focus', label: 'Фокус' },
       { href: '#projects', label: 'Проекты' },
+      { href: '#experiments', label: 'Эксперименты' },
       { href: '#stack', label: 'Стек' },
       { href: '#contact', label: 'Связь' },
     ],
-  },
-  en: {
-    eyebrow: 'Senior Full-Stack / Tech Lead / DevOps',
-    headline: 'Rodion Kalimullin',
-    lead: 'I build web systems from idea to production: architecture, backend, frontend, infrastructure, and AI tooling for faster delivery.',
-    ctaPrimary: 'View resume',
-    ctaSecondary: 'Projects',
-    oldVersion: 'Old version',
-    stats: [
-      { value: '~20 years', label: 'commercial experience' },
-      { value: 'MVP -> prod', label: 'startups and business systems' },
-      { value: 'AI + DevOps', label: 'delivery acceleration' },
+    metrics: [
+      { value: '4', label: 'ключевых направления' },
+      { value: 'MVP -> prod', label: 'путь от идеи до запуска' },
+      { value: 'AI + DevOps', label: 'ускорение сборки продуктов' },
     ],
-    focusTitle: 'Where I help',
-    focusLead: 'I like work where the code matters, and the system still feels calm after release.',
-    focus: [
-      { title: 'Architecture and backend', text: 'APIs, microservices, integrations, and high-load application paths.' },
-      { title: 'Practical frontend', text: 'React/Vue/Angular interfaces that remain pleasant to maintain.' },
-      { title: 'DevOps and production', text: 'Linux, Docker, Nginx, CI/CD, monitoring, and clear deployment routines.' },
-      { title: 'AI in the workflow', text: 'LLM tools for development, docs, analysis, and automation.' },
-    ],
-    projectsTitle: 'Featured projects',
-    projectsLead: 'A few active directions and products.',
-    postsTitle: 'Latest posts',
-    noPosts: 'Blog posts will appear here.',
-    stackTitle: 'Stack',
-    contactTitle: 'Let’s talk about a project',
-    contactLead: 'Open to full-time, contract, remote, and hybrid formats.',
+    activeTitle: 'Активные проекты',
+    activeLead: 'Не резюме ради резюме, а карта живых продуктов и экспериментов.',
+    experimentsTitle: 'Лаборатория',
+    experimentsLead: 'Темы, которые постоянно попадают в мои продукты и прототипы.',
+    stackTitle: 'Стек вокруг проектов',
+    stackLead: 'Инструменты, которыми я чаще всего собираю и запускаю свои системы.',
+    timelineTitle: 'Последние записи',
+    timelineLead: 'Заметки и обновления вокруг сайта, продуктов и разработки.',
+    noPosts: 'Записи блога появятся здесь.',
+    contactTitle: 'Есть идея для проекта?',
+    contactLead: 'Можно обсудить продукт, прототип, инфраструктуру или AI-автоматизацию.',
     contactTelegram: 'Telegram',
     contactGithub: 'GitHub',
+    open: 'Открыть',
+  },
+  en: {
+    eyebrow: 'PROJECT LAB / RODION.PRO',
+    headline: 'Projects, products, and experiments',
+    headlineLines: ['Projects,', 'products &', 'experiments'],
+    lead: 'A front page for what I launch: web products, game ideas, personal analytics, AI tooling, and the infrastructure around them.',
+    introTitle: 'Rodion Kalimullin',
+    introText: 'Senior Full-Stack / Tech Lead / DevOps. I take projects from idea to production and like systems that feel simple outside while staying solid inside.',
+    primaryCta: 'View projects',
+    secondaryCta: 'Contact',
+    resumeCta: 'Resume',
+    oldVersion: 'Old version',
     nav: [
-      { href: '#focus', label: 'Focus' },
       { href: '#projects', label: 'Projects' },
+      { href: '#experiments', label: 'Experiments' },
       { href: '#stack', label: 'Stack' },
       { href: '#contact', label: 'Contact' },
     ],
+    metrics: [
+      { value: '4', label: 'core directions' },
+      { value: 'MVP -> prod', label: 'from idea to launch' },
+      { value: 'AI + DevOps', label: 'faster product building' },
+    ],
+    activeTitle: 'Active projects',
+    activeLead: 'Not a resume-first page, but a map of living products and experiments.',
+    experimentsTitle: 'Lab notes',
+    experimentsLead: 'Themes that keep showing up in my products and prototypes.',
+    stackTitle: 'Project stack',
+    stackLead: 'Tools I use most often to build and ship systems.',
+    timelineTitle: 'Latest posts',
+    timelineLead: 'Notes and updates around the site, products, and development.',
+    noPosts: 'Blog posts will appear here.',
+    contactTitle: 'Have a project idea?',
+    contactLead: 'Let’s discuss a product, prototype, infrastructure, or AI automation.',
+    contactTelegram: 'Telegram',
+    contactGithub: 'GitHub',
+    open: 'Open',
   },
 }[lang];
 
@@ -96,7 +165,7 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
 });
 ---
 
-<div class="overflow-hidden">
+<div class="project-home w-full overflow-x-hidden bg-bg">
   <header class="border-b border-border bg-bg/90 backdrop-blur">
     <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
       <a href="/" class="font-mono text-lg font-bold text-accent">rodion.pro</a>
@@ -113,178 +182,303 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
     </div>
   </header>
 
-  <section
-    class="fresh-hero relative min-h-[72vh] border-b border-border bg-cover bg-center"
-  >
-    <div class="mx-auto flex min-h-[72vh] max-w-6xl items-center px-4 py-16">
-      <div class="max-w-2xl">
-        <p class="mb-4 inline-flex rounded-full border border-border bg-surface/80 px-3 py-1 text-sm font-semibold text-accent shadow-sm">
-          {copy.eyebrow}
-        </p>
-        <h1 class="text-4xl font-bold leading-tight text-text sm:text-6xl lg:text-7xl">
-          {copy.headline.split(' ').map((part, index) => (
-            <>
-              <span class="block sm:inline">{part}</span>
-              {index < copy.headline.split(' ').length - 1 && <span class="hidden sm:inline"> </span>}
-            </>
-          ))}
-        </h1>
-        <p class="mt-6 max-w-xl text-base leading-7 text-muted sm:text-xl sm:leading-8">
-          {copy.lead}
-        </p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a href={resumeHref} class="btn btn-primary">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l6 6v10a2 2 0 01-2 2z" />
-            </svg>
-            {copy.ctaPrimary}
-          </a>
-          <a href="#projects" class="btn btn-secondary">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            {copy.ctaSecondary}
-          </a>
-          <a href="/old" class="btn btn-ghost">
-            {copy.oldVersion}
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="bg-surface">
-    <div class="mx-auto grid max-w-6xl gap-4 px-4 py-6 sm:grid-cols-3">
-      {copy.stats.map((stat) => (
-        <div class="rounded-lg border border-border bg-bg px-5 py-4">
-          <div class="text-2xl font-bold text-text">{stat.value}</div>
-          <div class="mt-1 text-sm text-muted">{stat.label}</div>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section id="focus" class="mx-auto max-w-6xl px-4 py-16">
-    <div class="max-w-2xl">
-      <h2 class="text-3xl font-bold text-text">{copy.focusTitle}</h2>
-      <p class="mt-3 text-muted">{copy.focusLead}</p>
-    </div>
-    <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {copy.focus.map((item, index) => (
-        <article class="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm">
-          <div class:list={[
-            'mb-4 flex h-10 w-10 items-center justify-center rounded-md text-sm font-bold text-white',
-            index % 4 === 0 && 'bg-accent',
-            index % 4 === 1 && 'bg-accent2',
-            index % 4 === 2 && 'bg-warn',
-            index % 4 === 3 && 'bg-text',
-          ]}>
-            {index + 1}
-          </div>
-          <h3 class="font-semibold text-text">{item.title}</h3>
-          <p class="mt-2 text-sm leading-6 text-muted">{item.text}</p>
-        </article>
-      ))}
-    </div>
-  </section>
-
-  <section id="projects" class="border-y border-border bg-surface2/70">
-    <div class="mx-auto max-w-6xl px-4 py-16">
-      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <h2 class="text-3xl font-bold text-text">{copy.projectsTitle}</h2>
-          <p class="mt-3 text-muted">{copy.projectsLead}</p>
-        </div>
-        <a href="/old/projects" class="link font-medium">
-          {copy.ctaSecondary} ->
-        </a>
-      </div>
-      <div class="mt-8 grid gap-5 md:grid-cols-3">
-        {featuredProjects.map((project) => (
-          <a href={project.links.site || project.links.github || '/old/projects'} class="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm">
-            <div class="flex items-center justify-between gap-3">
-              <h3 class="text-lg font-semibold text-text group-hover:text-accent">{project.title}</h3>
-              <span class="rounded-full bg-accent/10 px-2 py-1 text-xs font-medium text-accent">
-                {project.status}
-              </span>
-            </div>
-            <p class="mt-3 text-sm leading-6 text-muted">{project.tagline}</p>
-            <div class="mt-4 flex flex-wrap gap-2">
-              {project.stack.slice(0, 5).map((tech) => (
-                <span class="tag">{tech}</span>
-              ))}
-            </div>
-          </a>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section id="stack" class="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-[0.9fr_1.1fr]">
-    <div>
-      <h2 class="text-3xl font-bold text-text">{copy.stackTitle}</h2>
-      <div class="mt-5 flex flex-wrap gap-2">
-        {resume.stackChips.map((tech) => (
-          <span class="rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text shadow-sm">{tech}</span>
-        ))}
-      </div>
-    </div>
-    <div>
-      <h2 class="text-3xl font-bold text-text">{copy.postsTitle}</h2>
-      <div class="mt-5 grid gap-3">
-        {latestPosts.length === 0 ? (
-          <p class="rounded-lg border border-border bg-surface p-5 text-sm text-muted">{copy.noPosts}</p>
-        ) : (
-          latestPosts.map((post) => (
-            <a href={`/old/blog/${post.slug}`} class="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-accent hover:shadow-glow-sm">
-              <time class="font-mono text-xs text-muted">{formatDate(post.data.date)}</time>
-              <h3 class="mt-2 font-semibold text-text">{post.data.title}</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted">{post.data.description}</p>
+  <main>
+    <section id="projects" class="relative border-b border-border">
+      <div class="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-10 lg:min-h-[760px] lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
+        <div class="min-w-0 w-full max-w-[21rem] sm:max-w-3xl">
+          <p class="inline-flex rounded-full border border-border bg-surface px-3 py-1 text-xs font-bold tracking-wide text-accent shadow-sm">
+            {copy.eyebrow}
+          </p>
+          <h1 class="mt-5 max-w-full text-[2.15rem] font-bold leading-[1.08] text-text sm:text-6xl lg:text-7xl">
+            {copy.headlineLines.map((line) => (
+              <span class="block">{line}</span>
+            ))}
+          </h1>
+          <p class="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-xl sm:leading-8">
+            {copy.lead}
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="#active-projects" class="btn btn-primary">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h7M4 12h16M4 18h10" />
+              </svg>
+              {copy.primaryCta}
             </a>
-          ))
-        )}
-      </div>
-    </div>
-  </section>
+            <a href="#contact" class="btn btn-secondary">{copy.secondaryCta}</a>
+            <a href="/old" class="btn btn-ghost">{copy.oldVersion}</a>
+          </div>
+        </div>
 
-  <section id="contact" class="bg-accent text-white">
-    <div class="mx-auto flex max-w-6xl flex-col justify-between gap-6 px-4 py-12 sm:flex-row sm:items-center">
+        <aside class="grid min-w-0 w-full max-w-full grid-cols-1 gap-4">
+          <div class="w-full max-w-full overflow-hidden rounded-lg border border-border bg-surface p-5 shadow-sm">
+            <div class="flex min-w-0 flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
+              <div class="min-w-0">
+                <p class="text-xs font-bold uppercase tracking-wide text-accent">maker profile</p>
+                <h2 class="mt-2 text-2xl font-bold text-text">{copy.introTitle}</h2>
+              </div>
+              <a href={resumeHref} class="shrink-0 rounded-md border border-border px-3 py-2 text-sm font-semibold text-muted transition hover:border-accent hover:text-accent">
+                {copy.resumeCta}
+              </a>
+            </div>
+            <p class="mt-4 break-words text-sm leading-6 text-muted">{copy.introText}</p>
+          </div>
+
+          <div class="grid w-full max-w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {copy.metrics.map((metric) => (
+              <div class="w-full max-w-full overflow-hidden rounded-lg border border-border bg-surface px-5 py-4 shadow-sm">
+                <div class="text-2xl font-bold text-text">{metric.value}</div>
+                <div class="mt-1 text-sm text-muted">{metric.label}</div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <div class="min-w-0 w-full max-w-full lg:col-span-2">
+          <div class="project-board grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-4">
+            {projectLab.map((project, index) => (
+              <a
+                href={project.href}
+                target={project.href.startsWith('http') ? '_blank' : undefined}
+                rel={project.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                class:list={[
+                  'group min-w-0 w-full max-w-full overflow-hidden rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm',
+                  project.span && 'lg:col-span-2 lg:row-span-2',
+                ]}
+                style={`--project-accent: ${project.accent};`}
+              >
+                <div class="project-preview mb-5 overflow-hidden rounded-lg border border-border bg-bg">
+                  <div class="project-preview-bar">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="project-preview-body">
+                    <div class="preview-panel preview-panel-main"></div>
+                    <div class="preview-stack">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex min-w-0 flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--project-accent);">{project.type}</p>
+                    <h3 class="mt-1 break-words text-2xl font-bold text-text group-hover:text-accent">{project.title}</h3>
+                  </div>
+                  <span class="self-start whitespace-nowrap rounded-full px-2 py-1 text-xs font-semibold" style="background: color-mix(in srgb, var(--project-accent) 12%, transparent); color: var(--project-accent);">
+                    {project.status}
+                  </span>
+                </div>
+                <p class="mt-4 text-sm leading-6 text-muted">{project.summary}</p>
+                <div class="mt-5 flex flex-wrap gap-2">
+                  {project.stack.map((tech) => (
+                    <span class="rounded-md border border-border bg-bg px-2 py-1 text-xs font-semibold text-muted">{tech}</span>
+                  ))}
+                </div>
+                <div class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+                  {copy.open}
+                  <svg class="h-4 w-4 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-6-6 6 6-6 6" />
+                  </svg>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="active-projects" class="bg-surface">
+      <div class="mx-auto max-w-6xl px-4 py-16">
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <h2 class="text-3xl font-bold text-text">{copy.activeTitle}</h2>
+            <p class="mt-3 max-w-2xl text-muted">{copy.activeLead}</p>
+          </div>
+          <a href="/old/projects" class="link font-medium">{copy.primaryCta} -></a>
+        </div>
+        <div class="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {featuredProjects.map((project) => (
+            <a href={project.links.site || project.links.github || '/old/projects'} class="min-w-0 overflow-hidden rounded-lg border border-border bg-bg p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm">
+              <div class="flex items-center justify-between gap-3">
+                <h3 class="text-lg font-bold text-text">{project.title}</h3>
+                <span class="whitespace-nowrap rounded-full bg-accent/10 px-2 py-1 text-xs font-semibold text-accent">{project.status}</span>
+              </div>
+              <p class="mt-3 text-sm leading-6 text-muted">{project.tagline}</p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                {project.stack.slice(0, 5).map((tech) => (
+                  <span class="tag">{tech}</span>
+                ))}
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="experiments" class="border-y border-border bg-surface2/70">
+      <div class="mx-auto max-w-6xl px-4 py-16">
+        <div class="max-w-2xl">
+          <h2 class="text-3xl font-bold text-text">{copy.experimentsTitle}</h2>
+          <p class="mt-3 text-muted">{copy.experimentsLead}</p>
+        </div>
+        <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {experiments.map((item, index) => (
+            <article class="rounded-lg border border-border bg-surface p-5 shadow-sm">
+              <div class:list={[
+                'mb-4 flex h-10 w-10 items-center justify-center rounded-md text-sm font-bold text-white',
+                index === 0 && 'bg-accent',
+                index === 1 && 'bg-accent2',
+                index === 2 && 'bg-warn',
+              ]}>
+                {index + 1}
+              </div>
+              <h3 class="text-lg font-bold text-text">{item.title}</h3>
+              <p class="mt-2 text-sm leading-6 text-muted">{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="stack" class="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-16 lg:grid-cols-[0.9fr_1.1fr]">
       <div>
-        <h2 class="text-3xl font-bold">{copy.contactTitle}</h2>
-        <p class="mt-2 text-white/75">{copy.contactLead}</p>
+        <h2 class="text-3xl font-bold text-text">{copy.stackTitle}</h2>
+        <p class="mt-3 text-muted">{copy.stackLead}</p>
+        <div class="mt-5 flex flex-wrap gap-2">
+          {resume.stackChips.map((tech) => (
+            <span class="rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-text shadow-sm">{tech}</span>
+          ))}
+        </div>
       </div>
-      <div class="flex flex-wrap gap-3">
-        <a href="https://t.me/WizardJIOCb" target="_blank" rel="noopener noreferrer" class="btn bg-white text-text hover:bg-surface2">
-          {copy.contactTelegram}
-        </a>
-        <a href="https://github.com/WizardJIOCb" target="_blank" rel="noopener noreferrer" class="btn border border-white/30 text-white hover:bg-white/10">
-          {copy.contactGithub}
-        </a>
+      <div>
+        <h2 class="text-3xl font-bold text-text">{copy.timelineTitle}</h2>
+        <p class="mt-3 text-muted">{copy.timelineLead}</p>
+        <div class="mt-5 grid grid-cols-1 gap-3">
+          {latestPosts.length === 0 ? (
+            <p class="rounded-lg border border-border bg-surface p-5 text-sm text-muted">{copy.noPosts}</p>
+          ) : (
+            latestPosts.map((post) => (
+              <a href={`/old/blog/${post.slug}`} class="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-accent hover:shadow-glow-sm">
+                <time class="font-mono text-xs text-muted">{formatDate(post.data.date)}</time>
+                <h3 class="mt-2 font-bold text-text">{post.data.title}</h3>
+                <p class="mt-1 line-clamp-2 text-sm text-muted">{post.data.description}</p>
+              </a>
+            ))
+          )}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <section id="contact" class="bg-surface">
+      <div class="mx-auto flex max-w-6xl flex-col justify-between gap-6 border-t border-border px-4 py-12 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="text-3xl font-bold text-text">{copy.contactTitle}</h2>
+          <p class="mt-2 text-muted">{copy.contactLead}</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://t.me/WizardJIOCb" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+            {copy.contactTelegram}
+          </a>
+          <a href="https://github.com/WizardJIOCb" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            {copy.contactGithub}
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <footer class="border-t border-border bg-bg">
     <div class="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center">
-      <p>&copy; 2026 Rodion. {lang === 'ru' ? 'Новая светлая версия.' : 'New light version.'}</p>
+      <p>&copy; 2026 Rodion. {lang === 'ru' ? 'Проектная лаборатория.' : 'Project lab.'}</p>
       <a href="/old" class="font-medium text-accent hover:underline">{copy.oldVersion}</a>
     </div>
   </footer>
 </div>
 
 <style>
-  .fresh-hero {
+  .project-home {
     background-image:
-      linear-gradient(90deg, rgba(248, 245, 236, 0.96) 0%, rgba(248, 245, 236, 0.88) 35%, rgba(248, 245, 236, 0.2) 70%),
-      url('/hero-workspace.png');
+      linear-gradient(rgba(15, 159, 138, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 159, 138, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
   }
 
-  @media (max-width: 639px) {
-    .fresh-hero {
-      background-image:
-        linear-gradient(90deg, rgba(248, 245, 236, 0.98) 0%, rgba(248, 245, 236, 0.94) 58%, rgba(248, 245, 236, 0.62) 100%),
-        url('/hero-workspace.png');
-      background-position: 60% center;
+  .project-home,
+  .project-home *,
+  .project-home *::before,
+  .project-home *::after {
+    box-sizing: border-box;
+  }
+
+  .project-home :where(h1, h2, h3, p, a, span) {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .project-home .btn {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .project-preview {
+    aspect-ratio: 16 / 9;
+  }
+
+  .project-preview-bar {
+    display: flex;
+    gap: 6px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--project-accent) 10%, var(--surface));
+  }
+
+  .project-preview-bar span {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--project-accent);
+    opacity: 0.8;
+  }
+
+  .project-preview-body {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .preview-panel {
+    min-height: 86px;
+    border-radius: 8px;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--project-accent) 28%, transparent), transparent),
+      var(--surface);
+    border: 1px solid color-mix(in srgb, var(--project-accent) 25%, var(--border));
+  }
+
+  .preview-stack {
+    display: grid;
+    gap: 8px;
+  }
+
+  .preview-stack span {
+    min-height: 22px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--project-accent) 18%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--project-accent) 20%, var(--border));
+  }
+
+  @media (max-width: 480px) {
+    .project-preview {
+      aspect-ratio: auto;
+    }
+
+    .project-preview-body {
+      grid-template-columns: 1fr;
+    }
+
+    .preview-panel {
+      min-height: 72px;
     }
   }
 </style>
