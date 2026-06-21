@@ -1,0 +1,255 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { Lang } from '@/i18n';
+import { getLocalizedPath } from '@/i18n';
+import { getFeaturedProjects } from '@/data/projects';
+import { resumeShortRu, resumeShortEn } from '@/data/resumeShort';
+
+interface Props {
+  lang: Lang;
+  latestPosts: CollectionEntry<'blog-ru'>[] | CollectionEntry<'blog-en'>[];
+}
+
+const { lang, latestPosts } = Astro.props;
+const resume = lang === 'ru' ? resumeShortRu : resumeShortEn;
+const featuredProjects = getFeaturedProjects(lang);
+
+const copy = {
+  ru: {
+    eyebrow: 'Senior Full-Stack / Tech Lead / DevOps',
+    headline: 'Родион Калимуллин',
+    lead: 'Собираю веб-системы от идеи до production: архитектура, backend, frontend, инфраструктура и AI-инструменты для быстрой доставки.',
+    ctaPrimary: 'Посмотреть резюме',
+    ctaSecondary: 'Проекты',
+    oldVersion: 'Старая версия',
+    stats: [
+      { value: '~20 лет', label: 'коммерческого опыта' },
+      { value: 'MVP -> prod', label: 'стартапы и бизнес-системы' },
+      { value: 'AI + DevOps', label: 'ускорение delivery' },
+    ],
+    focusTitle: 'Чем могу быть полезен',
+    focusLead: 'Люблю задачи, где нужно не только написать код, но и сделать так, чтобы система жила спокойно после релиза.',
+    focus: [
+      { title: 'Архитектура и backend', text: 'Проектирую API, микросервисы, интеграции и высоконагруженные контуры.' },
+      { title: 'Frontend без суеты', text: 'Делаю интерфейсы на React/Vue/Angular, которые удобно развивать дальше.' },
+      { title: 'DevOps и production', text: 'Настраиваю Linux, Docker, Nginx, CI/CD, мониторинг и понятные процессы деплоя.' },
+      { title: 'AI в рабочем цикле', text: 'Встраиваю LLM-инструменты в разработку, документацию, анализ и автоматизацию.' },
+    ],
+    projectsTitle: 'Избранные проекты',
+    projectsLead: 'Несколько живых направлений и продуктов.',
+    postsTitle: 'Последние записи',
+    noPosts: 'Записи блога появятся здесь.',
+    stackTitle: 'Стек',
+    contactTitle: 'Можно обсудить проект',
+    contactLead: 'Открыт к full-time, contract, remote и hybrid форматам.',
+    contactTelegram: 'Telegram',
+    contactGithub: 'GitHub',
+  },
+  en: {
+    eyebrow: 'Senior Full-Stack / Tech Lead / DevOps',
+    headline: 'Rodion Kalimullin',
+    lead: 'I build web systems from idea to production: architecture, backend, frontend, infrastructure, and AI tooling for faster delivery.',
+    ctaPrimary: 'View resume',
+    ctaSecondary: 'Projects',
+    oldVersion: 'Old version',
+    stats: [
+      { value: '~20 years', label: 'commercial experience' },
+      { value: 'MVP -> prod', label: 'startups and business systems' },
+      { value: 'AI + DevOps', label: 'delivery acceleration' },
+    ],
+    focusTitle: 'Where I help',
+    focusLead: 'I like work where the code matters, and the system still feels calm after release.',
+    focus: [
+      { title: 'Architecture and backend', text: 'APIs, microservices, integrations, and high-load application paths.' },
+      { title: 'Practical frontend', text: 'React/Vue/Angular interfaces that remain pleasant to maintain.' },
+      { title: 'DevOps and production', text: 'Linux, Docker, Nginx, CI/CD, monitoring, and clear deployment routines.' },
+      { title: 'AI in the workflow', text: 'LLM tools for development, docs, analysis, and automation.' },
+    ],
+    projectsTitle: 'Featured projects',
+    projectsLead: 'A few active directions and products.',
+    postsTitle: 'Latest posts',
+    noPosts: 'Blog posts will appear here.',
+    stackTitle: 'Stack',
+    contactTitle: 'Let’s talk about a project',
+    contactLead: 'Open to full-time, contract, remote, and hybrid formats.',
+    contactTelegram: 'Telegram',
+    contactGithub: 'GitHub',
+  },
+}[lang];
+
+const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<div class="overflow-hidden">
+  <section
+    class="fresh-hero relative min-h-[72vh] border-b border-border bg-cover bg-center"
+  >
+    <div class="mx-auto flex min-h-[72vh] max-w-6xl items-center px-4 py-16">
+      <div class="max-w-2xl">
+        <p class="mb-4 inline-flex rounded-full border border-border bg-surface/80 px-3 py-1 text-sm font-semibold text-accent shadow-sm">
+          {copy.eyebrow}
+        </p>
+        <h1 class="text-4xl font-bold leading-tight text-text sm:text-6xl lg:text-7xl">
+          {copy.headline.split(' ').map((part, index) => (
+            <>
+              <span class="block sm:inline">{part}</span>
+              {index < copy.headline.split(' ').length - 1 && <span class="hidden sm:inline"> </span>}
+            </>
+          ))}
+        </h1>
+        <p class="mt-6 max-w-xl text-base leading-7 text-muted sm:text-xl sm:leading-8">
+          {copy.lead}
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href={resume.cta.resumeHref} class="btn btn-primary">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l6 6v10a2 2 0 01-2 2z" />
+            </svg>
+            {copy.ctaPrimary}
+          </a>
+          <a href={getLocalizedPath('/projects', lang)} class="btn btn-secondary">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            {copy.ctaSecondary}
+          </a>
+          <a href="/old" class="btn btn-ghost">
+            {copy.oldVersion}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-surface">
+    <div class="mx-auto grid max-w-6xl gap-4 px-4 py-6 sm:grid-cols-3">
+      {copy.stats.map((stat) => (
+        <div class="rounded-lg border border-border bg-bg px-5 py-4">
+          <div class="text-2xl font-bold text-text">{stat.value}</div>
+          <div class="mt-1 text-sm text-muted">{stat.label}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 py-16">
+    <div class="max-w-2xl">
+      <h2 class="text-3xl font-bold text-text">{copy.focusTitle}</h2>
+      <p class="mt-3 text-muted">{copy.focusLead}</p>
+    </div>
+    <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {copy.focus.map((item, index) => (
+        <article class="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm">
+          <div class:list={[
+            'mb-4 flex h-10 w-10 items-center justify-center rounded-md text-sm font-bold text-white',
+            index % 4 === 0 && 'bg-accent',
+            index % 4 === 1 && 'bg-accent2',
+            index % 4 === 2 && 'bg-warn',
+            index % 4 === 3 && 'bg-text',
+          ]}>
+            {index + 1}
+          </div>
+          <h3 class="font-semibold text-text">{item.title}</h3>
+          <p class="mt-2 text-sm leading-6 text-muted">{item.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="border-y border-border bg-surface2/70">
+    <div class="mx-auto max-w-6xl px-4 py-16">
+      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <h2 class="text-3xl font-bold text-text">{copy.projectsTitle}</h2>
+          <p class="mt-3 text-muted">{copy.projectsLead}</p>
+        </div>
+        <a href={getLocalizedPath('/projects', lang)} class="link font-medium">
+          {copy.ctaSecondary} ->
+        </a>
+      </div>
+      <div class="mt-8 grid gap-5 md:grid-cols-3">
+        {featuredProjects.map((project) => (
+          <a href={project.links.site || project.links.github || getLocalizedPath('/projects', lang)} class="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-lg font-semibold text-text group-hover:text-accent">{project.title}</h3>
+              <span class="rounded-full bg-accent/10 px-2 py-1 text-xs font-medium text-accent">
+                {project.status}
+              </span>
+            </div>
+            <p class="mt-3 text-sm leading-6 text-muted">{project.tagline}</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              {project.stack.slice(0, 5).map((tech) => (
+                <span class="tag">{tech}</span>
+              ))}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-[0.9fr_1.1fr]">
+    <div>
+      <h2 class="text-3xl font-bold text-text">{copy.stackTitle}</h2>
+      <div class="mt-5 flex flex-wrap gap-2">
+        {resume.stackChips.map((tech) => (
+          <span class="rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text shadow-sm">{tech}</span>
+        ))}
+      </div>
+    </div>
+    <div>
+      <h2 class="text-3xl font-bold text-text">{copy.postsTitle}</h2>
+      <div class="mt-5 grid gap-3">
+        {latestPosts.length === 0 ? (
+          <p class="rounded-lg border border-border bg-surface p-5 text-sm text-muted">{copy.noPosts}</p>
+        ) : (
+          latestPosts.map((post) => (
+            <a href={getLocalizedPath(`/blog/${post.slug}`, lang)} class="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-accent hover:shadow-glow-sm">
+              <time class="font-mono text-xs text-muted">{formatDate(post.data.date)}</time>
+              <h3 class="mt-2 font-semibold text-text">{post.data.title}</h3>
+              <p class="mt-1 line-clamp-2 text-sm text-muted">{post.data.description}</p>
+            </a>
+          ))
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-text text-white">
+    <div class="mx-auto flex max-w-6xl flex-col justify-between gap-6 px-4 py-12 sm:flex-row sm:items-center">
+      <div>
+        <h2 class="text-3xl font-bold">{copy.contactTitle}</h2>
+        <p class="mt-2 text-white/75">{copy.contactLead}</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="https://t.me/WizardJIOCb" target="_blank" rel="noopener noreferrer" class="btn bg-white text-text hover:bg-surface2">
+          {copy.contactTelegram}
+        </a>
+        <a href="https://github.com/WizardJIOCb" target="_blank" rel="noopener noreferrer" class="btn border border-white/30 text-white hover:bg-white/10">
+          {copy.contactGithub}
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .fresh-hero {
+    background-image:
+      linear-gradient(90deg, rgba(248, 245, 236, 0.96) 0%, rgba(248, 245, 236, 0.88) 35%, rgba(248, 245, 236, 0.2) 70%),
+      url('/hero-workspace.png');
+  }
+
+  @media (max-width: 639px) {
+    .fresh-hero {
+      background-image:
+        linear-gradient(90deg, rgba(248, 245, 236, 0.98) 0%, rgba(248, 245, 236, 0.94) 58%, rgba(248, 245, 236, 0.62) 100%),
+        url('/hero-workspace.png');
+      background-position: 60% center;
+    }
+  }
+</style>

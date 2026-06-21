@@ -114,6 +114,7 @@ export const ui = {
     'cmd.language': 'Язык',
     
     // Theme names
+    'theme.daylight-studio': 'Daylight Studio',
     'theme.soft-neon-teal': 'Soft Neon Teal',
     'theme.violet-rain': 'Violet Rain',
     'theme.amber-terminal': 'Amber Terminal',
@@ -233,6 +234,7 @@ export const ui = {
     'cmd.language': 'Language',
     
     // Theme names
+    'theme.daylight-studio': 'Daylight Studio',
     'theme.soft-neon-teal': 'Soft Neon Teal',
     'theme.violet-rain': 'Violet Rain',
     'theme.amber-terminal': 'Amber Terminal',

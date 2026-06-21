@@ -4,8 +4,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme A - Soft Neon Teal (default) */
+/* Theme A - Daylight Studio (default) */
 :root,
+[data-theme='daylight-studio'] {
+  --bg: #f8f5ec;
+  --surface: #ffffff;
+  --surface2: #f1eadf;
+  --text: #172126;
+  --muted: #66737b;
+  --border: #dfd4c5;
+  --accent: #0f9f8a;
+  --accent2: #ff705c;
+  --glow: rgba(15, 159, 138, 0.18);
+  --danger: #e5484d;
+  --success: #1d9f64;
+  --warn: #d88a16;
+}
+
+/* Theme B - Soft Neon Teal */
 [data-theme='soft-neon-teal'] {
   --bg: #0b0f14;
   --surface: #111823;
@@ -21,7 +37,7 @@
   --warn: #ffb020;
 }
 
-/* Theme B - Violet Rain */
+/* Theme C - Violet Rain */
 [data-theme='violet-rain'] {
   --bg: #0a0612;
   --surface: #130d21;
@@ -37,7 +53,7 @@
   --warn: #ffc14a;
 }
 
-/* Theme C - Amber Terminal */
+/* Theme D - Amber Terminal */
 [data-theme='amber-terminal'] {
   --bg: #0d0b08;
   --surface: #15110c;
@@ -53,7 +69,7 @@
   --warn: #ffd56a;
 }
 
-/* Theme D - Ice Cyan */
+/* Theme E - Ice Cyan */
 [data-theme='ice-cyan'] {
   --bg: #071017;
   --surface: #0e1a24;
@@ -69,7 +85,7 @@
   --warn: #ffc85a;
 }
 
-/* Theme E - Mono Green */
+/* Theme F - Mono Green */
 [data-theme='mono-green'] {
   --bg: #070b07;
   --surface: #0f150f;
@@ -93,6 +109,11 @@
   body {
     @apply bg-bg text-text font-sans antialiased;
     min-height: 100vh;
+  }
+
+  a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
   }
   
   ::selection {
@@ -132,7 +153,7 @@
   }
   
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200;
     @apply focus:outline-none;
   }
   
@@ -141,7 +162,7 @@
   }
   
   .btn-primary {
-    @apply bg-accent text-bg hover:shadow-glow hover:brightness-110;
+    @apply bg-accent text-white hover:shadow-glow hover:brightness-105;
   }
   
   .btn-secondary {

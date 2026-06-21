@@ -18,16 +18,16 @@ const navItems = [
 ---
 
 <header class="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur-md">
-  <div class="mx-auto max-w-5xl px-4">
-    <nav class="flex h-16 items-center justify-between">
+  <div class="mx-auto w-full max-w-5xl px-4">
+    <nav class="site-nav grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 md:flex md:justify-between">
       <a 
         href={getLocalizedPath('/', lang)} 
-        class="flex items-center gap-2 font-mono text-lg font-semibold text-accent hover:glow-text transition-all"
+        class="flex min-w-0 items-center gap-2 font-mono text-base font-semibold text-accent hover:glow-text transition-all sm:text-lg"
       >
         <span class="text-muted">~/</span>rodion
       </a>
       
-      <div class="hidden md:flex items-center gap-1">
+      <div class="desktop-nav hidden items-center gap-1 md:flex">
         {navItems.map(({ key, path }) => {
           const localizedPath = getLocalizedPath(path, lang);
           const isActive = currentPath.startsWith(localizedPath);
@@ -47,7 +47,7 @@ const navItems = [
         })}
       </div>
       
-      <div class="flex items-center gap-2">
+      <div class="site-controls hidden min-w-0 shrink-0 items-center justify-end gap-1 sm:flex sm:gap-2">
         <button
           id="cmd-trigger"
           class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border text-sm text-muted hover:text-text hover:border-accent/50 transition-colors"
@@ -59,12 +59,14 @@ const navItems = [
           <span class="font-mono text-xs">Alt+K</span>
         </button>
         
-        <ThemeSwitch client:load />
+        <div class="hidden sm:block">
+          <ThemeSwitch client:load />
+        </div>
         <LanguageSwitch />
         
         <button
           id="mobile-menu-btn"
-          class="md:hidden p-2 rounded-md text-muted hover:text-text hover:bg-surface"
+          class="rounded-md p-1.5 text-muted hover:bg-surface hover:text-text md:hidden sm:p-2"
           aria-label="Menu"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,6 +100,20 @@ const navItems = [
     </div>
   </div>
 </header>
+
+<style>
+  @media (max-width: 639px) {
+    .site-controls {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .desktop-nav {
+      display: none !important;
+    }
+  }
+</style>
 
 <script>
   const menuBtn = document.getElementById('mobile-menu-btn');

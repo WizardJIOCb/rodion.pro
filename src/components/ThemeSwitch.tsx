@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 const themes = [
+  { id: 'daylight-studio', name: 'Daylight Studio', accent: '#0f9f8a' },
   { id: 'soft-neon-teal', name: 'Soft Neon Teal', accent: '#38e8d6' },
   { id: 'violet-rain', name: 'Violet Rain', accent: '#b066ff' },
   { id: 'amber-terminal', name: 'Amber Terminal', accent: '#ffb74a' },
@@ -11,7 +12,7 @@ const themes = [
 type ThemeId = (typeof themes)[number]['id'];
 
 export default function ThemeSwitch() {
-  const [currentTheme, setCurrentTheme] = useState<ThemeId>('soft-neon-teal');
+  const [currentTheme, setCurrentTheme] = useState<ThemeId>('daylight-studio');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

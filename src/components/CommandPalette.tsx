@@ -38,6 +38,7 @@ export default function CommandPalette({ lang }: Props) {
   ];
 
   const themeItems: CommandItem[] = [
+    { id: 'theme-daylight', label: 'Daylight Studio', action: () => setTheme('daylight-studio'), group: t.theme },
     { id: 'theme-soft', label: 'Soft Neon Teal', action: () => setTheme('soft-neon-teal'), group: t.theme },
     { id: 'theme-violet', label: 'Violet Rain', action: () => setTheme('violet-rain'), group: t.theme },
     { id: 'theme-amber', label: 'Amber Terminal', action: () => setTheme('amber-terminal'), group: t.theme },

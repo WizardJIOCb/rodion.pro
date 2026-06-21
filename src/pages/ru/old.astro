@@ -1,0 +1,135 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getLocalizedPath } from '@/i18n';
+import { getFeaturedProjects } from '@/data/projects';
+import TerminalHero from '@/components/TerminalHero.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import EventCard from '@/components/EventCard.astro';
+import { requireDb, events, hasDb } from '@/db';
+import { desc } from 'drizzle-orm';
+
+const lang = 'ru';
+const title = 'Старая версия';
+const description = 'Предыдущая версия главной страницы rodion.pro';
+const featuredProjects = getFeaturedProjects(lang);
+
+const posts = await getCollection('blog-ru', ({ data }) => !data.draft);
+const latestPosts = posts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+let recentEvents: typeof events.$inferSelect[] = [];
+let eventsUnavailable = false;
+const dbConfigured = hasDb();
+
+if (dbConfigured) {
+  try {
+    const db = requireDb();
+    recentEvents = await db
+      .select()
+      .from(events)
+      .orderBy(desc(events.ts))
+      .limit(5);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    eventsUnavailable = true;
+  }
+}
+
+const formatDate = (date: Date) => date.toLocaleDateString('ru-RU', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<Layout title={title} description={description} noindex>
+  <div class="mx-auto max-w-5xl px-4 py-12">
+    <div class="mb-8 flex flex-col justify-between gap-4 rounded-lg border border-border bg-surface p-4 sm:flex-row sm:items-center">
+      <div>
+        <p class="text-sm font-semibold text-accent">rodion.pro/old</p>
+        <h1 class="mt-1 text-2xl font-bold text-text">Старая версия главной</h1>
+      </div>
+      <a href="/ru/" class="btn btn-secondary">Вернуться на новую</a>
+    </div>
+
+    <TerminalHero lang={lang} />
+
+    <section class="mt-16">
+      <div class="mb-8 flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-text">Избранные проекты</h2>
+        <a href={getLocalizedPath('/projects', lang)} class="link text-sm">
+          Смотреть все ->
+        </a>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {featuredProjects.map((project) => (
+          <ProjectCard {...project} lang={lang} />
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <div class="mb-8 flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-text">Последние записи</h2>
+        <a href={getLocalizedPath('/blog', lang)} class="link text-sm">
+          Смотреть все ->
+        </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {latestPosts.length === 0 ? (
+          <div class="card">
+            <p class="text-sm text-muted">Записи блога появятся здесь</p>
+          </div>
+        ) : (
+          latestPosts.map((post) => (
+            <a
+              href={getLocalizedPath(`/blog/${post.slug}`, lang)}
+              class="card block group"
+              data-hover-glow
+            >
+              <time class="font-mono text-xs text-muted">
+                {formatDate(post.data.date)}
+              </time>
+              <h3 class="mb-2 mt-2 text-lg font-semibold text-text transition-colors group-hover:text-accent">
+                {post.data.title}
+              </h3>
+              <p class="line-clamp-2 text-sm text-muted">
+                {post.data.description}
+              </p>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <div class="mb-8 flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-text">Последние события</h2>
+        <a href={getLocalizedPath('/changelog', lang)} class="link text-sm">
+          Смотреть все ->
+        </a>
+      </div>
+      <div class="space-y-4">
+        {!dbConfigured ? (
+          <div class="card">
+            <p class="text-sm text-muted">События появятся после настройки базы данных</p>
+          </div>
+        ) : eventsUnavailable ? (
+          <div class="card">
+            <p class="text-sm text-muted">Не удалось загрузить события</p>
+          </div>
+        ) : recentEvents.length === 0 ? (
+          <div class="card">
+            <p class="text-sm text-muted">Событий пока нет</p>
+          </div>
+        ) : (
+          recentEvents.map((event) => (
+            <EventCard event={event} lang={lang} />
+          ))
+        )}
+      </div>
+    </section>
+  </div>
+</Layout>

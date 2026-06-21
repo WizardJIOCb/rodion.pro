@@ -26,7 +26,7 @@ const ogImage = image ? new URL(image, Astro.site).href : new URL('/og-default.p
 ---
 
 <!doctype html>
-<html lang={lang} data-theme="soft-neon-teal">
+<html lang={lang} data-theme="daylight-studio">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -62,7 +62,7 @@ const ogImage = image ? new URL(image, Astro.site).href : new URL('/og-default.p
       // Theme initialization (before render to prevent flash)
       (function() {
         const stored = localStorage.getItem('theme');
-        const theme = stored || 'soft-neon-teal';
+        const theme = stored || 'daylight-studio';
         document.documentElement.setAttribute('data-theme', theme);
       })();
     </script>
