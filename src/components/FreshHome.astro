@@ -16,17 +16,29 @@ const resumeHref = lang === 'ru' ? '/old/resume' : '/old/en/resume';
 
 const projectLab = [
   {
-    id: 'reader-market',
-    title: 'Reader.Market',
-    status: lang === 'ru' ? 'Активный продукт' : 'Active product',
-    type: lang === 'ru' ? 'AI-платформа для книг' : 'AI book platform',
+    id: 'hands-xedoc',
+    title: 'hands.xedoc.ru',
+    status: lang === 'ru' ? 'Жесты и камера' : 'Gestures + camera',
+    type: 'camera control lab',
     summary: lang === 'ru'
-      ? 'Платформа для чтения, публикации и рекомендаций вокруг книжного контента.'
-      : 'A platform for reading, publishing, and recommendations around books.',
-    href: 'https://reader.market',
-    stack: ['React', 'Node.js', 'PostgreSQL', 'AI'],
-    accent: '#0f9f8a',
+      ? 'Веб-прототип управления жестами рук и лицевыми сигналами через камеру.'
+      : 'A browser prototype for camera-based hand gestures and face-signal control.',
+    href: 'https://hands.xedoc.ru',
+    stack: ['TypeScript', 'Vite', 'MediaPipe'],
+    accent: '#8b5cf6',
     span: true,
+  },
+  {
+    id: 'music-xedoc',
+    title: 'music.xedoc.ru',
+    status: lang === 'ru' ? 'AI music' : 'AI music',
+    type: 'prompt-to-music',
+    summary: lang === 'ru'
+      ? 'Публичный интерфейс генерации музыки поверх StableDAW и локального inference.'
+      : 'A public prompt-to-music interface on top of StableDAW and local inference.',
+    href: 'https://music.xedoc.ru',
+    stack: ['StableDAW', 'Nginx', 'Python'],
+    accent: '#ec4899',
   },
   {
     id: 'crimson-wars',
@@ -41,52 +53,16 @@ const projectLab = [
     accent: '#ff705c',
   },
   {
-    id: 'activity-monitor',
-    title: 'Activity Monitor',
-    status: lang === 'ru' ? 'В разработке' : 'In progress',
-    type: lang === 'ru' ? 'личная аналитика' : 'personal analytics',
+    id: 'reader-market',
+    title: 'Reader.Market',
+    status: lang === 'ru' ? 'Активный продукт' : 'Active product',
+    type: lang === 'ru' ? 'AI-платформа для книг' : 'AI book platform',
     summary: lang === 'ru'
-      ? 'Трекер активности: desktop-агент, API, таймлайн, заметки и приватная аналитика работы.'
-      : 'Activity tracker with desktop agent, API, timeline, notes, and private work analytics.',
-    href: '/old/activity',
-    stack: ['Electron', 'Astro', 'PostgreSQL'],
-    accent: '#38bdf8',
-  },
-  {
-    id: 'hands-xedoc',
-    title: 'hands.xedoc.ru',
-    status: lang === 'ru' ? 'Жесты и камера' : 'Gestures + camera',
-    type: lang === 'ru' ? 'camera control lab' : 'camera control lab',
-    summary: lang === 'ru'
-      ? 'Веб-прототип управления жестами рук и лицевыми сигналами через камеру.'
-      : 'A browser prototype for camera-based hand gestures and face-signal control.',
-    href: 'https://hands.xedoc.ru',
-    stack: ['TypeScript', 'Vite', 'MediaPipe'],
-    accent: '#8b5cf6',
-  },
-  {
-    id: 'rodion-pro',
-    title: 'rodion.pro',
-    status: lang === 'ru' ? 'Живой сайт' : 'Live site',
-    type: lang === 'ru' ? 'личный хаб' : 'personal hub',
-    summary: lang === 'ru'
-      ? 'Дом для проектов, заметок, changelog и экспериментов с интерфейсами.'
-      : 'A home for projects, notes, changelog, and interface experiments.',
-    href: 'https://rodion.pro',
-    stack: ['Astro', 'Tailwind', 'Drizzle'],
-    accent: '#f0b429',
-  },
-  {
-    id: 'music-xedoc',
-    title: 'music.xedoc.ru',
-    status: lang === 'ru' ? 'AI music' : 'AI music',
-    type: lang === 'ru' ? 'prompt-to-music' : 'prompt-to-music',
-    summary: lang === 'ru'
-      ? 'Публичный интерфейс генерации музыки поверх StableDAW и локального inference.'
-      : 'A public prompt-to-music interface on top of StableDAW and local inference.',
-    href: 'https://music.xedoc.ru',
-    stack: ['StableDAW', 'Nginx', 'Python'],
-    accent: '#ec4899',
+      ? 'Платформа для чтения, публикации и рекомендаций вокруг книжного контента.'
+      : 'A platform for reading, publishing, and recommendations around books.',
+    href: 'https://reader.market',
+    stack: ['React', 'Node.js', 'PostgreSQL', 'AI'],
+    accent: '#0f9f8a',
   },
 ];
 
@@ -124,7 +100,7 @@ const copy = {
       { href: '#contact', label: 'Связь' },
     ],
     metrics: [
-      { value: '6', label: 'проектов на витрине' },
+      { value: '4', label: 'проекта на витрине' },
       { value: 'MVP -> prod', label: 'путь от идеи до запуска' },
       { value: 'AI + DevOps', label: 'ускорение сборки продуктов' },
     ],
@@ -161,7 +137,7 @@ const copy = {
       { href: '#contact', label: 'Contact' },
     ],
     metrics: [
-      { value: '6', label: 'showcase projects' },
+      { value: '4', label: 'showcase projects' },
       { value: 'MVP -> prod', label: 'from idea to launch' },
       { value: 'AI + DevOps', label: 'faster product building' },
     ],

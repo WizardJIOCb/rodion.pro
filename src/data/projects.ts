@@ -15,96 +15,8 @@ export interface Project {
   featured?: boolean;
 }
 
+// Новые проекты добавляем в начало списка, чтобы свежие работы были первыми.
 export const projects: Project[] = [
-  {
-    id: 'crimson-wars',
-    title: {
-      ru: 'Crimson Wars',
-      en: 'Crimson Wars',
-    },
-    tagline: {
-      ru: 'Персональный сайт в стиле soft cyberpunk',
-      en: 'Personal website with soft cyberpunk aesthetics',
-    },
-    status: 'active',
-    links: {
-      site: 'https://crimson.rodion.pro',
-      github: 'https://github.com/WizardJIOCb/crimson-wars',
-    },
-    stack: ['Astro', 'React', 'TypeScript', 'Tailwind', 'PostgreSQL', 'Drizzle'],
-    highlights: {
-      ru: [
-        'Survival игра'        
-      ],
-      en: [
-        'Survival game'
-      ],
-    },
-    featured: true,
-  },
-  {
-    id: 'rodion-pro',
-    title: {
-      ru: 'rodion.pro',
-      en: 'rodion.pro',
-    },
-    tagline: {
-      ru: 'Персональный сайт в стиле soft cyberpunk',
-      en: 'Personal website with soft cyberpunk aesthetics',
-    },
-    status: 'active',
-    links: {
-      site: 'https://rodion.pro',
-      github: 'https://github.com/WizardJIOCb/rodion.pro',
-    },
-    stack: ['Astro', 'React', 'TypeScript', 'Tailwind', 'PostgreSQL', 'Drizzle'],
-    highlights: {
-      ru: [
-        'Терминальный дизайн с 5 цветовыми темами',
-        'RU/EN локализация',
-        'Комментарии и реакции с Google OAuth',
-        'Автоматический changelog из GitHub',
-      ],
-      en: [
-        'Terminal design with 5 color themes',
-        'RU/EN localization',
-        'Comments and reactions with Google OAuth',
-        'Automatic changelog from GitHub',
-      ],
-    },
-    featured: true,
-  },
-  {
-    id: 'reader-market',
-    title: {
-      ru: 'Reader.Market',
-      en: 'Reader.Market',
-    },
-    tagline: {
-      ru: 'Платформа для чтения и публикации контента',
-      en: 'Platform for reading and publishing content',
-    },
-    status: 'active',
-    links: {
-      site: 'https://reader.market',
-    },
-    stack: ['TypeScript', 'Node.js', 'React', 'PostgreSQL', 'Docker'],
-    highlights: {
-      ru: [
-        'Веб-приложение для чтения книг',
-        'Система комментариев и рецензий',
-        'Персонализированные рекомендации',
-        'Статистика чтения',
-      ],
-      en: [
-        'Web application for reading books',
-        'Comments and reviews system',
-        'Personalized recommendations',
-        'Reading statistics',
-      ],      
-    },
-    featured: true,
-  },
   {
     id: 'hands-xedoc',
     title: {
@@ -164,6 +76,63 @@ export const projects: Project[] = [
         'Generation through a local backend and SSH reverse tunnel',
         'Patches for audio, library, votes, and LLM prompt helper',
       ],
+    },
+    featured: true,
+  },
+  {
+    id: 'crimson-wars',
+    title: {
+      ru: 'Crimson Wars',
+      en: 'Crimson Wars',
+    },
+    tagline: {
+      ru: 'Персональный сайт в стиле soft cyberpunk',
+      en: 'Personal website with soft cyberpunk aesthetics',
+    },
+    status: 'active',
+    links: {
+      site: 'https://crimson.rodion.pro',
+      github: 'https://github.com/WizardJIOCb/crimson-wars',
+    },
+    stack: ['Astro', 'React', 'TypeScript', 'Tailwind', 'PostgreSQL', 'Drizzle'],
+    highlights: {
+      ru: [
+        'Survival игра'
+      ],
+      en: [
+        'Survival game'
+      ],
+    },
+    featured: true,
+  },
+  {
+    id: 'reader-market',
+    title: {
+      ru: 'Reader.Market',
+      en: 'Reader.Market',
+    },
+    tagline: {
+      ru: 'Платформа для чтения и публикации контента',
+      en: 'Platform for reading and publishing content',
+    },
+    status: 'active',
+    links: {
+      site: 'https://reader.market',
+    },
+    stack: ['TypeScript', 'Node.js', 'React', 'PostgreSQL', 'Docker'],
+    highlights: {
+      ru: [
+        'Веб-приложение для чтения книг',
+        'Система комментариев и рецензий',
+        'Персонализированные рекомендации',
+        'Статистика чтения',
+      ],
+      en: [
+        'Web application for reading books',
+        'Comments and reviews system',
+        'Personalized recommendations',
+        'Reading statistics',
+      ],      
     },
     featured: true,
   }/*,
