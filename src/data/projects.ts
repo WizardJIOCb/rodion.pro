@@ -137,6 +137,38 @@ export const projects: Project[] = [
       ],      
     },
     featured: true,
+  },
+  {
+    id: 'xedoc',
+    title: {
+      ru: 'xedoc.ru',
+      en: 'xedoc.ru',
+    },
+    tagline: {
+      ru: 'Приватный web-workbench для Codex-разработки из браузера',
+      en: 'Private web workbench for Codex-driven development from a browser',
+    },
+    status: 'active',
+    links: {
+      site: 'https://xedoc.ru',
+      github: 'https://github.com/WizardJIOCb/xedoc.ru',
+    },
+    stack: ['React', 'Vite', 'Fastify', 'SQLite', 'WebSocket', 'Codex CLI'],
+    highlights: {
+      ru: [
+        'PWA-интерфейс для проектов, чатов, задач, логов, файлов и diff',
+        'Fastify API, SQLite и WebSocket-соединения для UI и агентов',
+        'Windows/Linux агент запускает Codex CLI в разрешенных папках',
+        'Синхронизация локальных Codex и VS Code чатов',
+      ],
+      en: [
+        'PWA interface for projects, chats, jobs, logs, files, and diffs',
+        'Fastify API, SQLite, and WebSocket connections for UI and agents',
+        'Windows/Linux agent runs Codex CLI inside allowlisted folders',
+        'Syncs local Codex and VS Code chats',
+      ],
+    },
+    featured: true,
   }/*,
   {
     id: 'cyka-lol',
