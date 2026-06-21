@@ -53,6 +53,18 @@ const projectLab = [
     accent: '#38bdf8',
   },
   {
+    id: 'hands-xedoc',
+    title: 'hands.xedoc.ru',
+    status: lang === 'ru' ? 'Жесты и камера' : 'Gestures + camera',
+    type: lang === 'ru' ? 'camera control lab' : 'camera control lab',
+    summary: lang === 'ru'
+      ? 'Веб-прототип управления жестами рук и лицевыми сигналами через камеру.'
+      : 'A browser prototype for camera-based hand gestures and face-signal control.',
+    href: 'https://hands.xedoc.ru',
+    stack: ['TypeScript', 'Vite', 'MediaPipe'],
+    accent: '#8b5cf6',
+  },
+  {
     id: 'rodion-pro',
     title: 'rodion.pro',
     status: lang === 'ru' ? 'Живой сайт' : 'Live site',
@@ -63,6 +75,18 @@ const projectLab = [
     href: 'https://rodion.pro',
     stack: ['Astro', 'Tailwind', 'Drizzle'],
     accent: '#f0b429',
+  },
+  {
+    id: 'music-xedoc',
+    title: 'music.xedoc.ru',
+    status: lang === 'ru' ? 'AI music' : 'AI music',
+    type: lang === 'ru' ? 'prompt-to-music' : 'prompt-to-music',
+    summary: lang === 'ru'
+      ? 'Публичный интерфейс генерации музыки поверх StableDAW и локального inference.'
+      : 'A public prompt-to-music interface on top of StableDAW and local inference.',
+    href: 'https://music.xedoc.ru',
+    stack: ['StableDAW', 'Nginx', 'Python'],
+    accent: '#ec4899',
   },
 ];
 
@@ -100,7 +124,7 @@ const copy = {
       { href: '#contact', label: 'Связь' },
     ],
     metrics: [
-      { value: '4', label: 'ключевых направления' },
+      { value: '6', label: 'проектов на витрине' },
       { value: 'MVP -> prod', label: 'путь от идеи до запуска' },
       { value: 'AI + DevOps', label: 'ускорение сборки продуктов' },
     ],
@@ -137,7 +161,7 @@ const copy = {
       { href: '#contact', label: 'Contact' },
     ],
     metrics: [
-      { value: '4', label: 'core directions' },
+      { value: '6', label: 'showcase projects' },
       { value: 'MVP -> prod', label: 'from idea to launch' },
       { value: 'AI + DevOps', label: 'faster product building' },
     ],
@@ -259,10 +283,18 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
                     </div>
                   </div>
                 </div>
-                <div class="flex min-w-0 flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                <div class:list={[
+                  'flex min-w-0 flex-col justify-between gap-3',
+                  project.span && 'sm:flex-row sm:items-start',
+                ]}>
                   <div class="min-w-0">
                     <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--project-accent);">{project.type}</p>
-                    <h3 class="mt-1 break-words text-2xl font-bold text-text group-hover:text-accent">{project.title}</h3>
+                    <h3 class:list={[
+                      'mt-1 break-words font-bold text-text group-hover:text-accent',
+                      project.title.includes('.xedoc.ru') ? 'text-lg' : 'text-xl',
+                    ]}>
+                      {project.title}
+                    </h3>
                   </div>
                   <span class="self-start whitespace-nowrap rounded-full px-2 py-1 text-xs font-semibold" style="background: color-mix(in srgb, var(--project-accent) 12%, transparent); color: var(--project-accent);">
                     {project.status}

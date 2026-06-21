@@ -104,6 +104,68 @@ export const projects: Project[] = [
       ],      
     },
     featured: true,
+  },
+  {
+    id: 'hands-xedoc',
+    title: {
+      ru: 'hands.xedoc.ru',
+      en: 'hands.xedoc.ru',
+    },
+    tagline: {
+      ru: 'Веб-прототип управления жестами и лицевыми сигналами через камеру',
+      en: 'Camera-based gesture and face-signal control prototype',
+    },
+    status: 'active',
+    links: {
+      site: 'https://hands.xedoc.ru',
+    },
+    stack: ['TypeScript', 'Vite', 'MediaPipe', 'Camera API', 'OBS'],
+    highlights: {
+      ru: [
+        'Трекинг рук и лица через MediaPipe',
+        'Жесты, мимика и повороты головы как сигналы',
+        'Output-режим для Streamlabs/OBS',
+        'Webhook для отправки событий во внешние сценарии',
+      ],
+      en: [
+        'Hand and face tracking with MediaPipe',
+        'Gestures, facial expressions, and head poses as signals',
+        'Output mode for Streamlabs/OBS',
+        'Webhook events for external automations',
+      ],
+    },
+    featured: true,
+  },
+  {
+    id: 'music-xedoc',
+    title: {
+      ru: 'music.xedoc.ru',
+      en: 'music.xedoc.ru',
+    },
+    tagline: {
+      ru: 'Публичный интерфейс генерации музыки на StableDAW',
+      en: 'Public prompt-to-music interface powered by StableDAW',
+    },
+    status: 'active',
+    links: {
+      site: 'https://music.xedoc.ru',
+    },
+    stack: ['HTML', 'Nginx', 'StableDAW', 'Python', 'SSH Tunnel'],
+    highlights: {
+      ru: [
+        'Простая страница prompt-to-music',
+        'Полный StableDAW editor через /editor',
+        'Генерация через локальный backend и SSH reverse tunnel',
+        'Патчи для аудио, библиотеки, голосований и LLM-помощника',
+      ],
+      en: [
+        'Simple prompt-to-music page',
+        'Full StableDAW editor at /editor',
+        'Generation through a local backend and SSH reverse tunnel',
+        'Patches for audio, library, votes, and LLM prompt helper',
+      ],
+    },
+    featured: true,
   }/*,
   {
     id: 'cyka-lol',
