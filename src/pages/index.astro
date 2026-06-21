@@ -1,18 +1,26 @@
 ---
-// Redirect root to language-prefixed version
-const acceptLanguage = Astro.request.headers.get('accept-language') || '';
-const cookies = Astro.cookies;
+import { getCollection } from 'astro:content';
+import NewHomeLayout from '@/layouts/NewHomeLayout.astro';
+import FreshHome from '@/components/FreshHome.astro';
 
-// Check cookie first
-const savedLang = cookies.get('lang')?.value;
+const lang = 'ru';
 
-let targetLang = 'ru';
+Astro.cookies.set('lang', lang, {
+  path: '/',
+  maxAge: 60 * 60 * 24 * 365,
+  httpOnly: false,
+  sameSite: 'lax',
+});
 
-if (savedLang === 'en' || savedLang === 'ru') {
-  targetLang = savedLang;
-} else if (acceptLanguage.toLowerCase().startsWith('en')) {
-  targetLang = 'en';
-}
+const title = 'Родион Калимуллин';
+const description = 'Родион Калимуллин - Senior Full-Stack Developer, Tech Lead и DevOps инженер';
 
-return Astro.redirect(`/${targetLang}/`, 302);
+const posts = await getCollection('blog-ru', ({ data }) => !data.draft);
+const latestPosts = posts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
 ---
+
+<NewHomeLayout title={title} description={description}>
+  <FreshHome lang={lang} latestPosts={latestPosts} />
+</NewHomeLayout>

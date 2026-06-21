@@ -1,7 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import type { Lang } from '@/i18n';
-import { getLocalizedPath } from '@/i18n';
 import { getFeaturedProjects } from '@/data/projects';
 import { resumeShortRu, resumeShortEn } from '@/data/resumeShort';
 
@@ -13,6 +12,7 @@ interface Props {
 const { lang, latestPosts } = Astro.props;
 const resume = lang === 'ru' ? resumeShortRu : resumeShortEn;
 const featuredProjects = getFeaturedProjects(lang);
+const resumeHref = lang === 'ru' ? '/old/resume' : '/old/en/resume';
 
 const copy = {
   ru: {
@@ -44,6 +44,12 @@ const copy = {
     contactLead: 'Открыт к full-time, contract, remote и hybrid форматам.',
     contactTelegram: 'Telegram',
     contactGithub: 'GitHub',
+    nav: [
+      { href: '#focus', label: 'Фокус' },
+      { href: '#projects', label: 'Проекты' },
+      { href: '#stack', label: 'Стек' },
+      { href: '#contact', label: 'Связь' },
+    ],
   },
   en: {
     eyebrow: 'Senior Full-Stack / Tech Lead / DevOps',
@@ -74,6 +80,12 @@ const copy = {
     contactLead: 'Open to full-time, contract, remote, and hybrid formats.',
     contactTelegram: 'Telegram',
     contactGithub: 'GitHub',
+    nav: [
+      { href: '#focus', label: 'Focus' },
+      { href: '#projects', label: 'Projects' },
+      { href: '#stack', label: 'Stack' },
+      { href: '#contact', label: 'Contact' },
+    ],
   },
 }[lang];
 
@@ -85,6 +97,22 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
 ---
 
 <div class="overflow-hidden">
+  <header class="border-b border-border bg-bg/90 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+      <a href="/" class="font-mono text-lg font-bold text-accent">rodion.pro</a>
+      <nav class="hidden items-center gap-1 sm:flex">
+        {copy.nav.map((item) => (
+          <a href={item.href} class="rounded-md px-3 py-2 text-sm font-medium text-muted transition hover:bg-surface hover:text-text">
+            {item.label}
+          </a>
+        ))}
+        <a href="/old" class="rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text transition hover:border-accent hover:text-accent">
+          {copy.oldVersion}
+        </a>
+      </nav>
+    </div>
+  </header>
+
   <section
     class="fresh-hero relative min-h-[72vh] border-b border-border bg-cover bg-center"
   >
@@ -105,13 +133,13 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
           {copy.lead}
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
-          <a href={resume.cta.resumeHref} class="btn btn-primary">
+          <a href={resumeHref} class="btn btn-primary">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l6 6v10a2 2 0 01-2 2z" />
             </svg>
             {copy.ctaPrimary}
           </a>
-          <a href={getLocalizedPath('/projects', lang)} class="btn btn-secondary">
+          <a href="#projects" class="btn btn-secondary">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
@@ -136,7 +164,7 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-4 py-16">
+  <section id="focus" class="mx-auto max-w-6xl px-4 py-16">
     <div class="max-w-2xl">
       <h2 class="text-3xl font-bold text-text">{copy.focusTitle}</h2>
       <p class="mt-3 text-muted">{copy.focusLead}</p>
@@ -160,20 +188,20 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
     </div>
   </section>
 
-  <section class="border-y border-border bg-surface2/70">
+  <section id="projects" class="border-y border-border bg-surface2/70">
     <div class="mx-auto max-w-6xl px-4 py-16">
       <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h2 class="text-3xl font-bold text-text">{copy.projectsTitle}</h2>
           <p class="mt-3 text-muted">{copy.projectsLead}</p>
         </div>
-        <a href={getLocalizedPath('/projects', lang)} class="link font-medium">
+        <a href="/old/projects" class="link font-medium">
           {copy.ctaSecondary} ->
         </a>
       </div>
       <div class="mt-8 grid gap-5 md:grid-cols-3">
         {featuredProjects.map((project) => (
-          <a href={project.links.site || project.links.github || getLocalizedPath('/projects', lang)} class="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm">
+          <a href={project.links.site || project.links.github || '/old/projects'} class="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-glow-sm">
             <div class="flex items-center justify-between gap-3">
               <h3 class="text-lg font-semibold text-text group-hover:text-accent">{project.title}</h3>
               <span class="rounded-full bg-accent/10 px-2 py-1 text-xs font-medium text-accent">
@@ -192,7 +220,7 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
     </div>
   </section>
 
-  <section class="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-[0.9fr_1.1fr]">
+  <section id="stack" class="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-[0.9fr_1.1fr]">
     <div>
       <h2 class="text-3xl font-bold text-text">{copy.stackTitle}</h2>
       <div class="mt-5 flex flex-wrap gap-2">
@@ -208,7 +236,7 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
           <p class="rounded-lg border border-border bg-surface p-5 text-sm text-muted">{copy.noPosts}</p>
         ) : (
           latestPosts.map((post) => (
-            <a href={getLocalizedPath(`/blog/${post.slug}`, lang)} class="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-accent hover:shadow-glow-sm">
+            <a href={`/old/blog/${post.slug}`} class="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-accent hover:shadow-glow-sm">
               <time class="font-mono text-xs text-muted">{formatDate(post.data.date)}</time>
               <h3 class="mt-2 font-semibold text-text">{post.data.title}</h3>
               <p class="mt-1 line-clamp-2 text-sm text-muted">{post.data.description}</p>
@@ -219,7 +247,7 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
     </div>
   </section>
 
-  <section class="bg-text text-white">
+  <section id="contact" class="bg-accent text-white">
     <div class="mx-auto flex max-w-6xl flex-col justify-between gap-6 px-4 py-12 sm:flex-row sm:items-center">
       <div>
         <h2 class="text-3xl font-bold">{copy.contactTitle}</h2>
@@ -235,6 +263,13 @@ const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-R
       </div>
     </div>
   </section>
+
+  <footer class="border-t border-border bg-bg">
+    <div class="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center">
+      <p>&copy; 2026 Rodion. {lang === 'ru' ? 'Новая светлая версия.' : 'New light version.'}</p>
+      <a href="/old" class="font-medium text-accent hover:underline">{copy.oldVersion}</a>
+    </div>
+  </footer>
 </div>
 
 <style>

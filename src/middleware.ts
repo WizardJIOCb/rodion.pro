@@ -7,5 +7,13 @@ export const onRequest = defineMiddleware((context, next) => {
     return context.rewrite('/ru/old');
   }
 
+  if (pathname.startsWith('/old/en/')) {
+    return context.rewrite(pathname.replace(/^\/old\/en/, '/en'));
+  }
+
+  if (pathname.startsWith('/old/')) {
+    return context.rewrite(pathname.replace(/^\/old/, '/ru'));
+  }
+
   return next();
 });

@@ -42,7 +42,7 @@ export default defineConfig({
     defaultLocale: 'ru',
     locales: ['ru', 'en'],
     routing: {
-      prefixDefaultLocale: true,
+      prefixDefaultLocale: false,
     },
   },
 });
