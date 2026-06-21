@@ -1,9 +1,16 @@
 ---
+import Layout from '@/layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import NewHomeLayout from '@/layouts/NewHomeLayout.astro';
-import FreshHome from '@/components/FreshHome.astro';
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@/i18n';
+import { getFeaturedProjects } from '@/data/projects';
+import TerminalHero from '@/components/TerminalHero.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import EventCard from '@/components/EventCard.astro';
+import { requireDb, events, hasDb } from '@/db';
+import { desc } from 'drizzle-orm';
 
-const lang = 'ru';
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 Astro.cookies.set('lang', lang, {
   path: '/',
@@ -12,15 +19,129 @@ Astro.cookies.set('lang', lang, {
   sameSite: 'lax',
 });
 
-const title = 'Родион Калимуллин';
-const description = 'Родион Калимуллин - Senior Full-Stack Developer, Tech Lead и DevOps инженер';
+const title = lang === 'ru' ? 'Главная' : 'Home';
+const description = lang === 'ru'
+  ? 'Персональный сайт Rodion - разработчик, DevOps, AI энтузиаст'
+  : 'Personal website of Rodion - developer, DevOps, AI enthusiast';
 
-const posts = await getCollection('blog-ru', ({ data }) => !data.draft);
+const featuredProjects = getFeaturedProjects(lang);
+
+const posts = await getCollection(`blog-${lang}`, ({ data }) => !data.draft);
 const latestPosts = posts
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 3);
+
+let recentEvents: typeof events.$inferSelect[] = [];
+let eventsUnavailable = false;
+const dbConfigured = hasDb();
+
+if (dbConfigured) {
+  try {
+    const db = requireDb();
+    recentEvents = await db
+      .select()
+      .from(events)
+      .orderBy(desc(events.ts))
+      .limit(5);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    eventsUnavailable = true;
+  }
+}
+
+const formatDate = (date: Date) => date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
 ---
 
-<NewHomeLayout title={title} description={description}>
-  <FreshHome lang={lang} latestPosts={latestPosts} />
-</NewHomeLayout>
+<Layout title={title} description={description}>
+  <div class="mx-auto max-w-5xl px-4 py-12">
+    <TerminalHero lang={lang} />
+
+    <section class="mt-16">
+      <div class="mb-8 flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-text">{t('section.featured')}</h2>
+        <a href={getLocalizedPath('/projects', lang)} class="link text-sm">
+          {t('section.viewAll')} &rarr;
+        </a>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {featuredProjects.map((project) => (
+          <ProjectCard {...project} lang={lang} />
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <div class="mb-8 flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-text">{t('section.latest')}</h2>
+        <a href={getLocalizedPath('/blog', lang)} class="link text-sm">
+          {t('section.viewAll')} &rarr;
+        </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {latestPosts.length === 0 ? (
+          <div class="card">
+            <p class="text-sm text-muted">
+              {lang === 'ru' ? 'Записи блога появятся здесь' : 'Blog posts will appear here'}
+            </p>
+          </div>
+        ) : (
+          latestPosts.map((post) => (
+            <a
+              href={getLocalizedPath(`/blog/${post.slug}`, lang)}
+              class="card block group"
+              data-hover-glow
+            >
+              <time class="font-mono text-xs text-muted">
+                {formatDate(post.data.date)}
+              </time>
+              <h3 class="mb-2 mt-2 text-lg font-semibold text-text transition-colors group-hover:text-accent">
+                {post.data.title}
+              </h3>
+              <p class="line-clamp-2 text-sm text-muted">
+                {post.data.description}
+              </p>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <div class="mb-8 flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-text">{t('section.events')}</h2>
+        <a href={getLocalizedPath('/changelog', lang)} class="link text-sm">
+          {t('section.viewAll')} &rarr;
+        </a>
+      </div>
+      <div class="space-y-4">
+        {!dbConfigured ? (
+          <div class="card">
+            <p class="text-sm text-muted">
+              {lang === 'ru' ? 'События появятся после настройки базы данных' : 'Events will appear after database setup'}
+            </p>
+          </div>
+        ) : eventsUnavailable ? (
+          <div class="card">
+            <p class="text-sm text-muted">
+              {lang === 'ru' ? 'Не удалось загрузить события' : 'Failed to load events'}
+            </p>
+          </div>
+        ) : recentEvents.length === 0 ? (
+          <div class="card">
+            <p class="text-sm text-muted">
+              {lang === 'ru' ? 'Событий пока нет' : 'No events yet'}
+            </p>
+          </div>
+        ) : (
+          recentEvents.map((event) => (
+            <EventCard event={event} lang={lang} />
+          ))
+        )}
+      </div>
+    </section>
+  </div>
+</Layout>

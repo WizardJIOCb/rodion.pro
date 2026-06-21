@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import NewHomeLayout from '@/layouts/NewHomeLayout.astro';
+import FreshHome from '@/components/FreshHome.astro';
+
+const lang = 'ru';
+
+Astro.cookies.set('lang', lang, {
+  path: '/',
+  maxAge: 60 * 60 * 24 * 365,
+  httpOnly: false,
+  sameSite: 'lax',
+});
+
+const title = 'Альтернативная главная';
+const description = 'Светлая проектная витрина Rodion';
+
+const posts = await getCollection('blog-ru', ({ data }) => !data.draft);
+const latestPosts = posts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+---
+
+<NewHomeLayout title={title} description={description}>
+  <FreshHome lang={lang} latestPosts={latestPosts} />
+</NewHomeLayout>
