@@ -74,7 +74,7 @@ export const resumeShortRu: ResumeShort = {
   ],
   experienceShort: [
     {
-      company: 'Хоум Банк \\ Forward LLC',
+      company: 'Хоум Банк',
       role: 'Full-Stack Developer',
       bullets: ['Микросервисы, критичные сервисы, мониторинг, Jira/Confluence'],
     },
