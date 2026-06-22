@@ -143,7 +143,7 @@ export const resumeSections: ResumeSection[] = [
         achievements: [
           { ru: 'Разработка и сопровождение банковских микросервисов', en: 'Development and support of banking microservices' },
           { ru: 'Работа в enterprise-микросервисной архитектуре', en: 'Work in enterprise microservice architecture' },
-          { ru: 'Поддержка и доработка критичных сервисов', en: 'Support and improvement of critical services' },
+          { ru: 'Поддержка и доработка внутренних сервисов', en: 'Support and improvement of internal services' },
           { ru: 'Взаимодействие с backend, DevOps и аналитическими командами', en: 'Collaboration with backend, DevOps, and analytics teams' },
           { ru: 'Работа с логированием, мониторингом и инфраструктурой', en: 'Working with logging, monitoring, and infrastructure' },
           { ru: 'Использование Jira / Confluence', en: 'Using Jira / Confluence' },

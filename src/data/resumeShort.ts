@@ -76,7 +76,7 @@ export const resumeShortRu: ResumeShort = {
     {
       company: 'Хоум Банк',
       role: 'Full-Stack Developer',
-      bullets: ['Микросервисы, критичные сервисы, мониторинг, Jira/Confluence'],
+      bullets: ['Микросервисы, внутренние сервисы, мониторинг, Jira/Confluence'],
     },
     {
       company: 'Forward LLC',
@@ -145,7 +145,7 @@ export const resumeShortEn: ResumeShort = {
     {
       company: 'Home Bank',
       role: 'Full-Stack Developer',
-      bullets: ['Microservices, critical services, monitoring, Jira/Confluence'],
+      bullets: ['Microservices, internal services, monitoring, Jira/Confluence'],
     },
     {
       company: 'Forward LLC',
