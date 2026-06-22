@@ -18,6 +18,38 @@ export interface Project {
 // Новые проекты добавляем в начало списка, чтобы свежие работы были первыми.
 export const projects: Project[] = [
   {
+    id: 'images-xedoc',
+    title: {
+      ru: 'images.xedoc.ru',
+      en: 'images.xedoc.ru',
+    },
+    tagline: {
+      ru: 'MVP-сервис генерации изображений с веб-панелью, очередью задач и ComfyUI worker',
+      en: 'Image generation MVP with a web panel, job queue, and ComfyUI worker',
+    },
+    status: 'active',
+    links: {
+      site: 'https://images.xedoc.ru',
+      github: 'https://github.com/WizardJIOCb/images.xedoc.ru',
+    },
+    stack: ['React', 'Vite', 'Fastify', 'PostgreSQL', 'Redis', 'ComfyUI'],
+    highlights: {
+      ru: [
+        'React + Vite + Tailwind интерфейс для генерации, очереди и галереи',
+        'Fastify API с локальным файловым хранилищем и worker endpoints',
+        'Очередь задач на BullMQ/Redis и схема PostgreSQL через Drizzle',
+        'Отдельный GPU worker для домашнего Windows ПК с ComfyUI',
+      ],
+      en: [
+        'React + Vite + Tailwind interface for generation, queue, and gallery',
+        'Fastify API with local file storage and worker endpoints',
+        'BullMQ/Redis job queue and PostgreSQL schema via Drizzle',
+        'Separate GPU worker for a home Windows PC with ComfyUI',
+      ],
+    },
+    featured: true,
+  },
+  {
     id: 'hands-xedoc',
     title: {
       ru: 'hands.xedoc.ru',
