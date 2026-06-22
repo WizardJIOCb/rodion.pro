@@ -146,7 +146,6 @@ export const resumeSections: ResumeSection[] = [
           { ru: 'Поддержка и доработка внутренних сервисов', en: 'Support and improvement of internal services' },
           { ru: 'Взаимодействие с backend, DevOps и аналитическими командами', en: 'Collaboration with backend, DevOps, and analytics teams' },
           { ru: 'Работа с логированием, мониторингом и инфраструктурой', en: 'Working with logging, monitoring, and infrastructure' },
-          { ru: 'Использование Jira / Confluence', en: 'Using Jira / Confluence' },
         ],
       },
       {
